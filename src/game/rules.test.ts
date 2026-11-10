@@ -72,6 +72,7 @@ import {
   advanceOnboardingTutorialPure,
   translateUiPure,
 } from '../core/StorageService';
+import { resolveDeployNetworkStrategyPure } from '../core/NetworkClient';
 
 test('Full-Skin Wardrobe catalog contains all 8 modular categories with rich items', () => {
   assert.ok(getCosmeticsByCategory('cape').length >= 12);
@@ -1657,5 +1658,37 @@ test('Stage 11 Adaptive Performance Quality Tiering, High-Contrast & Reduced-Sha
   assert.equal(step3.nextSave.tutorialStep, 3);
   assert.equal(step3.nextSave.candles, candlesBeforeTut + 2);
 });
+
+test('Netlify & Edge CDN deployment adapter selects edge_serverless on *.netlify.app, fullstack_ws on localhost, and custom_ws when VITE_WS_URL is set', () => {
+  // 1. Netlify domain automatically enters edge_serverless mode (no failing /ws connection attempts)
+  const netlifyStrat = resolveDeployNetworkStrategyPure(
+    'rea-sky-travelers.netlify.app',
+    'https:',
+    'rea-sky-travelers.netlify.app'
+  );
+  assert.equal(netlifyStrat.mode, 'edge_serverless');
+  assert.equal(netlifyStrat.wsUrl, null);
+  assert.equal(netlifyStrat.broadcastChannelName, 'glimmer_travelers_sync_v1');
+
+  // 2. Local / Fullstack Node server uses fullstack_ws
+  const localStrat = resolveDeployNetworkStrategyPure(
+    'localhost',
+    'http:',
+    'localhost:3000'
+  );
+  assert.equal(localStrat.mode, 'fullstack_ws');
+  assert.equal(localStrat.wsUrl, 'ws://localhost:3000/ws');
+
+  // 3. Custom external WebSocket server overrides static host
+  const customStrat = resolveDeployNetworkStrategyPure(
+    'rea-sky-travelers.netlify.app',
+    'https:',
+    'rea-sky-travelers.netlify.app',
+    'wss://sky-realtime.example.com/ws'
+  );
+  assert.equal(customStrat.mode, 'custom_ws');
+  assert.equal(customStrat.wsUrl, 'wss://sky-realtime.example.com/ws');
+});
+
 
 

@@ -53,8 +53,58 @@ export interface NetworkStatusSnapshot {
   queuedReliableCount: number;
 }
 
+/**
+ * Pure helper to determine whether the app is running on a static/serverless edge CDN (like Netlify)
+ * vs a persistent WebSocket host or a custom VITE_WS_URL endpoint.
+ */
+export function resolveDeployNetworkStrategyPure(
+  hostname: string,
+  protocol: string,
+  host: string,
+  customWsUrl = '',
+  forceStatic = false
+): {
+  mode: 'custom_ws' | 'edge_serverless' | 'fullstack_ws';
+  wsUrl: string | null;
+  broadcastChannelName: string;
+} {
+  const trimmedWs = (customWsUrl || '').trim();
+  if (trimmedWs.startsWith('ws://') || trimmedWs.startsWith('wss://')) {
+    return {
+      mode: 'custom_ws',
+      wsUrl: trimmedWs,
+      broadcastChannelName: 'glimmer_travelers_sync_v1',
+    };
+  }
+
+  const lowerHost = (hostname || '').toLowerCase();
+  const isStaticCdnHost =
+    forceStatic ||
+    lowerHost.endsWith('.netlify.app') ||
+    lowerHost.endsWith('.netlify.live') ||
+    lowerHost.endsWith('.vercel.app') ||
+    lowerHost.endsWith('.pages.dev') ||
+    lowerHost.endsWith('.github.io');
+
+  if (isStaticCdnHost) {
+    return {
+      mode: 'edge_serverless',
+      wsUrl: null,
+      broadcastChannelName: 'glimmer_travelers_sync_v1',
+    };
+  }
+
+  const wsProto = protocol === 'https:' ? 'wss:' : 'ws:';
+  return {
+    mode: 'fullstack_ws',
+    wsUrl: `${wsProto}//${host}/ws`,
+    broadcastChannelName: 'glimmer_travelers_sync_v1',
+  };
+}
+
 class NetworkManager {
   private ws: WebSocket | null = null;
+  private bc: BroadcastChannel | null = null;
   private connected = false;
   private roomId = 'offline_home';
   private maxRoomSize = 8;
@@ -179,10 +229,42 @@ class NetworkManager {
       if (this.ws) {
         this.ws.onclose = null;
         this.ws.close();
+        this.ws = null;
       }
-      const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${proto}//${window.location.host}/ws`;
-      const socket = new WebSocket(wsUrl);
+
+      const envMeta = (import.meta as any).env || {};
+      const strategy = resolveDeployNetworkStrategyPure(
+        window.location.hostname,
+        window.location.protocol,
+        window.location.host,
+        envMeta.VITE_WS_URL || '',
+        envMeta.VITE_STATIC_DEPLOY === 'true'
+      );
+
+      // Initialize BroadcastChannel for zero-latency cross-tab multiplayer sync (works on Netlify & locally!)
+      if (!this.bc && typeof BroadcastChannel !== 'undefined') {
+        try {
+          this.bc = new BroadcastChannel(strategy.broadcastChannelName);
+          this.bc.onmessage = (ev) => {
+            if (ev?.data && ev.data.senderId !== this.localPlayerId) {
+              this.handleMessage(ev.data);
+            }
+          };
+        } catch {
+          // BroadcastChannel optional
+        }
+      }
+
+      // On Netlify / static edge CDN without a custom WS URL, enter Cloud Autonomous Room Mode cleanly with 0 WS errors
+      if (strategy.mode === 'edge_serverless' || !strategy.wsUrl) {
+        this.connected = true;
+        this.roomId = `${this.currentRealmId}_inst_1`;
+        this.pendingReliableQueue = [];
+        this.emitStatus();
+        return;
+      }
+
+      const socket = new WebSocket(strategy.wsUrl);
       this.ws = socket;
 
       let openedAtLeastOnce = false;
@@ -643,6 +725,19 @@ class NetworkManager {
         })
       );
     }
+    if (this.bc && this.localPlayerId) {
+      try {
+        this.bc.postMessage({
+          type: 'peer:transform',
+          senderId: this.localPlayerId,
+          playerId: this.localPlayerId,
+          playerName: this.localPlayerName,
+          ...state,
+        });
+      } catch {
+        // Ignore BroadcastChannel closed state
+      }
+    }
   }
 
   public broadcastEvent(type: string, payload: Record<string, any> = {}) {
@@ -659,6 +754,17 @@ class NetworkManager {
       // Queue reliable social/expression events while disconnected so they flush on reconnect!
       if (this.pendingReliableQueue.length < 32) {
         this.pendingReliableQueue.push(packet);
+      }
+    }
+    if (this.bc && this.localPlayerId) {
+      try {
+        this.bc.postMessage({
+          ...packet,
+          senderId: this.localPlayerId,
+          senderName: this.localPlayerName,
+        });
+      } catch {
+        // Ignore BroadcastChannel closed state
       }
     }
 
