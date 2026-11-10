@@ -1,0 +1,1445 @@
+{
+  "meta": {
+    "gameTitle": "微光旅人 · Glimmer Travelers",
+    "version": "1.11.0-stage11-final",
+    "calibrationNote": "所有核心数值均集中于此配置文件，标注【待对照实机校准】的参数可在不修改代码的情况下直接微调。"
+  },
+  "locomotion": {
+    "walkSpeed": 4.8,
+    "runSpeed": 8.8,
+    "runJoystickThreshold": 0.68,
+    "jumpVerticalImpulse": 8.4,
+    "highLandingVelocityThreshold": -9.2,
+    "landingStiffDurationSec": 0.45,
+    "slopeSlideMinAngleDeg": 21.0,
+    "slopeSlideAcceleration": 11.5,
+    "shallowWaterSlowMultiplier": 0.62,
+    "shallowWaterSurfaceY": 0.36,
+    "cameraAutoRecenterRate": 1.65,
+    "note": "待对照实机校准：地面漫步/推满摇杆奔跑/跳跃/高处落地短暂硬直/陡坡滑行/浅水涉水减速与第三人称相机自动回正参数"
+  },
+  "energy": {
+    "flapCostWedges": 1.0,
+    "flapVerticalImpulse": 8.6,
+    "glideForwardBoost": 6.5,
+    "hoverAirSpeed": 10.2,
+    "glideAirSpeed": 14.8,
+    "diveMaxHorizontalSpeed": 19.8,
+    "diveGravity": 22.5,
+    "divePullUpLiftFactor": 0.58,
+    "windTunnelUpdraftAccel": 15.5,
+    "windTunnelRechargeRatePerSec": 1.4,
+    "groundRechargeRatePerSec": 0.95,
+    "lightSourceRechargeRatePerSec": 2.4,
+    "companionProximityRechargeRatePerSec": 1.35,
+    "darkWaterDrainRatePerSec": 0.85,
+    "darkRainDrainRatePerSec": 0.42,
+    "krillHitEnergyLossWedges": 2.0,
+    "crabHitEnergyLossWedges": 1.0,
+    "edenRockHitEnergyLossWedges": 2.0,
+    "tempLostWedgeRecoveryRatePerSec": 0.65,
+    "wingedLightTotalInWorld": 60,
+    "maxWingWedgesCap": 12,
+    "wingedLightToWedgesTable": [
+      { "wedgeLevel": 1, "requiredWingedLight": 1, "note": "待对照实机校准：初生 1 翼" },
+      { "wedgeLevel": 2, "requiredWingedLight": 2, "note": "待对照实机校准：2 翼" },
+      { "wedgeLevel": 3, "requiredWingedLight": 5, "note": "待对照实机校准：3 翼" },
+      { "wedgeLevel": 4, "requiredWingedLight": 10, "note": "待对照实机校准：4 翼" },
+      { "wedgeLevel": 5, "requiredWingedLight": 15, "note": "待对照实机校准：5 翼" },
+      { "wedgeLevel": 6, "requiredWingedLight": 20, "note": "待对照实机校准：6 翼" },
+      { "wedgeLevel": 7, "requiredWingedLight": 22, "note": "待对照实机校准：7 翼" },
+      { "wedgeLevel": 8, "requiredWingedLight": 24, "note": "待对照实机校准：8 翼" },
+      { "wedgeLevel": 9, "requiredWingedLight": 26, "note": "待对照实机校准：9 翼" },
+      { "wedgeLevel": 10, "requiredWingedLight": 28, "note": "待对照实机校准：10 翼" },
+      { "wedgeLevel": 11, "requiredWingedLight": 30, "note": "待对照实机校准：11 翼" },
+      { "wedgeLevel": 12, "requiredWingedLight": 35, "note": "待对照实机校准：12 翼满阶" }
+    ]
+  },
+  "economy": {
+    "waxPerCandle": 100,
+    "dailyCandleCap": 20,
+    "dailyHeartCap": 5,
+    "heartGiftCostCandles": 3,
+    "friendRequestCostCandles": 1,
+    "edenAscendedCandlePerStatues": 0.25,
+    "redShardAscendedCandleReward": 3.5,
+    "blackShardWaxReward": 200,
+    "dailyQuestRewardSeasonCandles": 1,
+    "dailyRerollLimit": 1,
+    "note": "待对照实机校准：阶段4 蜡烛/爱心经济与每日获取上限配置"
+  },
+  "social": {
+    "maxPlayersPerRealmInstance": 8,
+    "maxPlayersInAviaryCamp": 16,
+    "strangerIgniteDistance": 3.8,
+    "companionRechargeDistance": 4.5,
+    "hugEnergyRestoreWedges": 12.0,
+    "highFiveEnergyRestoreWedges": 1.5,
+    "teleportOffsetMeters": 1.45,
+    "reportReasons": ["言语不当", "恶意骚扰", "疑似外挂作弊", "其他违规行为"],
+    "sensitiveWords": ["作弊", "外挂", "辱骂", "笨蛋", "垃圾", "骗子", "滚"],
+    "friendTreeNodes": [
+      {
+        "id": "ft_ignite",
+        "level": 0,
+        "name": "点亮星火",
+        "description": "与陌生旅人相互举起烛火点亮，显露彼此真实装扮面貌",
+        "costType": "free",
+        "costAmount": 0,
+        "prerequisiteId": null,
+        "unlockAction": "ignite"
+      },
+      {
+        "id": "ft_friend",
+        "level": 1,
+        "name": "缔结星盘好友 & 牵手共飞",
+        "description": "赠予 1 根白蜡烛缔结好友，解锁牵手同步飞行与专属爱称",
+        "costType": "candles",
+        "costAmount": 1,
+        "prerequisiteId": "ft_ignite",
+        "unlockAction": "hand_hold"
+      },
+      {
+        "id": "ft_highfive",
+        "level": 2,
+        "name": "星光击掌 (High-Five)",
+        "description": "解锁双人欢庆击掌动作，碰撞出灿烂星火",
+        "costType": "candles",
+        "costAmount": 2,
+        "prerequisiteId": "ft_friend",
+        "unlockAction": "high_five"
+      },
+      {
+        "id": "ft_chat",
+        "level": 3,
+        "name": "心音密语 (好友聊天气泡)",
+        "description": "解锁无需长椅的实时头顶气泡文字交流",
+        "costType": "candles",
+        "costAmount": 3,
+        "prerequisiteId": "ft_highfive",
+        "unlockAction": "chat"
+      },
+      {
+        "id": "ft_hug",
+        "level": 4,
+        "name": "温暖拥抱 (Warm Hug)",
+        "description": "解锁双人相拥动作，瞬间恢复彼此全部斗篷光能",
+        "costType": "hearts",
+        "costAmount": 1,
+        "prerequisiteId": "ft_chat",
+        "unlockAction": "hug"
+      },
+      {
+        "id": "ft_carry",
+        "level": 5,
+        "name": "背抱翱翔 (Piggyback Carry)",
+        "description": "高阶好友默契动作，将好友背在肩上共同穿云翱翔",
+        "costType": "hearts",
+        "costAmount": 2,
+        "prerequisiteId": "ft_hug",
+        "unlockAction": "carry"
+      }
+    ]
+  },
+  "spiritMemoryQuests": [
+    {
+      "spiritId": "spirit_prairie_butterfly",
+      "spiritName": "云野·引蝶牧光先祖",
+      "realmId": "prairie",
+      "emoteUnlocked": "emote_butterfly",
+      "note": "待对照实机校准：阶段4 先祖记忆短流程（地面跟随 → 凌空飞跃 → 终点石像共鸣）",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "title": "第 1/3 幕 · 唤醒幽光洞窟心火（地面跟随引蝶先祖光影）",
+          "mode": "follow",
+          "x": -16.8,
+          "y": 0.95,
+          "z": -14.8
+        },
+        {
+          "stepIndex": 2,
+          "title": "第 2/3 幕 · 御风振翅追光（飞向洞窟高台星冠菇上方）",
+          "mode": "fly",
+          "x": -19.5,
+          "y": 2.8,
+          "z": -16.8
+        },
+        {
+          "stepIndex": 3,
+          "title": "第 3/3 幕 · 记忆终章（点燃引蝶先祖石像，化作流星归入星盘）",
+          "mode": "interact",
+          "x": -18.2,
+          "y": 1.15,
+          "z": -13.5
+        }
+      ]
+    },
+    {
+      "spiritId": "spirit_prairie_cheer",
+      "spiritName": "云野·雀跃欢呼先祖",
+      "realmId": "prairie",
+      "emoteUnlocked": "emote_cheer_jump",
+      "note": "待对照实机校准：阶段4 三塔村落先祖记忆短流程",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "title": "第 1/3 幕 · 唤醒钟塔心火（跟随欢呼先祖穿过浮岛阶梯）",
+          "mode": "follow",
+          "x": 15.2,
+          "y": 1.85,
+          "z": -23.5
+        },
+        {
+          "stepIndex": 2,
+          "title": "第 2/3 幕 · 振翅掠过金钟（飞跃三塔钟楼中庭光环）",
+          "mode": "fly",
+          "x": 16.5,
+          "y": 3.6,
+          "z": -26.5
+        },
+        {
+          "stepIndex": 3,
+          "title": "第 3/3 幕 · 记忆终章（点燃钟塔先祖石像，解锁雀跃欢呼动作）",
+          "mode": "interact",
+          "x": 14.5,
+          "y": 1.87,
+          "z": -25.0
+        }
+      ]
+    },
+    {
+      "spiritId": "spirit_isle_pointing",
+      "spiritName": "晨岛·指路寻光先祖",
+      "realmId": "isle",
+      "emoteUnlocked": "emote_point",
+      "note": "待对照实机校准：阶段4 晨岛引路先祖记忆短流程",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "title": "第 1/3 幕 · 沙洲寻光（地面跟随引路先祖足迹）",
+          "mode": "follow",
+          "x": -6.0,
+          "y": 0.85,
+          "z": -8.0
+        },
+        {
+          "stepIndex": 2,
+          "title": "第 2/3 幕 · 初次展翅（飞跃晨岛试炼石阶）",
+          "mode": "fly",
+          "x": 0.0,
+          "y": 2.6,
+          "z": -12.0
+        },
+        {
+          "stepIndex": 3,
+          "title": "第 3/3 幕 · 记忆终章（点燃引路先祖石像，开启星盘）",
+          "mode": "interact",
+          "x": 0.0,
+          "y": 1.2,
+          "z": -6.0
+        }
+      ]
+    }
+  ],
+  "constellations": [
+    {
+      "spiritId": "spirit_isle_pointing",
+      "spiritName": "晨岛·指路寻光先祖",
+      "realmId": "isle",
+      "type": "regular",
+      "description": "于晨岛沙洲高台守望初生旅人的常驻引路先祖",
+      "nodes": [
+        {
+          "id": "node_emote_point_lv1",
+          "name": "指点方向 Lv.1",
+          "category": "emote",
+          "targetId": "emote_point",
+          "level": 1,
+          "costType": "free",
+          "costAmount": 0,
+          "prerequisiteId": null
+        },
+        {
+          "id": "node_emote_point_lv2",
+          "name": "指点方向 Lv.2 (星轨流光)",
+          "category": "emote",
+          "targetId": "emote_point",
+          "level": 2,
+          "costType": "candles",
+          "costAmount": 3,
+          "prerequisiteId": "node_emote_point_lv1"
+        },
+        {
+          "id": "node_hair_moth",
+          "name": "初心雀跃呆毛短发",
+          "category": "cosmetic",
+          "targetId": "hair_moth_default",
+          "costType": "candles",
+          "costAmount": 4,
+          "prerequisiteId": "node_emote_point_lv1"
+        },
+        {
+          "id": "node_heart_isle",
+          "name": "先祖馈赠爱心 · 晨岛",
+          "category": "heart",
+          "targetId": "heart_isle_1",
+          "costType": "candles",
+          "costAmount": 3,
+          "prerequisiteId": "node_emote_point_lv1"
+        },
+        {
+          "id": "node_wing_buff_isle",
+          "name": "永久光之翼节点 · 晨岛",
+          "category": "wing_buff",
+          "targetId": "buff_isle_1",
+          "costType": "ascendedCandles",
+          "costAmount": 2,
+          "prerequisiteId": "node_hair_moth"
+        }
+      ]
+    },
+    {
+      "spiritId": "spirit_prairie_butterfly",
+      "spiritName": "云野·引蝶牧光先祖",
+      "realmId": "prairie",
+      "type": "regular",
+      "description": "漫步在云野幽光洞窟、与发光金蝶共舞的常驻先祖",
+      "nodes": [
+        {
+          "id": "node_emote_butterfly_lv1",
+          "name": "引蝶共鸣 Lv.1",
+          "category": "emote",
+          "targetId": "emote_butterfly",
+          "level": 1,
+          "costType": "free",
+          "costAmount": 0,
+          "prerequisiteId": null
+        },
+        {
+          "id": "node_emote_butterfly_lv3",
+          "name": "引蝶共鸣 Lv.3 (群蝶环绕)",
+          "category": "emote",
+          "targetId": "emote_butterfly",
+          "level": 3,
+          "costType": "candles",
+          "costAmount": 5,
+          "prerequisiteId": "node_emote_butterfly_lv1"
+        },
+        {
+          "id": "node_heart_butterfly",
+          "name": "先祖馈赠爱心 · 云野",
+          "category": "heart",
+          "targetId": "heart_prairie_1",
+          "costType": "candles",
+          "costAmount": 3,
+          "prerequisiteId": "node_emote_butterfly_lv1"
+        },
+        {
+          "id": "node_cape_sunlight_yellow",
+          "name": "圣岛遥鲲王金辉斗篷",
+          "category": "cosmetic",
+          "targetId": "cape_manta_king",
+          "costType": "hearts",
+          "costAmount": 3,
+          "prerequisiteId": "node_emote_butterfly_lv3"
+        },
+        {
+          "id": "node_prop_harp",
+          "name": "云野先祖黄金竖琴",
+          "category": "cosmetic",
+          "targetId": "prop_golden_harp",
+          "costType": "hearts",
+          "costAmount": 5,
+          "prerequisiteId": "node_cape_sunlight_yellow"
+        },
+        {
+          "id": "node_call_manta",
+          "name": "遥鲲清鸣呼唤音色",
+          "category": "call_sound",
+          "targetId": "call_manta_spirit",
+          "costType": "candles",
+          "costAmount": 4,
+          "prerequisiteId": "node_emote_butterfly_lv3"
+        }
+      ]
+    },
+    {
+      "spiritId": "spirit_prairie_cheer",
+      "spiritName": "云野·雀跃欢呼先祖",
+      "realmId": "prairie",
+      "type": "regular",
+      "description": "守望云野三塔钟楼村落、为结伴旅人欢呼喝彩的常驻先祖",
+      "nodes": [
+        {
+          "id": "node_emote_cheer_lv1",
+          "name": "雀跃欢呼 Lv.1",
+          "category": "emote",
+          "targetId": "emote_cheer_jump",
+          "level": 1,
+          "costType": "free",
+          "costAmount": 0,
+          "prerequisiteId": null
+        },
+        {
+          "id": "node_emote_cheer_lv4",
+          "name": "雀跃欢呼 Lv.4 (满天礼花)",
+          "category": "emote",
+          "targetId": "emote_cheer_jump",
+          "level": 4,
+          "costType": "candles",
+          "costAmount": 6,
+          "prerequisiteId": "node_emote_cheer_lv1"
+        },
+        {
+          "id": "node_hat_sun_straw",
+          "name": "圣岛夏日宽檐草帽",
+          "category": "cosmetic",
+          "targetId": "hat_sun_straw",
+          "costType": "candles",
+          "costAmount": 4,
+          "prerequisiteId": "node_emote_cheer_lv1"
+        },
+        {
+          "id": "node_pants_cargo",
+          "name": "圣岛季米白工装背带裤",
+          "category": "cosmetic",
+          "targetId": "pants_jelly_cargo",
+          "costType": "hearts",
+          "costAmount": 4,
+          "prerequisiteId": "node_emote_cheer_lv4"
+        },
+        {
+          "id": "node_wing_buff_prairie",
+          "name": "永久光之翼节点 · 云野",
+          "category": "wing_buff",
+          "targetId": "buff_prairie_1",
+          "costType": "ascendedCandles",
+          "costAmount": 2,
+          "prerequisiteId": "node_pants_cargo"
+        }
+      ]
+    },
+    {
+      "spiritId": "spirit_valley_spin",
+      "spiritName": "霞谷·冰原旋转舞者先祖",
+      "realmId": "valley",
+      "type": "seasonal",
+      "description": "在霞谷落日竞技场翩翩起舞的音韵季传奇先祖",
+      "nodes": [
+        {
+          "id": "node_emote_spin_lv1",
+          "name": "芭蕾旋转舞 Lv.1",
+          "category": "emote",
+          "targetId": "emote_spin_dance",
+          "level": 1,
+          "costType": "free",
+          "costAmount": 0,
+          "prerequisiteId": null
+        },
+        {
+          "id": "node_emote_spin_lv5",
+          "name": "芭蕾旋转舞 Lv.5 (满级华彩星旋)",
+          "category": "emote",
+          "targetId": "emote_spin_dance",
+          "level": 5,
+          "costType": "seasonCandles",
+          "costAmount": 6,
+          "prerequisiteId": "node_emote_spin_lv1"
+        },
+        {
+          "id": "node_hair_white_bird",
+          "name": "音韵白鸟双羽冠",
+          "category": "cosmetic",
+          "targetId": "hair_white_bird",
+          "costType": "seasonCandles",
+          "costAmount": 12,
+          "prerequisiteId": "node_emote_spin_lv5"
+        },
+        {
+          "id": "node_cape_owl_white",
+          "name": "音韵白鸟燕尾斗篷",
+          "category": "cosmetic",
+          "targetId": "cape_owl_white",
+          "costType": "hearts",
+          "costAmount": 6,
+          "prerequisiteId": "node_hair_white_bird"
+        },
+        {
+          "id": "node_sheet_soaring",
+          "name": "《云野振翅之歌》典藏乐谱",
+          "category": "music_sheet",
+          "targetId": "sheet_cloud_soaring",
+          "costType": "seasonCandles",
+          "costAmount": 4,
+          "prerequisiteId": "node_emote_spin_lv5"
+        }
+      ]
+    },
+    {
+      "spiritId": "spirit_season_guide_aurora",
+      "spiritName": "流光星韵季·向导先祖",
+      "realmId": "home",
+      "type": "season_guide",
+      "description": "驻留遇境与云野的当季向导，指引旅人完成季节任务并兑换毕业礼",
+      "nodes": [
+        {
+          "id": "node_guide_pendant",
+          "name": "极光冰晶星河项链 (季节向导礼)",
+          "category": "cosmetic",
+          "targetId": "neck_aurora_pendant",
+          "costType": "free",
+          "costAmount": 0,
+          "prerequisiteId": null
+        },
+        {
+          "id": "node_guide_earrings",
+          "name": "欧若拉星芒流苏耳坠",
+          "category": "cosmetic",
+          "targetId": "face_star_earrings",
+          "costType": "seasonCandles",
+          "costAmount": 6,
+          "prerequisiteId": "node_guide_pendant"
+        },
+        {
+          "id": "node_guide_aurora_wings",
+          "name": "欧若拉流光蝶翼 (季节毕业斗篷)",
+          "category": "cosmetic",
+          "targetId": "cape_aurora_wings",
+          "costType": "seasonCandles",
+          "costAmount": 10,
+          "prerequisiteId": "node_guide_earrings"
+        }
+      ]
+    },
+    {
+      "spiritId": "spirit_vault_pray",
+      "spiritName": "禁阁·星河冥想贤者先祖",
+      "realmId": "vault",
+      "type": "returning",
+      "description": "周期性限时回归社交营地的禁阁顶层先祖",
+      "nodes": [
+        {
+          "id": "node_emote_pray_lv1",
+          "name": "星盘祈祷 Lv.1",
+          "category": "emote",
+          "targetId": "emote_pray_star",
+          "level": 1,
+          "costType": "free",
+          "costAmount": 0,
+          "prerequisiteId": null
+        },
+        {
+          "id": "node_emote_pray_lv4",
+          "name": "星盘祈祷 Lv.4 (六芒星法阵)",
+          "category": "emote",
+          "targetId": "emote_pray_star",
+          "level": 4,
+          "costType": "candles",
+          "costAmount": 8,
+          "prerequisiteId": "node_emote_pray_lv1"
+        },
+        {
+          "id": "node_mask_anubis",
+          "name": "预言阿努比斯黄金神面",
+          "category": "cosmetic",
+          "targetId": "mask_anubis",
+          "costType": "ascendedCandles",
+          "costAmount": 4,
+          "prerequisiteId": "node_emote_pray_lv4"
+        },
+        {
+          "id": "node_prop_winter_piano",
+          "name": "凛冬季高音水晶钢琴",
+          "category": "cosmetic",
+          "targetId": "prop_sky_piano",
+          "costType": "hearts",
+          "costAmount": 8,
+          "prerequisiteId": "node_mask_anubis"
+        }
+      ]
+    },
+    {
+      "spiritId": "spirit_event_bloom",
+      "spiritName": "花憩节·落樱茶艺先祖",
+      "realmId": "prairie",
+      "type": "event",
+      "description": "在花憩节庆典期间降临蝴蝶平原的活动先祖",
+      "nodes": [
+        {
+          "id": "node_bloom_blush",
+          "name": "花憩节落樱额间花钿",
+          "category": "cosmetic",
+          "targetId": "face_sakura_blush",
+          "costType": "candles",
+          "costAmount": 6,
+          "prerequisiteId": null
+        },
+        {
+          "id": "node_bloom_cape",
+          "name": "花憩节落樱花瓣斗篷",
+          "category": "cosmetic",
+          "targetId": "cape_sakura_bloom",
+          "costType": "hearts",
+          "costAmount": 5,
+          "prerequisiteId": "node_bloom_blush"
+        }
+      ]
+    }
+  ],
+  "dailyQuestsPool": [
+    {
+      "id": "dq_light_candles",
+      "title": "点亮 3 处星盘烛火簇",
+      "type": "collection",
+      "targetCount": 3,
+      "rewardType": "seasonCandles",
+      "rewardAmount": 1
+    },
+    {
+      "id": "dq_call_stranger",
+      "title": "向旅人发出星音呼唤 [Q] 2 次",
+      "type": "social",
+      "targetCount": 2,
+      "rewardType": "seasonCandles",
+      "rewardAmount": 1
+    },
+    {
+      "id": "dq_play_music",
+      "title": "使用云端乐器弹奏 5 个音符",
+      "type": "music",
+      "targetCount": 5,
+      "rewardType": "seasonCandles",
+      "rewardAmount": 1
+    },
+    {
+      "id": "dq_relive_spirit",
+      "title": "在任意区域重温 1 位先祖记忆",
+      "type": "exploration",
+      "targetCount": 1,
+      "rewardType": "hearts",
+      "rewardAmount": 1
+    },
+    {
+      "id": "dq_glide_clouds",
+      "title": "展翅进行流光滑翔或振翅 4 次",
+      "type": "exploration",
+      "targetCount": 4,
+      "rewardType": "seasonCandles",
+      "rewardAmount": 1
+    },
+    {
+      "id": "dq_meditate_shrine",
+      "title": "在神龛或动作栏施展星盘冥想 1 次",
+      "type": "meditation",
+      "targetCount": 1,
+      "rewardType": "hearts",
+      "rewardAmount": 1
+    }
+  ],
+  "seasonsAndEvents": {
+    "activeSeasonId": "season_aurora_starlight",
+    "seasons": [
+      {
+        "id": "season_aurora_starlight",
+        "name": "流光星韵季 (Season of Starlight)",
+        "themeColor": "#38bdf8",
+        "description": "跟随星韵向导穿越云海，收集季节烛火解锁流光羽翼与水晶高音琴"
+      },
+      {
+        "id": "season_shattering_void",
+        "name": "破晓红石季 (Season of Shattering)",
+        "themeColor": "#f43f5e",
+        "description": "净化坠落于各大王国的红黑碎石与暗植物，获取升华红蜡烛"
+      },
+      {
+        "id": "event_bloom_sakura",
+        "name": "花憩落樱节 (Days of Bloom)",
+        "themeColor": "#f472b6",
+        "description": "遇境与云野飘落漫天樱瓣，在落樱茶桌旁与旅人共饮赏花"
+      }
+    ],
+    "shardEruptions": [
+      {
+        "id": "shard_black_prairie",
+        "type": "black",
+        "realmId": "prairie",
+        "name": "黑石碎片的余烬",
+        "rewardType": "wax",
+        "rewardAmount": 200
+      },
+      {
+        "id": "shard_red_wasteland",
+        "type": "red",
+        "realmId": "wasteland",
+        "name": "伊甸红石喷发事件",
+        "rewardType": "ascendedCandles",
+        "rewardAmount": 4
+      }
+    ],
+    "seasonCandleEndConversionRate": 1.0,
+    "seasonStoryQuests": [
+      {
+        "id": "sq_act_1",
+        "actNumber": 1,
+        "title": "第一幕 · 晨曦星音召唤",
+        "realmId": "isle",
+        "description": "前往晨岛初生沙洲唤醒星光信标，与向导先祖共鸣第一乐章",
+        "rewardHearts": 1,
+        "rewardSeasonCandles": 2,
+        "rewardAscendedCandles": 0,
+        "unlockCosmeticId": null
+      },
+      {
+        "id": "sq_act_2",
+        "actNumber": 2,
+        "title": "第二幕 · 云海千鸟同飞",
+        "realmId": "prairie",
+        "description": "在云野蝴蝶平原与霞谷流霞间乘风滑翔，收集散落的星韵音符",
+        "rewardHearts": 1,
+        "rewardSeasonCandles": 2,
+        "rewardAscendedCandles": 0,
+        "unlockCosmeticId": null
+      },
+      {
+        "id": "sq_act_3",
+        "actNumber": 3,
+        "title": "第三幕 · 秘境荧光护火",
+        "realmId": "forest",
+        "description": "深入雨林与暮土净化暗黑蚀光植物，守护迷途生灵的心火",
+        "rewardHearts": 1,
+        "rewardSeasonCandles": 3,
+        "rewardAscendedCandles": 2,
+        "unlockCosmeticId": null
+      },
+      {
+        "id": "sq_act_4",
+        "actNumber": 4,
+        "title": "第四幕 · 终章星河交响 (毕业礼)",
+        "realmId": "vault",
+        "description": "登临禁阁星河浮台完成千人星海共鸣，获赐季节毕业礼「欧若拉流光透明神翼」",
+        "rewardHearts": 2,
+        "rewardSeasonCandles": 4,
+        "rewardAscendedCandles": 2,
+        "unlockCosmeticId": "cape_aurora_wings"
+      }
+    ],
+    "travelingSpiritsPool": [
+      {
+        "id": "ts_peeking_bunny",
+        "spiritId": "spirit_valley_spin",
+        "name": "复刻先祖 · 梦想季偷看邮差",
+        "seasonOrigin": "梦想季 (Season of Dreams)",
+        "stayWindowLabel": "周四 06:00 — 周一 12:00 (限时 4 天)",
+        "featuredCosmeticId": "hair_bunny_peeking",
+        "featuredCosmeticName": "梦想季垂耳兔绒帽发",
+        "wingBuffBonus": 1
+      },
+      {
+        "id": "ts_fire_prophet",
+        "spiritId": "spirit_isle_pointing",
+        "name": "复刻先祖 · 预言季火之先知",
+        "seasonOrigin": "预言季 (Season of Prophecy)",
+        "stayWindowLabel": "周四 06:00 — 周一 12:00 (限时 4 天)",
+        "featuredCosmeticId": "prop_fire_brazier",
+        "featuredCosmeticName": "预言季星火取暖火盆",
+        "wingBuffBonus": 1
+      },
+      {
+        "id": "ts_sakura_bloom",
+        "spiritId": "spirit_event_bloom",
+        "name": "复刻先祖 · 花憩节落樱茶艺师",
+        "seasonOrigin": "花憩节 (Days of Bloom)",
+        "stayWindowLabel": "周四 06:00 — 周一 12:00 (限时 4 天)",
+        "featuredCosmeticId": "cape_sakura_bloom",
+        "featuredCosmeticName": "花憩节落樱花瓣斗篷",
+        "wingBuffBonus": 1
+      }
+    ]
+  },
+  "homeFurnitureCatalog": [
+    {
+      "id": "furn_starlight_brazier",
+      "name": "星火取暖火盆",
+      "category": "light_recharge",
+      "effectLabel": "🔥 温暖回能 (+2.4/s)",
+      "costCandles": 4,
+      "description": "放置于小屋或营地，靠近可持续回复斗篷光能与烛火"
+    },
+    {
+      "id": "furn_chat_bench",
+      "name": "双人云石长椅",
+      "category": "bench_chat",
+      "effectLabel": "💬 双人同坐免好友树交谈",
+      "costCandles": 6,
+      "description": "可与陌生旅人并排同坐，无需解锁好友树即可开启交谈"
+    },
+    {
+      "id": "furn_sakura_canopy",
+      "name": "花憩落樱茶亭",
+      "category": "shelter",
+      "effectLabel": "🌸 遮雨赏樱景观亭",
+      "costCandles": 10,
+      "description": "唯美粉白垂樱伞亭，为家园增添治愈光影"
+    },
+    {
+      "id": "furn_wind_chime_arch",
+      "name": "风铃共鸣石拱",
+      "category": "instrument_echo",
+      "effectLabel": "🎐 星音风铃共鸣拱门",
+      "costCandles": 8,
+      "description": "微风吹拂时泛起清脆星音与光点粒子"
+    },
+    {
+      "id": "furn_floating_lantern",
+      "name": "星河悬浮祈愿灯",
+      "category": "light_recharge",
+      "effectLabel": "🏮 悬浮星灯照明回能",
+      "costCandles": 5,
+      "description": "流光溢彩的浮空祈愿灯簇，照亮共享空间夜空并回复翼能"
+    },
+    {
+      "id": "furn_manta_plush_rug",
+      "name": "遥鲲绒毛星毯",
+      "category": "comfort_rest",
+      "effectLabel": "☁️ 治愈云毯与遥鲲玩偶",
+      "costCandles": 7,
+      "description": "柔软的星月织锦圆毯搭配发光小遥鲲抱枕，供旅人围坐小憩"
+    }
+  ],
+  "homePresetLayouts": [
+    {
+      "id": "preset_sakura_teahouse",
+      "name": "花憩樱下茶会 (4件套)",
+      "description": "一键布置落樱茶亭、双人云石长椅、星火火盆与悬浮祈愿灯",
+      "placements": [
+        { "furnitureId": "furn_sakura_canopy", "x": -3.2, "z": 3.4, "rotY": 0.4 },
+        { "furnitureId": "furn_chat_bench", "x": 3.2, "z": 3.4, "rotY": -0.4 },
+        { "furnitureId": "furn_starlight_brazier", "x": 0.0, "z": 4.2, "rotY": 0.0 },
+        { "furnitureId": "furn_floating_lantern", "x": -1.8, "z": 2.2, "rotY": 0.8 }
+      ]
+    },
+    {
+      "id": "preset_starlight_camp",
+      "name": "星火共鸣营地 (5件套)",
+      "description": "环绕遇境星盘布置风铃石拱、遥鲲星毯、双火盆与长椅",
+      "placements": [
+        { "furnitureId": "furn_wind_chime_arch", "x": 0.0, "z": -3.8, "rotY": 0.0 },
+        { "furnitureId": "furn_manta_plush_rug", "x": -2.6, "z": 2.6, "rotY": 0.5 },
+        { "furnitureId": "furn_starlight_brazier", "x": -4.2, "z": 1.2, "rotY": 0.0 },
+        { "furnitureId": "furn_starlight_brazier", "x": 4.2, "z": 1.2, "rotY": 0.0 },
+        { "furnitureId": "furn_chat_bench", "x": 2.8, "z": 2.8, "rotY": -0.6 }
+      ]
+    }
+  ],
+  "photoStudio": {
+    "fovMin": 28,
+    "fovMax": 85,
+    "defaultFov": 60,
+    "maxRollDeg": 25,
+    "maxSavedPhotos": 12
+  },
+  "presetMusicSheets": [
+    {
+      "id": "sheet_starlight_lullaby",
+      "title": "微光星海摇篮曲",
+      "bpm": 108,
+      "notes": [
+        { "keyIndex": 0, "delayMs": 0 },
+        { "keyIndex": 2, "delayMs": 400 },
+        { "keyIndex": 4, "delayMs": 800 },
+        { "keyIndex": 7, "delayMs": 1200 },
+        { "keyIndex": 6, "delayMs": 1700 },
+        { "keyIndex": 4, "delayMs": 2100 },
+        { "keyIndex": 2, "delayMs": 2500 },
+        { "keyIndex": 4, "delayMs": 3000 },
+        { "keyIndex": 5, "delayMs": 3500 },
+        { "keyIndex": 7, "delayMs": 3900 },
+        { "keyIndex": 9, "delayMs": 4300 },
+        { "keyIndex": 7, "delayMs": 4900 }
+      ]
+    },
+    {
+      "id": "sheet_cloud_soaring",
+      "title": "云野振翅之歌",
+      "bpm": 120,
+      "notes": [
+        { "keyIndex": 4, "delayMs": 0 },
+        { "keyIndex": 7, "delayMs": 350 },
+        { "keyIndex": 9, "delayMs": 700 },
+        { "keyIndex": 11, "delayMs": 1050 },
+        { "keyIndex": 12, "delayMs": 1500 },
+        { "keyIndex": 11, "delayMs": 1950 },
+        { "keyIndex": 9, "delayMs": 2300 },
+        { "keyIndex": 7, "delayMs": 2650 }
+      ]
+    }
+  ],
+  "prairieZone": {
+    "note": "待对照实机校准：阶段3 第一个完整区域（云野 Daylight Prairie）3个子区域、蜡烛点位、发光植物、风洞、先祖站点×2、昼夜氛围与配乐配置",
+    "subZones": [
+      {
+        "id": "prairie_butterfly_meadow",
+        "name": "蝴蝶平原",
+        "subtitle": "阳光倾泻的翠绿草甸，遍布发光星瓣花与引蝶祭坛",
+        "centerX": 0.0,
+        "centerZ": 4.0,
+        "radius": 18.0
+      },
+      {
+        "id": "prairie_echo_cavern",
+        "name": "幽光洞窟",
+        "subtitle": "西侧云海岩洞，生长着巨型发光星冠菇与引蝶先祖记忆",
+        "centerX": -18.5,
+        "centerZ": -16.0,
+        "radius": 15.0
+      },
+      {
+        "id": "prairie_bell_village",
+        "name": "三塔钟楼村落",
+        "subtitle": "穿越云海风洞抵达的浮岛钟塔村落与长老神殿",
+        "centerX": 14.5,
+        "centerZ": -28.0,
+        "radius": 22.0
+      }
+    ],
+    "candleClusters": [
+      {
+        "id": "prairie_candle_meadow",
+        "name": "蝴蝶平原祭坛大蜡烛堆",
+        "subtitle": "点燃收集高浓度烛火 (+45 烛火 & 瞬间回满翼能)",
+        "subZoneId": "prairie_butterfly_meadow",
+        "x": -5.5,
+        "z": -2.5,
+        "waxReward": 45
+      },
+      {
+        "id": "prairie_candle_cavern",
+        "name": "幽光洞窟荧光蜡烛堆",
+        "subtitle": "点燃洞窟温暖烛火 (+45 烛火 & 恢复能量)",
+        "subZoneId": "prairie_echo_cavern",
+        "x": -17.5,
+        "z": -18.5,
+        "waxReward": 45
+      },
+      {
+        "id": "prairie_candle_village",
+        "name": "三塔村落钟下红蜡烛",
+        "subtitle": "点燃钟塔祈愿烛火 (+50 烛火 & 恢复能量)",
+        "subZoneId": "prairie_bell_village",
+        "x": 15.5,
+        "z": -21.5,
+        "waxReward": 50
+      },
+      {
+        "id": "prairie_candle_temple",
+        "name": "云野神殿阶梯大蜡烛",
+        "subtitle": "点燃神殿圣火 (+55 烛火 & 恢复能量)",
+        "subZoneId": "prairie_bell_village",
+        "x": 0.0,
+        "z": -28.0,
+        "waxReward": 55
+      }
+    ],
+    "lightBlooms": [
+      {
+        "id": "prairie_bloom_meadow",
+        "name": "发光星瓣花 · 蝴蝶平原",
+        "subtitle": "靠近持续回能，按 [E] 绽放星粉 (+35 烛火 & 瞬间回满斗篷能量)",
+        "subZoneId": "prairie_butterfly_meadow",
+        "x": 6.2,
+        "z": -4.0,
+        "waxReward": 35
+      },
+      {
+        "id": "prairie_bloom_cavern",
+        "name": "发光星冠菇 · 幽光洞窟",
+        "subtitle": "洞窟荧光植物，靠近回能，按 [E] 共鸣绽放 (+40 烛火 & 充满翼能)",
+        "subZoneId": "prairie_echo_cavern",
+        "x": -20.5,
+        "z": -13.5,
+        "waxReward": 40
+      },
+      {
+        "id": "prairie_bloom_village",
+        "name": "发光云端莲 · 三塔村落",
+        "subtitle": "钟塔浮屿圣莲，靠近回能，按 [E] 绽放光蝶 (+40 烛火 & 充满翼能)",
+        "subZoneId": "prairie_bell_village",
+        "x": 18.0,
+        "z": -29.0,
+        "waxReward": 40
+      }
+    ],
+    "windTunnel": {
+      "xMin": -11.5,
+      "xMax": 11.5,
+      "zStart": -12.0,
+      "zEnd": -38.0,
+      "ringAltitudeY": 6.8,
+      "ringCount": 7,
+      "updraftAccel": 15.5,
+      "forwardBoostAccel": 5.8,
+      "rechargeRatePerSec": 1.4
+    },
+    "ancestorSpirits": [
+      {
+        "id": "prairie_spirit_butterfly",
+        "spiritId": "spirit_prairie_butterfly",
+        "name": "云野·引蝶牧光先祖",
+        "subtitle": "位于幽光洞窟入口 · 心火共鸣重温引蝶记忆 (+1 爱心, +2 升华红烛 & 解锁引蝶共鸣)",
+        "subZoneId": "prairie_echo_cavern",
+        "x": -14.5,
+        "z": -14.0,
+        "emoteUnlocked": "emote_butterfly"
+      },
+      {
+        "id": "prairie_spirit_cheer",
+        "spiritId": "spirit_prairie_cheer",
+        "name": "云野·雀跃欢呼先祖",
+        "subtitle": "位于三塔钟楼村落 · 心火共鸣重温欢庆记忆 (+1 爱心, +2 升华红烛 & 解锁雀跃欢呼)",
+        "subZoneId": "prairie_bell_village",
+        "x": 14.5,
+        "z": -26.0,
+        "emoteUnlocked": "emote_cheer_jump"
+      }
+    ],
+    "dayNightCycle": {
+      "morning": {
+        "id": "morning",
+        "label": "破晓晨曦",
+        "skyTopColor": "#0369A1",
+        "skyHorizonColor": "#FDE68A",
+        "fogColor": "#FEF3C7",
+        "fogDensity": 0.0052,
+        "sunColor": "#FFFBEB",
+        "sunIntensity": 2.15,
+        "hemiSkyColor": "#BAE6FD",
+        "hemiGroundColor": "#86EFAC",
+        "cloudColor": "#FFFBEB",
+        "musicTempoMultiplier": 0.96
+      },
+      "noon": {
+        "id": "noon",
+        "label": "晴空正午",
+        "skyTopColor": "#0284C7",
+        "skyHorizonColor": "#BAE6FD",
+        "fogColor": "#E0F2FE",
+        "fogDensity": 0.0048,
+        "sunColor": "#FFFBEB",
+        "sunIntensity": 2.45,
+        "hemiSkyColor": "#7DD3FC",
+        "hemiGroundColor": "#4ADE80",
+        "cloudColor": "#FFFFFF",
+        "musicTempoMultiplier": 1.0
+      },
+      "sunset": {
+        "id": "sunset",
+        "label": "落日流霞",
+        "skyTopColor": "#3730A3",
+        "skyHorizonColor": "#FB923C",
+        "fogColor": "#FDBA74",
+        "fogDensity": 0.0058,
+        "sunColor": "#FDE047",
+        "sunIntensity": 2.25,
+        "hemiSkyColor": "#F472B6",
+        "hemiGroundColor": "#D97706",
+        "cloudColor": "#FED7AA",
+        "musicTempoMultiplier": 0.92
+      },
+      "starry_night": {
+        "id": "starry_night",
+        "label": "星河静夜",
+        "skyTopColor": "#090D16",
+        "skyHorizonColor": "#1E3A8A",
+        "fogColor": "#172554",
+        "fogDensity": 0.0062,
+        "sunColor": "#93C5FD",
+        "sunIntensity": 1.35,
+        "hemiSkyColor": "#60A5FA",
+        "hemiGroundColor": "#065F46",
+        "cloudColor": "#BFDBFE",
+        "musicTempoMultiplier": 0.85
+      }
+    }
+  },
+  "expression": {
+    "note": "待对照实机校准：阶段5 呼唤（短按/长按蓄力深呼唤 + 4大呼唤音色）、动作轮盘（1-5级动作幅度与星芒特效）、神龛冥想留言与音频混音参数",
+    "calls": {
+      "tapRadius": 8.5,
+      "deepChargeThresholdSec": 0.55,
+      "deepRadius": 22.0,
+      "tapEnergyRestoreWedges": 0.45,
+      "deepEnergyRestoreWedges": 1.5,
+      "crabFlipRadius": 18.0,
+      "voices": [
+        {
+          "id": "default",
+          "name": "初心星音",
+          "spiritSource": "初始旅人心火音色",
+          "color": "#FEF08A",
+          "baseFreq": 523.25
+        },
+        {
+          "id": "manta",
+          "name": "遥鲲清鸣",
+          "spiritSource": "云野引蝶先祖解锁",
+          "color": "#38BDF8",
+          "baseFreq": 440.0
+        },
+        {
+          "id": "jellyfish",
+          "name": "水母空灵",
+          "spiritSource": "圣岛水母共鸣音色",
+          "color": "#F472B6",
+          "baseFreq": 587.33
+        },
+        {
+          "id": "bell",
+          "name": "禁阁星钟",
+          "spiritSource": "禁阁祈祷圣徒共鸣",
+          "color": "#A78BFA",
+          "baseFreq": 659.25
+        }
+      ]
+    },
+    "emoteLevels": [
+      {
+        "level": 1,
+        "label": "Lv.1 基础动作",
+        "motionScale": 1.0,
+        "particleCount": 12,
+        "auraDescription": "纯朴肢体表达"
+      },
+      {
+        "level": 2,
+        "label": "Lv.2 微光流萤",
+        "motionScale": 1.12,
+        "particleCount": 20,
+        "auraDescription": "指尖伴随微光星点"
+      },
+      {
+        "level": 3,
+        "label": "Lv.3 进阶韵律",
+        "motionScale": 1.24,
+        "particleCount": 28,
+        "auraDescription": "更丰富的旋转与跃起幅度"
+      },
+      {
+        "level": 4,
+        "label": "Lv.4 璀璨星轨",
+        "motionScale": 1.36,
+        "particleCount": 36,
+        "auraDescription": "周身绽放绚丽星芒粒子环"
+      },
+      {
+        "level": 5,
+        "label": "Lv.5 满级华彩",
+        "motionScale": 1.48,
+        "particleCount": 46,
+        "auraDescription": "满级全屏星辉流光与圣咏回响"
+      }
+    ],
+    "meditation": {
+      "promptQuestion": "今日神龛冥想提问：在云海旅途中，哪一刻的微光与陪伴最令你感到温暖？",
+      "heartReward": 1,
+      "presetBlessings": [
+        "愿每一缕微光都能穿越云海，照亮独行旅人的夜空。",
+        "在云野听风声与竖琴共鸣，谢谢身旁素昧平生的陪伴。",
+        "即使在暴风眼中失去光翼，只要心火不灭，终会在星河重逢。"
+      ]
+    }
+  },
+  "network": {
+    "note": "待对照实机校准：阶段6 联机底座（8人房间/遇境16人、15Hz变换同步、客户端插值与速度外推、服务端反作弊速度上限、断线重连与机器人旅人配置）",
+    "protocolVersion": "1.0",
+    "maxRoomPlayers": 8,
+    "maxCampPlayers": 16,
+    "transformSyncRateHz": 15,
+    "interpolationLambda": 12.0,
+    "extrapolationMaxSec": 0.25,
+    "maxAuthoritySpeedMps": 28.0,
+    "rateLimitPerSec": 45,
+    "reconnectDelayMs": 2500,
+    "botTravelers": [
+      {
+        "playerId": "bot_traveller_1",
+        "playerName": "云野牧蝶人",
+        "spawnX": -2.4,
+        "spawnZ": 1.4,
+        "spawnYaw": 0.65,
+        "outfitIndex": 1,
+        "patrolPhase": 0.4
+      },
+      {
+        "playerId": "bot_traveller_2",
+        "playerName": "霞谷聆音客",
+        "spawnX": 2.4,
+        "spawnZ": 1.4,
+        "spawnYaw": -0.65,
+        "outfitIndex": 2,
+        "patrolPhase": 2.8
+      },
+      {
+        "playerId": "bot_traveller_3",
+        "playerName": "晨岛寻星者",
+        "spawnX": 0.0,
+        "spawnZ": -2.6,
+        "spawnYaw": 0.0,
+        "outfitIndex": 3,
+        "patrolPhase": 4.7
+      }
+    ]
+  },
+  "realmsStage8": {
+    "note": "待对照实机校准：阶段8 全8大王国区域专属玩法与伊甸之眼重生循环（雨林淋雨与蘑菇亭避雨、霞谷溜冰场低摩擦漂移与飞行赛道光圈、暮土冥龙锁定掩体与深呼唤掀翻暗蟹、禁阁双人协作机关门与星河浮台、伊甸之眼飞石红石雨石像献祭与星河涅槃重生）",
+    "forest": {
+      "rainDrainRatePerSec": 0.42,
+      "jellyfishFloatBoostVy": 9.4,
+      "mushroomShelters": [
+        {
+          "id": "forest_shelter_courtyard",
+          "name": "荧光巨菇避雨亭 · 静谧庭院",
+          "subtitle": "进入巨型荧光伞菇遮蔽区 · 阻挡暗雨侵蚀并持续回复光之翼 (+2.2/s)，按 [E] 借助水母浮力跃升",
+          "x": -7.2,
+          "z": -14.5,
+          "radius": 4.2
+        },
+        {
+          "id": "forest_shelter_brook",
+          "name": "荧光巨菇避雨亭 · 秘境溪谷",
+          "subtitle": "荧光伞菇庇护圈 · 隔绝雨水消融并恢复心火能量，按 [E] 唤醒荧光水母托举升空",
+          "x": 6.8,
+          "z": -22.5,
+          "radius": 4.2
+        },
+        {
+          "id": "forest_shelter_hollow",
+          "name": "古树灯亭庇护所 · 秘密树洞",
+          "subtitle": "雨林古树圣火灯亭 · 完全阻挡暗雨并快速充能斗篷",
+          "x": 0.0,
+          "z": -33.0,
+          "radius": 4.5
+        }
+      ],
+      "darkPlants": [
+        {
+          "id": "forest_dark_plant_1",
+          "name": "暗黑蚀光藤 · 荧光溪畔",
+          "subtitle": "举起心火持续燃烧净化暗黑藤蔓 (+65 滴纯净烛火 & 绽放荧光水母浮台)",
+          "x": -4.2,
+          "z": -20.5,
+          "waxReward": 65
+        },
+        {
+          "id": "forest_dark_plant_2",
+          "name": "暗黑巨型蚀光花 · 树洞高台",
+          "subtitle": "净化巨型暗黑花株 (+75 滴纯净烛火 & 恢复全部受损翼格)",
+          "x": 5.2,
+          "z": -29.0,
+          "waxReward": 75
+        }
+      ]
+    },
+    "valley": {
+      "iceSpeedMultiplier": 1.38,
+      "iceDriftAccel": 4.2,
+      "raceRingBoostSpeed": 13.8,
+      "raceRings": [
+        {
+          "id": "valley_race_ring_1",
+          "name": "霞谷滑行赛道 · 第 1 光圈 (冰原起点)",
+          "subtitle": "穿过或按 [E] 激活赛道金环 · 获得流光冲刺加速 (+45 滴烛火 & +1.5 翼能)",
+          "x": 0.0,
+          "yOffset": 1.4,
+          "z": -12.5,
+          "waxReward": 45
+        },
+        {
+          "id": "valley_race_ring_2",
+          "name": "霞谷飞行赛道 · 第 2 光圈 (千鸟云桥)",
+          "subtitle": "激活高空竞速光环 · 触发流霞推进气流 (+50 滴烛火 & 充满翼能)",
+          "x": -5.6,
+          "yOffset": 2.4,
+          "z": -23.5,
+          "waxReward": 50
+        },
+        {
+          "id": "valley_race_ring_3",
+          "name": "霞谷竞技场冲线 · 终章金环 (落日圆剧场)",
+          "subtitle": "冲刺抵达落日竞技场终点金环 (+65 滴烛火 & 荣光礼花绽放)",
+          "x": 4.8,
+          "yOffset": 1.8,
+          "z": -34.5,
+          "waxReward": 65
+        }
+      ]
+    },
+    "wasteland": {
+      "ruinShelters": [
+        {
+          "id": "wasteland_shelter_ribcage",
+          "name": "远古巨兽肋骨掩体 · 墓园西侧",
+          "subtitle": "断壁残垣遮蔽区 · 阻断暮土冥龙红光视线锁定并安全回能",
+          "x": -8.5,
+          "z": -17.5,
+          "radius": 4.2
+        },
+        {
+          "id": "wasteland_shelter_pillar",
+          "name": "倾颓石柱掩体 · 战场东侧",
+          "subtitle": "石柱掩体盲区 · 躲避冥龙探照灯扫描并修复受损光翼",
+          "x": 8.5,
+          "z": -24.5,
+          "radius": 4.2
+        }
+      ],
+      "darkCrabs": [
+        {
+          "id": "wasteland_crab_1",
+          "name": "暮土暗黑螃蟹 · 荒原巡游者",
+          "subtitle": "长按 [Q] 发出蓄力深呼唤可将其震翻四脚朝天！掀翻后按 [E] 净化收集 (+40 滴烛火)",
+          "x": -4.8,
+          "z": -16.8,
+          "waxReward": 40
+        },
+        {
+          "id": "wasteland_crab_2",
+          "name": "暮土暗黑螃蟹 · 沉船守卫",
+          "subtitle": "长按 [Q] 蓄力深呼唤可掀翻暗蟹！掀翻后按 [E] 净化安抚 (+40 滴烛火)",
+          "x": 4.6,
+          "z": -22.0,
+          "waxReward": 40
+        }
+      ]
+    },
+    "vault": {
+      "starlightGravity": 6.5,
+      "coopDoor": {
+        "id": "vault_coop_door_1",
+        "name": "禁阁双人星盘机关门",
+        "subtitle": "需与身旁旅人/同伴心火共鸣同时点亮机关 · 按 [E] 开启星河秘库 (+65 滴烛火 & 激活浮台)",
+        "x": 0.0,
+        "z": -18.5,
+        "waxReward": 65
+      },
+      "starlightElevator": {
+        "id": "vault_starlight_elevator",
+        "name": "禁阁星河悬浮祈祷台",
+        "subtitle": "按 [E] 吟唱星光浮力共鸣 · 托举旅人缓慢升往禁阁高层星河神坛 (回满翼能 & 直达高空)",
+        "x": 0.0,
+        "z": -30.5,
+        "targetAltitudeY": 13.5
+      }
+    },
+    "eden": {
+      "ascendedCandlesPerStatue": 1.0,
+      "rebirthBonusAscendedCandles": 4,
+      "rebirthPermanentWingBuffBonus": 1,
+      "statues": [
+        {
+          "id": "eden_statue_1",
+          "name": "暴风眼先祖石像 · 献祭之径 I",
+          "subtitle": "按 [E] 献出 1 枚光之翼挽救先祖石像 (+1 根伊甸升华红蜡烛)",
+          "x": -3.8,
+          "z": -14.5
+        },
+        {
+          "id": "eden_statue_2",
+          "name": "暴风眼先祖石像 · 献祭之径 II",
+          "subtitle": "按 [E] 献出 1 枚光之翼点亮受困石像 (+1 根伊甸升华红蜡烛)",
+          "x": 4.2,
+          "z": -21.5
+        },
+        {
+          "id": "eden_statue_3",
+          "name": "暴风眼先祖石像 · 狂风红石坡 III",
+          "subtitle": "按 [E] 顶着飞石狂风献出光之翼 (+1 根伊甸升华红蜡烛)",
+          "x": -4.0,
+          "z": -29.5
+        },
+        {
+          "id": "eden_statue_4",
+          "name": "暴风眼先祖石像 · 伊甸祭坛前哨 IV",
+          "subtitle": "按 [E] 献出心火与光之翼完成终极救赎 (+1 根伊甸升华红蜡烛)",
+          "x": 3.8,
+          "z": -36.5
+        }
+      ]
+    }
+  },
+  "stage11Polish": {
+    "performanceTiers": {
+      "low": {
+        "label": "流畅省电 (Low · 1.0x DPR)",
+        "pixelRatioCap": 1.0,
+        "shadowMapEnabled": false,
+        "particleScale": 0.45,
+        "cloudInstanceRatio": 0.55
+      },
+      "medium": {
+        "label": "均衡画质 (Medium · 1.25x DPR)",
+        "pixelRatioCap": 1.25,
+        "shadowMapEnabled": true,
+        "particleScale": 0.75,
+        "cloudInstanceRatio": 0.8
+      },
+      "high": {
+        "label": "极致云海 (High · 1.5x DPR)",
+        "pixelRatioCap": 1.5,
+        "shadowMapEnabled": true,
+        "particleScale": 1.0,
+        "cloudInstanceRatio": 1.0
+      }
+    },
+    "onboardingTutorial": {
+      "completionRewardCandles": 2,
+      "steps": [
+        {
+          "step": 0,
+          "action": "move",
+          "titleZh": "步骤 1/3 · 漫步微光之境",
+          "titleEn": "Step 1/3 · Walk in the Glimmer Realm",
+          "hintZh": "按 [WASD] 或拖动左下角摇杆在遇境漫步",
+          "hintEn": "Press [WASD] or drag the virtual joystick to walk"
+        },
+        {
+          "step": 1,
+          "action": "ignite",
+          "titleZh": "步骤 2/3 · 点亮心火与星音呼唤",
+          "titleEn": "Step 2/3 · Ignite Candle & Starlight Call",
+          "hintZh": "靠近红蜡烛按 [E] 点亮或按 [Q] 发出星音呼唤",
+          "hintEn": "Press [E] near a candle or [Q] to emit a Starlight Call"
+        },
+        {
+          "step": 2,
+          "action": "fly",
+          "titleZh": "步骤 3/3 · 振翅冲上云海",
+          "titleEn": "Step 3/3 · Flap Wings & Soar into the Clouds",
+          "hintZh": "按 [Space] 振翅起飞，在空中按 [Shift] 切换破风滑翔 (+2 白蜡烛奖励)",
+          "hintEn": "Press [Space] to flap wings and [Shift] to glide (+2 White Candles)"
+        }
+      ]
+    },
+    "i18n": {
+      "zh": {
+        "appTitle": "微光旅人 · Rea 光遇",
+        "realmBannerPrefix": "当前王国",
+        "tutorialCompleted": "🎉 新手旅途引导全部完成 · 已赠予 +2 根白蜡烛！",
+        "qualityTierLabel": "渲染画质档位",
+        "highContrastLabel": "高对比色觉辅助",
+        "reducedShakeLabel": "防眩晕镜头减震"
+      },
+      "en": {
+        "appTitle": "Glimmer Travelers · Rea Sky",
+        "realmBannerPrefix": "Current Realm",
+        "tutorialCompleted": "🎉 Onboarding Complete · Awarded +2 White Candles!",
+        "qualityTierLabel": "Graphics Quality Tier",
+        "highContrastLabel": "High-Contrast Mode",
+        "reducedShakeLabel": "Reduced Camera Shake"
+      }
+    }
+  }
+}
+
+
+

@@ -1,0 +1,6 @@
+{
+  "name": "Rea·光遇 (Rea: Children of the Light)",
+  "description": "跨平台高帧率3D云海翱翔与社交探索游戏，内置全皮肤解锁换装星盘、先祖共鸣交互系统、15键光遇乐器演奏与六大云端王国无缝探索。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
