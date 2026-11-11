@@ -285,6 +285,297 @@ export function buildEdenStatueMesh(
   return group;
 }
 
+/**
+ * Stage 12: Builds bespoke 3D interactive meshes for the 6《光·遇》Tribute Easter Eggs.
+ */
+export function buildEasterEggMesh(
+  shadowTex: THREE.CanvasTexture,
+  eggId: string
+): THREE.Group {
+  const group = new THREE.Group();
+  const shadow = new THREE.Mesh(
+    new THREE.CircleGeometry(2.1, 22).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({
+      map: shadowTex,
+      transparent: true,
+      depthWrite: false,
+      opacity: 0.72,
+    })
+  );
+  shadow.position.y = 0.02;
+  group.add(shadow);
+
+  const goldMat = new THREE.MeshStandardMaterial({
+    color: 0xfde047,
+    emissive: 0xf59e0b,
+    emissiveIntensity: 1.1,
+    roughness: 0.25,
+    metalness: 0.75,
+  });
+
+  if (eggId === 'egg_oreo_plush_shrine') {
+    // 8-Player Summoning Ring + Adorable Black & White Oreo Puppy (奥利奥小狗)
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(1.5, 1.75, 8).rotateX(-Math.PI / 2),
+      new THREE.MeshBasicMaterial({
+        color: 0xfef08a,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.75,
+      })
+    );
+    ring.position.y = 0.04;
+    group.add(ring);
+
+    const cushion = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.75, 0.85, 0.28, 16),
+      new THREE.MeshStandardMaterial({ color: 0xf43f5e, roughness: 0.6 })
+    );
+    cushion.position.y = 0.14;
+    group.add(cushion);
+
+    const pupGroup = new THREE.Group();
+    pupGroup.name = 'spirit_core';
+    pupGroup.position.y = 0.52;
+    const blackFur = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.7 });
+    const whiteFur = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.6 });
+
+    const body = new THREE.Mesh(
+      new THREE.SphereGeometry(0.34, 14, 12).scale(1.25, 0.85, 0.9),
+      blackFur
+    );
+    const belly = new THREE.Mesh(
+      new THREE.SphereGeometry(0.27, 12, 10).scale(1.05, 0.75, 0.85),
+      whiteFur
+    );
+    belly.position.set(0.08, -0.04, 0);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.26, 14, 12), blackFur);
+    head.position.set(0.32, 0.24, 0);
+    const snout = new THREE.Mesh(new THREE.SphereGeometry(0.13, 10, 10), whiteFur);
+    snout.position.set(0.52, 0.2, 0);
+    const earL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.22, 0.1), blackFur);
+    earL.position.set(0.28, 0.42, 0.18);
+    const earR = earL.clone();
+    earR.position.z = -0.18;
+    const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 0.28, 8), whiteFur);
+    tail.position.set(-0.42, 0.18, 0);
+    tail.rotation.z = 0.6;
+    pupGroup.add(body, belly, head, snout, earL, earR, tail);
+    group.add(pupGroup);
+  } else if (eggId === 'egg_little_prince_rose') {
+    // B612 Glass Dome Glowing Crimson Rose (星光沙漠玫瑰)
+    const plinth = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.65, 0.82, 0.7, 16),
+      new THREE.MeshStandardMaterial({ color: 0xdbeafe, roughness: 0.5 })
+    );
+    plinth.position.y = 0.35;
+    const stem = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.03, 0.03, 0.45, 8),
+      new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x059669, emissiveIntensity: 0.5 })
+    );
+    stem.position.y = 0.92;
+    const roseBlossom = new THREE.Mesh(
+      new THREE.DodecahedronGeometry(0.22, 1),
+      new THREE.MeshStandardMaterial({
+        color: 0xf43f5e,
+        emissive: 0xe11d48,
+        emissiveIntensity: 1.5,
+        roughness: 0.2,
+      })
+    );
+    roseBlossom.position.y = 1.18;
+    roseBlossom.name = 'spirit_core';
+    const glassDome = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.46, 0.48, 0.95, 20),
+      new THREE.MeshStandardMaterial({
+        color: 0xe0f2fe,
+        transparent: true,
+        opacity: 0.34,
+        roughness: 0.05,
+        metalness: 0.2,
+      })
+    );
+    glassDome.position.y = 1.12;
+    group.add(plinth, stem, roseBlossom, glassDome);
+  } else if (eggId === 'egg_grandma_feast_table') {
+    // Grandma's Ancestor Table + Steaming Golden Wax Buns (老奶奶团子盛宴)
+    const table = new THREE.Mesh(
+      new THREE.BoxGeometry(2.8, 0.35, 1.25),
+      new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.75 })
+    );
+    table.position.y = 0.55;
+    group.add(table);
+    const bunCluster = new THREE.Group();
+    bunCluster.name = 'spirit_core';
+    bunCluster.position.y = 1.05;
+    for (let i = 0; i < 6; i++) {
+      const ang = (i / 6) * Math.PI * 2;
+      const bun = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 10), goldMat);
+      bun.position.set(Math.cos(ang) * 0.65, (i % 2) * 0.12, Math.sin(ang) * 0.35);
+      bunCluster.add(bun);
+    }
+    group.add(bunCluster);
+  } else if (eggId === 'egg_tgc_office_portal') {
+    // TGC Secret Office Blue Barrier + Space Station Satellite
+    const portalFrame = new THREE.Mesh(
+      new THREE.BoxGeometry(2.2, 2.8, 0.22),
+      new THREE.MeshStandardMaterial({
+        color: 0x38bdf8,
+        emissive: 0x0284c7,
+        emissiveIntensity: 1.2,
+        transparent: true,
+        opacity: 0.62,
+      })
+    );
+    portalFrame.position.y = 1.4;
+    const satellite = new THREE.Mesh(
+      new THREE.TorusKnotGeometry(0.42, 0.1, 48, 8),
+      goldMat
+    );
+    satellite.position.y = 2.6;
+    satellite.name = 'spirit_core';
+    group.add(portalFrame, satellite);
+  } else if (eggId === 'egg_hermit_yeti_igloo') {
+    // Hermit Valley Yeti Plush + Warm Cocoa Mug & Snow Dome
+    const snowBase = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.15, 1.3, 0.28, 20),
+      new THREE.MeshStandardMaterial({ color: 0xe0f2fe, roughness: 0.55 })
+    );
+    snowBase.position.y = 0.14;
+    const yetiGroup = new THREE.Group();
+    yetiGroup.name = 'spirit_core';
+    yetiGroup.position.y = 0.72;
+    const yetiFurMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.8 });
+    const yetiTorso = new THREE.Mesh(new THREE.SphereGeometry(0.48, 14, 12), yetiFurMat);
+    const yetiHead = new THREE.Mesh(new THREE.SphereGeometry(0.32, 14, 12), yetiFurMat);
+    yetiHead.position.y = 0.52;
+    const hornL = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.34, 8), goldMat);
+    hornL.position.set(-0.24, 0.78, 0);
+    hornL.rotation.z = 0.45;
+    const hornR = hornL.clone();
+    hornR.position.x = 0.24;
+    hornR.rotation.z = -0.45;
+    yetiGroup.add(yetiTorso, yetiHead, hornL, hornR);
+    group.add(snowBase, yetiGroup);
+  } else if (eggId === 'egg_forgotten_ark_rainbow_spell') {
+    // Forgotten Ark 6-Color Enchantment Orbs & Miniature Golden Ark
+    const arkHull = new THREE.Mesh(
+      new THREE.BoxGeometry(2.1, 0.45, 0.72),
+      new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.65 })
+    );
+    arkHull.position.y = 0.55;
+    const orbsGroup = new THREE.Group();
+    orbsGroup.name = 'spirit_core';
+    orbsGroup.position.y = 1.45;
+    const spellColors = [0xef4444, 0x38bdf8, 0x4ade80, 0xfacc15, 0xc084fc, 0xf472b6];
+    spellColors.forEach((hex, idx) => {
+      const ang = (idx / 6) * Math.PI * 2;
+      const orb = new THREE.Mesh(
+        new THREE.SphereGeometry(0.18, 12, 10),
+        new THREE.MeshStandardMaterial({ color: hex, emissive: hex, emissiveIntensity: 1.3 })
+      );
+      orb.position.set(Math.cos(ang) * 0.85, Math.sin(idx) * 0.15, Math.sin(ang) * 0.85);
+      orbsGroup.add(orb);
+    });
+    group.add(arkHull, orbsGroup);
+  } else if (eggId === 'egg_aurora_concert_wings') {
+    // AURORA Golden Translucent Butterfly Wings & Starlight Stage Pedestal
+    const stagePedestal = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.25, 1.45, 0.36, 24),
+      goldMat
+    );
+    stagePedestal.position.y = 0.18;
+    const wingsGroup = new THREE.Group();
+    wingsGroup.name = 'spirit_core';
+    wingsGroup.position.y = 1.45;
+    const auroraWingMat = new THREE.MeshStandardMaterial({
+      color: 0xfde047,
+      emissive: 0xf59e0b,
+      emissiveIntensity: 1.35,
+      transparent: true,
+      opacity: 0.82,
+      side: THREE.DoubleSide,
+    });
+    const wingL = new THREE.Mesh(new THREE.CircleGeometry(0.95, 16), auroraWingMat);
+    wingL.scale.set(1.2, 0.75, 1);
+    wingL.position.set(-0.78, 0.1, 0);
+    wingL.rotation.y = 0.35;
+    const wingR = wingL.clone();
+    wingR.position.x = 0.78;
+    wingR.rotation.y = -0.35;
+    wingsGroup.add(wingL, wingR);
+    group.add(stagePedestal, wingsGroup);
+  } else if (eggId === 'egg_abyss_treasure_leviathan') {
+    // Abyss Bioluminescent Treasure Chest & Aqua Pearl Core
+    const chestBase = new THREE.Mesh(
+      new THREE.BoxGeometry(1.25, 0.68, 0.85),
+      new THREE.MeshStandardMaterial({ color: 0x0f766e, roughness: 0.5, metalness: 0.4 })
+    );
+    chestBase.position.y = 0.34;
+    const pearlCore = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.46, 1),
+      new THREE.MeshStandardMaterial({
+        color: 0x22d3ee,
+        emissive: 0x06b6d4,
+        emissiveIntensity: 1.4,
+      })
+    );
+    pearlCore.position.y = 1.28;
+    pearlCore.name = 'spirit_core';
+    group.add(chestBase, pearlCore);
+  } else if (eggId === 'egg_wind_paths_kalimba_chime') {
+    // Season of Flight Golden Wind-Chime & White Bird Messenger
+    const chimeRing = new THREE.Mesh(
+      new THREE.TorusGeometry(1.15, 0.12, 12, 28),
+      goldMat
+    );
+    chimeRing.position.y = 1.55;
+    const chimeCore = new THREE.Group();
+    chimeCore.name = 'spirit_core';
+    chimeCore.position.y = 1.55;
+    [-0.45, 0, 0.45].forEach((cx, idx) => {
+      const tube = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.07, 0.07, 1.1 + idx * 0.2, 10),
+        goldMat
+      );
+      tube.position.set(cx, -0.35, 0);
+      chimeCore.add(tube);
+    });
+    group.add(chimeRing, chimeCore);
+  } else if (eggId === 'egg_trial_of_fire_brazier') {
+    // Season of Prophecy 4-Trial Golden Crown Fire Brazier
+    const altarBase = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.1, 1.35, 0.65, 8),
+      new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.65 })
+    );
+    altarBase.position.y = 0.325;
+    const flameCrown = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.58, 0),
+      goldMat
+    );
+    flameCrown.position.y = 1.38;
+    flameCrown.name = 'spirit_core';
+    group.add(altarBase, flameCrown);
+  } else {
+    // Sanctuary Conch Geyser & Rainbow Bridge Prism Altar
+    const conchRing = new THREE.Mesh(
+      new THREE.TorusGeometry(1.35, 0.22, 12, 28).rotateX(Math.PI / 2),
+      new THREE.MeshStandardMaterial({
+        color: eggId === 'egg_rainbow_bridge' ? 0xc084fc : 0x38bdf8,
+        emissive: eggId === 'egg_rainbow_bridge' ? 0x9333ea : 0x0284c7,
+        emissiveIntensity: 1.1,
+      })
+    );
+    conchRing.position.y = 0.2;
+    const coreCrystal = new THREE.Mesh(new THREE.OctahedronGeometry(0.52, 0), goldMat);
+    coreCrystal.position.y = 1.35;
+    coreCrystal.name = 'spirit_core';
+    group.add(conchRing, coreCrystal);
+  }
+
+  return group;
+}
+
 export function buildSkyWorldEnvironment(
   renderer: THREE.WebGLRenderer,
   initialRealm: RealmConfig
@@ -292,11 +583,11 @@ export function buildSkyWorldEnvironment(
   const root = new THREE.Group();
 
   const stoneBump = createMicroReliefTexture(renderer, 'stone');
-  stoneBump.repeat.set(16, 16);
+  stoneBump.repeat.set(28, 28);
   const runeTex = createMicroReliefTexture(renderer, 'gold_runes');
 
-  // 1. Sculpted Meadow / Sanctuary Terrain Mesh (128x128 high-density grid to eliminate chordal foot sinking)
-  const terrainGeo = new THREE.PlaneGeometry(180, 180, 128, 128);
+  // 1. Stage 13 Ultra-Wide Continent Sculpted Terrain Mesh (520x520m, >11x original area!)
+  const terrainGeo = new THREE.PlaneGeometry(520, 520, 200, 200);
   terrainGeo.rotateX(-Math.PI / 2);
   const posAttr = terrainGeo.attributes.position;
   for (let i = 0; i < posAttr.count; i++) {
@@ -328,8 +619,8 @@ export function buildSkyWorldEnvironment(
   terrainMesh.receiveShadow = true;
   root.add(terrainMesh);
 
-  // 2. Reflective Mirror Sea surrounding the Islands
-  const waterGeo = new THREE.PlaneGeometry(340, 340, 1, 1);
+  // 2. Stage 13 Expanded Reflective Mirror Ocean surrounding all 8 Outer Sanctuaries (880x880m)
+  const waterGeo = new THREE.PlaneGeometry(880, 880, 1, 1);
   waterGeo.rotateX(-Math.PI / 2);
   const waterMat = new THREE.MeshStandardMaterial({
     color: initialRealm.waterColor,
@@ -682,9 +973,259 @@ export function buildSkyWorldEnvironment(
   }
   root.add(windTunnelGroup);
 
-  // 6. InstancedMesh Billowing Cloud Sea Perimeter (云海围合边界)
-  const cloudCount = 96;
-  const cloudGeo = new THREE.DodecahedronGeometry(4.8, 1);
+  // 5d. Stage 12 Outer Sanctuaries & High-Altitude Sky Islands (圣岛海螺喷泉群岛、千鸟天际浮岛、老奶奶秘密树屋、北境七彩彩虹桥)
+  const outerSanctuariesGroup = new THREE.Group();
+
+  // Outer Sanctuary 1: Sanctuary Islands Conch Geyser & Breaching Sky-Whale at (52, 4.2, -28)
+  const geyserIslandGroup = new THREE.Group();
+  const geyserY = groundHeightAt(52, -28);
+  geyserIslandGroup.position.set(52, geyserY, -28);
+  const conchSpire = new THREE.Mesh(
+    new THREE.ConeGeometry(3.2, 6.8, 12),
+    stoneMat
+  );
+  conchSpire.position.set(-4.2, 3.2, -2.5);
+  conchSpire.rotation.z = -0.25;
+  const geyserRim = new THREE.Mesh(
+    new THREE.TorusGeometry(2.6, 0.35, 12, 28).rotateX(Math.PI / 2),
+    stoneMat
+  );
+  geyserRim.position.set(0, 0.15, 0);
+  const geyserJetPlume = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.85, 1.85, 11.5, 16, 1, true),
+    new THREE.MeshBasicMaterial({
+      color: 0x7dd3fc,
+      transparent: true,
+      opacity: 0.42,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    })
+  );
+  geyserJetPlume.position.set(0, 5.75, 0);
+  geyserJetPlume.name = 'geyser_plume';
+  // Ancient White Sky-Whale breaching above Sanctuary Islands
+  const whaleGroup = new THREE.Group();
+  whaleGroup.name = 'sanctuary_whale';
+  whaleGroup.position.set(8.5, 9.5, -6.0);
+  const whaleMat = new THREE.MeshStandardMaterial({
+    color: 0xf8fafc,
+    emissive: 0x38bdf8,
+    emissiveIntensity: 0.65,
+    roughness: 0.25,
+  });
+  const whaleBody = new THREE.Mesh(
+    new THREE.CapsuleGeometry(1.35, 5.2, 10, 18).rotateX(Math.PI / 2),
+    whaleMat
+  );
+  const whaleFluke = new THREE.Mesh(
+    new THREE.BoxGeometry(3.8, 0.22, 1.4),
+    whaleMat
+  );
+  whaleFluke.position.set(0, 0, -3.4);
+  whaleGroup.add(whaleBody, whaleFluke);
+  geyserIslandGroup.add(conchSpire, geyserRim, geyserJetPlume, whaleGroup);
+  outerSanctuariesGroup.add(geyserIslandGroup);
+
+  // Outer Sanctuary 2: Citadel Floating Sky Island at (46, 14.5, -68)
+  const citadelGroup = new THREE.Group();
+  const citadelY = groundHeightAt(46, -68);
+  citadelGroup.position.set(46, citadelY, -68);
+  const skyIslandBase = new THREE.Mesh(
+    new THREE.ConeGeometry(8.5, 9.5, 14).rotateX(Math.PI),
+    stoneMat
+  );
+  skyIslandBase.position.y = -4.75;
+  const citadelRing1 = new THREE.Mesh(
+    new THREE.TorusGeometry(5.4, 0.16, 12, 36),
+    goldMat
+  );
+  citadelRing1.position.y = 5.2;
+  citadelRing1.name = 'citadel_ring_1';
+  const citadelRing2 = new THREE.Mesh(
+    new THREE.TorusGeometry(6.8, 0.14, 12, 36),
+    goldMat
+  );
+  citadelRing2.position.y = 5.2;
+  citadelRing2.rotation.x = Math.PI / 3;
+  citadelRing2.name = 'citadel_ring_2';
+  citadelGroup.add(skyIslandBase, citadelRing1, citadelRing2);
+  outerSanctuariesGroup.add(citadelGroup);
+
+  // Outer Sanctuary 3: Grandma's Hollow Treehouse at (-54, 3.2, -32)
+  const grandmaGroup = new THREE.Group();
+  const grandmaY = groundHeightAt(-54, -32);
+  grandmaGroup.position.set(-54, grandmaY, -32);
+  const hollowTrunk = new THREE.Mesh(
+    new THREE.CylinderGeometry(4.6, 5.8, 12.0, 16, 1, true),
+    new THREE.MeshStandardMaterial({
+      color: 0x451a03,
+      roughness: 0.85,
+      side: THREE.DoubleSide,
+    })
+  );
+  hollowTrunk.position.y = 5.8;
+  const treeCrown = new THREE.Mesh(
+    new THREE.DodecahedronGeometry(7.2, 1),
+    new THREE.MeshStandardMaterial({
+      color: 0x10b981,
+      emissive: 0x059669,
+      emissiveIntensity: 0.35,
+      roughness: 0.65,
+    })
+  );
+  treeCrown.position.y = 13.0;
+  grandmaGroup.add(hollowTrunk, treeCrown);
+  outerSanctuariesGroup.add(grandmaGroup);
+
+  // Outer Sanctuary 4: 7-Color Prismatic Rainbow Sky-Bridge at (0, 9.2, -88)
+  const rainbowBridgeGroup = new THREE.Group();
+  const rbY = groundHeightAt(0, -88);
+  rainbowBridgeGroup.position.set(0, rbY, -88);
+  const rainbowColors = [
+    0xef4444, 0xf97316, 0xfacc15, 0x4ade80, 0x38bdf8, 0x818cf8, 0xc084fc,
+  ];
+  rainbowColors.forEach((hex, idx) => {
+    const strip = new THREE.Mesh(
+      new THREE.BoxGeometry(22.0, 0.22, 0.72),
+      new THREE.MeshStandardMaterial({
+        color: hex,
+        emissive: hex,
+        emissiveIntensity: 0.85,
+        transparent: true,
+        opacity: 0.78,
+        roughness: 0.2,
+      })
+    );
+    strip.position.set(0, -0.08, (idx - 3) * 0.74);
+    rainbowBridgeGroup.add(strip);
+  });
+  outerSanctuariesGroup.add(rainbowBridgeGroup);
+
+  // Outer Sanctuary 5: Wind Paths Cloud Archipelago at (112, 22, -96)
+  const windPathsGroup = new THREE.Group();
+  const wpY = groundHeightAt(112, -96);
+  windPathsGroup.position.set(112, wpY, -96);
+  const wpIslandBase = new THREE.Mesh(
+    new THREE.ConeGeometry(10.5, 11.5, 14).rotateX(Math.PI),
+    stoneMat
+  );
+  wpIslandBase.position.y = -5.75;
+  const wpChimeArch = new THREE.Mesh(
+    new THREE.TorusGeometry(6.2, 0.35, 12, 32, Math.PI),
+    goldMat
+  );
+  wpChimeArch.position.y = 0.2;
+  const wpSkyStreamRing = new THREE.Mesh(
+    new THREE.TorusGeometry(9.5, 0.16, 10, 36).rotateX(Math.PI / 2),
+    windRingMat
+  );
+  wpSkyStreamRing.position.y = 3.6;
+  wpSkyStreamRing.name = 'wind_paths_ring';
+  windPathsGroup.add(wpIslandBase, wpChimeArch, wpSkyStreamRing);
+  outerSanctuariesGroup.add(windPathsGroup);
+
+  // Outer Sanctuary 6: Hermit Valley Snow Peak & Sunset Gondola at (96, 18.5, 64)
+  const hermitPeakGroup = new THREE.Group();
+  const hpY = groundHeightAt(96, 64);
+  hermitPeakGroup.position.set(96, hpY, 64);
+  const snowPeakCone = new THREE.Mesh(
+    new THREE.ConeGeometry(11.0, 12.0, 14).rotateX(Math.PI),
+    new THREE.MeshStandardMaterial({ color: 0xe0f2fe, roughness: 0.45 })
+  );
+  snowPeakCone.position.y = -6.0;
+  const iglooDome = new THREE.Mesh(
+    new THREE.SphereGeometry(3.4, 18, 12, 0, Math.PI * 2, 0, Math.PI / 2),
+    new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.5 })
+  );
+  iglooDome.position.set(-3.2, 0, -2.2);
+  const gondolaPylon = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.35, 0.52, 8.5, 10),
+    goldMat
+  );
+  gondolaPylon.position.set(4.5, 4.2, 1.8);
+  hermitPeakGroup.add(snowPeakCone, iglooDome, gondolaPylon);
+  outerSanctuariesGroup.add(hermitPeakGroup);
+
+  // Outer Sanctuary 7: Abyss Bioluminescent Coral Reef Trench & Leviathan at (-108, 2.6, 68)
+  const abyssGroup = new THREE.Group();
+  const abY = groundHeightAt(-108, 68);
+  abyssGroup.position.set(-108, abY, 68);
+  const sunkenTower = new THREE.Mesh(
+    new THREE.CylinderGeometry(2.2, 3.2, 9.5, 12),
+    new THREE.MeshStandardMaterial({ color: 0x0f766e, roughness: 0.7 })
+  );
+  sunkenTower.position.set(-4.5, 4.6, -3.5);
+  const coralArch = new THREE.Mesh(
+    new THREE.TorusGeometry(5.5, 0.55, 10, 28, Math.PI),
+    new THREE.MeshStandardMaterial({
+      color: 0x22d3ee,
+      emissive: 0x0891b2,
+      emissiveIntensity: 0.95,
+    })
+  );
+  coralArch.rotation.y = 0.6;
+  const leviathanGroup = new THREE.Group();
+  leviathanGroup.name = 'abyss_leviathan';
+  leviathanGroup.position.set(6.5, 6.2, 4.0);
+  const leviathanBody = new THREE.Mesh(
+    new THREE.CapsuleGeometry(1.1, 4.8, 10, 16).rotateX(Math.PI / 2),
+    new THREE.MeshStandardMaterial({
+      color: 0x06b6d4,
+      emissive: 0x22d3ee,
+      emissiveIntensity: 0.85,
+    })
+  );
+  leviathanGroup.add(leviathanBody);
+  abyssGroup.add(sunkenTower, coralArch, leviathanGroup);
+  outerSanctuariesGroup.add(abyssGroup);
+
+  // Outer Sanctuary 8: AURORA Starlight Concert Colosseum at (0, 12.8, -148)
+  const auroraColosseumGroup = new THREE.Group();
+  const acY = groundHeightAt(0, -148);
+  auroraColosseumGroup.position.set(0, acY, -148);
+  const colosseumPlinth = new THREE.Mesh(
+    new THREE.CylinderGeometry(14.5, 16.5, 2.4, 28),
+    stoneMat
+  );
+  colosseumPlinth.position.y = -1.2;
+  for (let c = 0; c < 8; c++) {
+    const cAng = (c / 8) * Math.PI * 2;
+    const colMesh = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.48, 0.62, 7.8, 10),
+      goldMat
+    );
+    colMesh.position.set(Math.cos(cAng) * 12.2, 3.9, Math.sin(cAng) * 12.2);
+    auroraColosseumGroup.add(colMesh);
+  }
+  const auroraCrownRing = new THREE.Mesh(
+    new THREE.TorusGeometry(9.8, 0.22, 12, 40),
+    goldMat
+  );
+  auroraCrownRing.position.y = 8.4;
+  auroraCrownRing.rotation.x = Math.PI / 2.4;
+  auroraCrownRing.name = 'aurora_stage_ring';
+  auroraColosseumGroup.add(colosseumPlinth, auroraCrownRing);
+  outerSanctuariesGroup.add(auroraColosseumGroup);
+
+  // Forgotten Ark (-88, -82) & Trial of Prophecy Gate (78, -118) Landmarks
+  const arkLandmark = new THREE.Mesh(
+    new THREE.BoxGeometry(8.5, 2.2, 3.2),
+    new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.72 })
+  );
+  arkLandmark.position.set(-88, groundHeightAt(-88, -82) + 1.1, -82);
+  arkLandmark.rotation.z = 0.12;
+  const trialGate = new THREE.Mesh(
+    new THREE.TorusGeometry(4.8, 0.55, 10, 24, Math.PI),
+    goldMat
+  );
+  trialGate.position.set(78, groundHeightAt(78, -118), -118);
+  outerSanctuariesGroup.add(arkLandmark, trialGate);
+
+  root.add(outerSanctuariesGroup);
+
+  // 6. InstancedMesh Billowing Cloud Sea Perimeter (inner, mid, and 210m ultra-outer cloud banks)
+  const cloudCount = 192;
+  const cloudGeo = new THREE.DodecahedronGeometry(5.2, 1);
   const cloudMat = new THREE.MeshStandardMaterial({
     color: initialRealm.cloudColor,
     emissive: initialRealm.skyHorizonColor,
@@ -697,17 +1238,32 @@ export function buildSkyWorldEnvironment(
   const cColor = new THREE.Color();
 
   for (let i = 0; i < cloudCount; i++) {
-    const ring = i < 64 ? 1 : 2;
-    const angle = (i / (ring === 1 ? 64 : 32)) * Math.PI * 2 + ring * 0.4;
-    const radius = ring === 1 ? 58 + (i % 5) * 3.5 : 34 + (i % 7) * 4.5;
+    const ring = i < 64 ? 0 : i < 128 ? 1 : i < 160 ? 2 : 3;
+    const countInRing = ring <= 1 ? 64 : 32;
+    const angle = ((i % countInRing) / countInRing) * Math.PI * 2 + ring * 0.4;
+    const radius =
+      ring === 0
+        ? 198 + (i % 7) * 5.2
+        : ring === 1
+          ? 124 + (i % 6) * 4.5
+          : ring === 2
+            ? 64 + (i % 7) * 4.0
+            : 36 + (i % 5) * 4.5;
     const cx = Math.cos(angle) * radius;
-    const cz = Math.sin(angle) * radius - 8;
-    const cy = ring === 1 ? 2.5 + (i % 4) * 2.2 : 14 + (i % 5) * 3.5;
+    const cz = Math.sin(angle) * radius - 12;
+    const cy =
+      ring === 0
+        ? 6.5 + (i % 6) * 3.2
+        : ring === 1
+          ? 3.5 + (i % 5) * 2.8
+          : ring === 2
+            ? 8.5 + (i % 4) * 2.5
+            : 15 + (i % 5) * 3.5;
 
     dummy.position.set(cx, cy, cz);
-    const sx = 1.4 + (i % 3) * 0.45;
-    const sy = 0.75 + (i % 2) * 0.25;
-    const sz = 1.2 + ((i + 1) % 3) * 0.4;
+    const sx = 1.5 + (i % 3) * 0.55;
+    const sy = 0.8 + (i % 2) * 0.28;
+    const sz = 1.3 + ((i + 1) % 3) * 0.45;
     dummy.scale.set(sx, sy, sz);
     dummy.rotation.set(0, angle, 0);
     dummy.updateMatrix();
@@ -721,8 +1277,8 @@ export function buildSkyWorldEnvironment(
   cloudInstanced.computeBoundingSphere();
   root.add(cloudInstanced);
 
-  // 7. InstancedMesh Stylized Meadow Cypress Trees & Floating Spire Stones
-  const treeCount = 28;
+  // 7. InstancedMesh Stylized Meadow Cypress Trees & Floating Spire Stones across the 220m continent
+  const treeCount = 72;
   const treeGeo = new THREE.ConeGeometry(1.35, 5.2, 7);
   treeGeo.translate(0, 2.6, 0);
   const treeMat = new THREE.MeshStandardMaterial({
@@ -732,15 +1288,20 @@ export function buildSkyWorldEnvironment(
   const treeInstanced = new THREE.InstancedMesh(treeGeo, treeMat, treeCount);
   for (let i = 0; i < treeCount; i++) {
     const angle = (i / treeCount) * Math.PI * 2 + 0.25;
-    const r = 22 + (i % 4) * 7.5;
+    const r =
+      i < 28
+        ? 22 + (i % 4) * 7.5
+        : i < 48
+          ? 58 + (i % 5) * 9.5
+          : 118 + (i % 6) * 11.5;
     const tx = Math.cos(angle) * r;
-    const tz = Math.sin(angle) * r - 6;
+    const tz = Math.sin(angle) * r - 8;
     if (Math.abs(tx) < 7 && tz < 5 && tz > -55) {
       dummy.position.set(tx + (tx >= 0 ? 9 : -9), groundHeightAt(tx + (tx >= 0 ? 9 : -9), tz), tz);
     } else {
       dummy.position.set(tx, groundHeightAt(tx, tz), tz);
     }
-    const scale = 0.85 + (i % 4) * 0.14;
+    const scale = 0.85 + (i % 4) * 0.16;
     dummy.scale.set(scale, scale * (0.9 + (i % 3) * 0.15), scale);
     dummy.rotation.set(0, i * 1.1, 0);
     dummy.updateMatrix();
@@ -942,6 +1503,31 @@ export function buildSkyWorldEnvironment(
     const bellObj = prairieLandmarksGroup.getObjectByName('village_bell');
     if (bellObj) {
       bellObj.rotation.z = Math.sin(elapsed * 2.1) * 0.12;
+    }
+
+    // Stage 12 & 13: Animate Sanctuary Sky-Whale, Citadel Rings, Abyss Leviathan & Aurora Stage Ring
+    const whaleObj = outerSanctuariesGroup.getObjectByName('sanctuary_whale');
+    if (whaleObj) {
+      whaleObj.position.y = 9.5 + Math.sin(elapsed * 1.1) * 3.8;
+      whaleObj.rotation.x = Math.cos(elapsed * 1.1) * 0.45;
+      whaleObj.rotation.y = elapsed * 0.25;
+    }
+    const cRing1 = outerSanctuariesGroup.getObjectByName('citadel_ring_1');
+    const cRing2 = outerSanctuariesGroup.getObjectByName('citadel_ring_2');
+    if (cRing1) cRing1.rotation.y = elapsed * 0.55;
+    if (cRing2) cRing2.rotation.z = -elapsed * 0.42;
+    const leviathanObj = outerSanctuariesGroup.getObjectByName('abyss_leviathan');
+    if (leviathanObj) {
+      leviathanObj.position.y = 6.2 + Math.sin(elapsed * 1.3) * 2.4;
+      leviathanObj.rotation.y = -elapsed * 0.35;
+    }
+    const auroraRingObj = outerSanctuariesGroup.getObjectByName('aurora_stage_ring');
+    if (auroraRingObj) {
+      auroraRingObj.rotation.z = elapsed * 0.48;
+    }
+    const wpRingObj = outerSanctuariesGroup.getObjectByName('wind_paths_ring');
+    if (wpRingObj) {
+      wpRingObj.rotation.z = -elapsed * 0.85;
     }
 
     // Update Krill patrol in Wasteland & Eden

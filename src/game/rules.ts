@@ -7,6 +7,7 @@ export const PRAIRIE_CFG = gameConfigRaw.prairieZone;
 export const EXPRESSION_CFG = (gameConfigRaw as any).expression;
 export const NETWORK_CFG = (gameConfigRaw as any).network;
 export const REALMS_STAGE8_CFG = (gameConfigRaw as any).realmsStage8;
+export const STAGE12_CFG = (gameConfigRaw as any).stage12Expansion;
 
 export type DayNightPhase = 'morning' | 'noon' | 'sunset' | 'starry_night';
 export const DAY_NIGHT_PHASES: DayNightPhase[] = [
@@ -239,6 +240,20 @@ export const REALMS: Record<RealmId, RealmConfig> = {
 };
 
 export function getSubZoneNameAt(realmId: RealmId, x: number, z: number): string {
+  // Stage 12: Check 4 Outer Sanctuaries first across the expanded 135m world
+  const outerSanctuaries = (STAGE12_CFG?.outerSanctuaries || []) as {
+    id: string;
+    name: string;
+    x: number;
+    z: number;
+    radius: number;
+  }[];
+  for (const s of outerSanctuaries) {
+    if (Math.hypot(x - s.x, z - s.z) <= (s.radius || 14.0)) {
+      return s.name;
+    }
+  }
+
   if (realmId === 'prairie') {
     // Stage 3 Data-driven 3 Prairie Sub-Zones:
     // 1) 幽光洞窟 (Echo Cavern on West side around x = -18.5, z = -16)
@@ -273,7 +288,8 @@ export type InteractableType =
   | 'dark_crab'
   | 'coop_door'
   | 'starlight_elevator'
-  | 'eden_statue';
+  | 'eden_statue'
+  | 'easter_egg';
 
 export interface WorldInteractable {
   id: string;
@@ -290,6 +306,12 @@ export interface WorldInteractable {
   emoteUnlocked?: string;
   waxReward?: number;
   flipped?: boolean;
+  loreText?: string;
+  candlesBonus?: number;
+  heartsBonus?: number;
+  ascendedCandlesBonus?: number;
+  wingedLightBonus?: number;
+  launchVy?: number;
 }
 
 export interface EmoteAction {
@@ -653,10 +675,59 @@ export function groundHeightAt(x: number, z: number): number {
     return 0.65 + villageT * 1.35;
   }
 
-  // 5. Gentle rolling meadow hills & floating island ridges
+  // 4d. Stage 12 Outer Sanctuaries & High-Altitude Sky Islands
+  const outerSanctuaries = (STAGE12_CFG?.outerSanctuaries || []) as {
+    id: string;
+    x: number;
+    y: number;
+    z: number;
+    radius: number;
+  }[];
+  for (const s of outerSanctuaries) {
+    const dSanc = Math.hypot(x - s.x, z - s.z);
+    const rSanc = s.radius || 14.0;
+    if (dSanc < rSanc) {
+      const innerFlat = rSanc * 0.58;
+      if (dSanc <= innerFlat) {
+        return s.y;
+      }
+      const blendT = 1 - (dSanc - innerFlat) / (rSanc - innerFlat);
+      const smooth = blendT * blendT * (3 - 2 * blendT);
+      return 0.8 + (s.y - 0.8) * smooth;
+    }
+  }
+
+  // 4e. Stage 12 Oreo 8-Player Shrine Terrace (38, -18), TGC Office Portal (-36, -48) & B612 Desert Rose (-42, 26)
+  const distOreo = Math.hypot(x - 38.0, z - -18.0);
+  if (distOreo < 7.5) {
+    const tOreo = Math.max(0, 1 - distOreo / 7.5);
+    return 1.2 + tOreo * 1.6;
+  }
+  const distTgc = Math.hypot(x - -36.0, z - -48.0);
+  if (distTgc < 7.5) {
+    const tTgc = Math.max(0, 1 - distTgc / 7.5);
+    return 1.2 + tTgc * 2.2;
+  }
+  const distRose = Math.hypot(x - -42.0, z - 26.0);
+  if (distRose < 8.0) {
+    const tRose = Math.max(0, 1 - distRose / 8.0);
+    return 1.1 + tRose * 1.5;
+  }
+  const distArk = Math.hypot(x - -88.0, z - -82.0);
+  if (distArk < 12.0) {
+    const tArk = Math.max(0, 1 - distArk / 12.0);
+    return 1.2 + tArk * 3.4;
+  }
+  const distTrial = Math.hypot(x - 78.0, z - -118.0);
+  if (distTrial < 11.5) {
+    const tTrial = Math.max(0, 1 - distTrial / 11.5);
+    return 1.4 + tTrial * 5.0;
+  }
+
+  // 5. Gentle rolling meadow hills & floating island ridges across the 220m expanded continent
   const wave1 = Math.sin(x * 0.08) * Math.cos(z * 0.08) * 1.6;
   const wave2 = Math.sin((x + z) * 0.045) * 1.1;
-  const edgeLift = dist > 52 ? Math.min(8.0, (dist - 52) * 0.25) : 0;
+  const edgeLift = dist > 52 ? Math.min(12.5, (dist - 52) * 0.12) : 0;
 
   return Math.max(-0.4, 0.35 + wave1 + wave2 + edgeLift);
 }
@@ -956,6 +1027,50 @@ export function createWorldInteractables(realm: RealmId): WorldInteractable[] {
       radius: 3.6,
       activated: false,
     },
+    {
+      id: `${realm}_wl_sky_citadel`,
+      type: 'winged_light',
+      name: '光之翼 · 千鸟天际浮岛星童',
+      subtitle: '登上 14.5m 高空千鸟星桥浮岛 · 吸收云端金人 (+1 永久小金人)',
+      x: 46.0,
+      y: groundHeightAt(46.0, -68.0),
+      z: -68.0,
+      radius: 4.0,
+      activated: false,
+    },
+    {
+      id: `${realm}_wl_wind_paths`,
+      type: 'winged_light',
+      name: '光之翼 · 风行网道云端领航员',
+      subtitle: '飞抵海拔 22m 风行网道浮空群岛 · 吸收高空领航金人 (+1 永久小金人)',
+      x: 115.0,
+      y: groundHeightAt(115.0, -96.0),
+      z: -96.0,
+      radius: 4.2,
+      activated: false,
+    },
+    {
+      id: `${realm}_wl_hermit_peak`,
+      type: 'winged_light',
+      name: '光之翼 · 雪隐峰日落守望者',
+      subtitle: '登上东南雪隐峰海拔 18.5m 缆车台 · 吸收雪山金人 (+1 永久小金人)',
+      x: 99.0,
+      y: groundHeightAt(99.0, 64.0),
+      z: 64.0,
+      radius: 4.2,
+      activated: false,
+    },
+    {
+      id: `${realm}_wl_aurora_colosseum`,
+      type: 'winged_light',
+      name: '光之翼 · 欧若拉星光剧场之巅',
+      subtitle: '飞抵极北天际千人星光竞技场 · 吸收音乐会金人 (+1 永久小金人)',
+      x: 0.0,
+      y: groundHeightAt(0.0, -144.0),
+      z: -144.0,
+      radius: 4.2,
+      activated: false,
+    },
     ...spiritItems,
     // Elder Temple Ascension Altar (神庙祈福升华终点)
     {
@@ -1127,6 +1242,43 @@ export function createWorldInteractables(realm: RealmId): WorldInteractable[] {
       radius: 3.8,
       activated: false,
       waxReward: 65,
+    });
+  }
+
+  // Stage 12: 6 Collectible Sky Tribute Easter Eggs across the 135m expanded map
+  const easterEggs = (STAGE12_CFG?.easterEggs || []) as {
+    id: string;
+    name: string;
+    subtitle: string;
+    loreText: string;
+    x: number;
+    z: number;
+    radius: number;
+    waxReward: number;
+    candlesBonus: number;
+    heartsBonus: number;
+    ascendedCandlesBonus: number;
+    wingedLightBonus: number;
+    launchVy: number;
+  }[];
+  for (const egg of easterEggs) {
+    list.push({
+      id: egg.id,
+      type: 'easter_egg',
+      name: egg.name,
+      subtitle: egg.subtitle,
+      loreText: egg.loreText,
+      x: egg.x,
+      y: groundHeightAt(egg.x, egg.z),
+      z: egg.z,
+      radius: egg.radius || 4.4,
+      activated: false,
+      waxReward: egg.waxReward || 60,
+      candlesBonus: egg.candlesBonus || 0,
+      heartsBonus: egg.heartsBonus || 0,
+      ascendedCandlesBonus: egg.ascendedCandlesBonus || 0,
+      wingedLightBonus: egg.wingedLightBonus || 0,
+      launchVy: egg.launchVy || 0,
     });
   }
 
@@ -1420,23 +1572,36 @@ export function stepPlayerPhysics(
   const maxSinkSpeed = next.isDiving ? -19.5 : -14.0;
   next.vy = Math.max(maxSinkSpeed, next.vy - baseGravity * dt);
 
-  // Stage 3 Wind Tunnel Updraft & Forward Tailwind Corridor (configured in gameConfig.json prairieZone.windTunnel)
+  // Stage 3 Wind Tunnel Updraft & Stage 13 Outer Wind-Path Cloud Rail Network
   const wt = PRAIRIE_CFG.windTunnel;
-  const inWindCorridor =
+  const inInnerWindCorridor =
     (weather === 'wind_updraft' || realmId === 'home') &&
     next.x >= wt.xMin &&
     next.x <= wt.xMax &&
     next.z <= wt.zStart &&
     next.z >= wt.zEnd &&
     (!next.grounded || weather === 'wind_updraft');
+  const distFromWindPaths = Math.hypot(next.x - 112.0, next.z - -96.0);
+  const inOuterWindPath =
+    !next.grounded &&
+    next.y >= 8.0 &&
+    (distFromWindPaths <= 28.0 ||
+      (Math.hypot(next.x, next.z) >= 88.0 && Math.hypot(next.x, next.z) <= 156.0 && next.y >= 11.0));
+  const inWindCorridor = inInnerWindCorridor || inOuterWindPath;
   next.inWindTunnel = inWindCorridor;
-  if (inWindCorridor && !next.grounded && !next.isDiving) {
+  if (inInnerWindCorridor && !next.grounded && !next.isDiving) {
     next.vy = Math.min(11.5, next.vy + (wt.updraftAccel + 4.5) * dt);
     // Forward tailwind propulsion toward the northern Three-Tower Bell Village (-Z)
     next.vz = Math.min(next.vz - wt.forwardBoostAccel * dt, -3.5);
     next.wingEnergy = Math.min(
       effectiveMaxEnergy,
       next.wingEnergy + wt.rechargeRatePerSec * dt
+    );
+  } else if (inOuterWindPath && !next.isDiving) {
+    next.vy = Math.min(13.5, next.vy + (wt.updraftAccel + 5.5) * dt);
+    next.wingEnergy = Math.min(
+      effectiveMaxEnergy,
+      next.wingEnergy + (wt.rechargeRatePerSec + 0.8) * dt
     );
   }
 
@@ -1466,14 +1631,15 @@ export function stepPlayerPhysics(
     next.z = colRes.z;
   }
 
-  // Keep player inside playable cloud sanctuary radius (68m) with soft cloud updraft bounce
+  // Stage 12: Keep player inside expanded playable cloud sanctuary radius (135m, >4x area!) with soft cloud updraft bounce
+  const maxWorldRadius = Number(STAGE12_CFG?.worldRadius) || 135;
   const radialDist = Math.hypot(next.x, next.z);
-  if (radialDist > 66) {
-    const scaleBack = 66 / radialDist;
+  if (radialDist > maxWorldRadius) {
+    const scaleBack = maxWorldRadius / radialDist;
     next.x *= scaleBack;
     next.z *= scaleBack;
-    next.vy = Math.max(next.vy, 6.5); // Outer cloud bank lifts player gently upward!
-    next.wingEnergy = Math.min(effectiveMaxEnergy, next.wingEnergy + 1.5 * dt);
+    next.vy = Math.max(next.vy, 7.5); // Outer cloud bank lifts player gently upward!
+    next.wingEnergy = Math.min(effectiveMaxEnergy, next.wingEnergy + 1.8 * dt);
   }
 
   const stepHorizDist = Math.hypot(next.x - prevX, next.z - prevZ);
@@ -1557,7 +1723,10 @@ export function stepPlayerPhysics(
     PRAIRIE_CFG.candleClusters.some((c) => Math.hypot(next.x - c.x, next.z - c.z) < 3.8) ||
     PRAIRIE_CFG.lightBlooms.some((b) => Math.hypot(next.x - b.x, next.z - b.z) < 4.0);
   const nearRealmShelter = isInRealmShelterAt(realmId, next.x, next.z);
-  const nearCandleCluster = nearCandleOrBloom || nearRealmShelter;
+  const nearOuterSanctuary = ((STAGE12_CFG?.outerSanctuaries || []) as { x: number; z: number; radius: number }[]).some(
+    (s) => Math.hypot(next.x - s.x, next.z - s.z) < (s.radius || 14.0) * 0.75
+  );
+  const nearCandleCluster = nearCandleOrBloom || nearRealmShelter || nearOuterSanctuary;
   const nearCloudRing = radialDist > 48;
   const hasUmbrella = loadout?.prop === 'prop_light_umbrella';
   next.inShelter =
@@ -1565,6 +1734,7 @@ export function stepPlayerPhysics(
     nearNorthernTemple ||
     nearCandleCluster ||
     nearRealmShelter ||
+    nearOuterSanctuary ||
     Boolean(hasFireBrazier || hasUmbrella);
 
   let energySource: EnergyChangeSource = 'none';
@@ -1689,7 +1859,8 @@ export function findNearestInteractable(
     const isReusable =
       item.type === 'temple_altar' ||
       item.type === 'rain_shelter' ||
-      item.type === 'starlight_elevator';
+      item.type === 'starlight_elevator' ||
+      item.type === 'easter_egg';
     if (item.activated && !isReusable) continue;
     const dx = item.x - px;
     const dy = item.y - py;
@@ -1844,6 +2015,34 @@ export function applyInteraction(
       ascendedAtTemple = true;
       bannerMessage = `点亮「${target.name}」· 星门开启，祈福升华仪式达成！`;
     }
+  } else if (target.type === 'easter_egg') {
+    const waxGain = target.waxReward ?? 60;
+    const totalWax = nextProgress.wax + waxGain;
+    const forgedCandles = Math.floor(totalWax / 100);
+    nextProgress.candles += forgedCandles;
+    nextProgress.wax = totalWax % 100;
+
+    if (!target.activated) {
+      nextProgress.candles += target.candlesBonus || 0;
+      nextProgress.hearts += target.heartsBonus || 0;
+      nextProgress.ascendedCandles += target.ascendedCandlesBonus || 0;
+      if (target.wingedLightBonus && target.wingedLightBonus > 0) {
+        nextProgress.wingedLights += target.wingedLightBonus;
+      }
+    }
+
+    const updatedMaxWedges = calculateWingWedges(nextProgress.wingedLights, loadout);
+    nextPhysics.maxWingWedges = updatedMaxWedges;
+    nextPhysics.wingEnergy = updatedMaxWedges;
+
+    if (target.launchVy && target.launchVy > 0) {
+      nextPhysics.vy = target.launchVy;
+      nextPhysics.grounded = false;
+      nextPhysics.flightMode = 'glide';
+      nextPhysics.locomotionMode = 'fly';
+    }
+
+    bannerMessage = `🎉 触发彩蛋「${target.name}」！${target.loreText || target.subtitle}`;
   }
 
   return {

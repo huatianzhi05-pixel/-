@@ -369,9 +369,15 @@ async function startServer() {
           const nz = Number(msg.z) || 0;
           const dist = Math.hypot(nx - currentPeer.x, ny - currentPeer.y, nz - currentPeer.z);
 
-          // Server-authoritative speed check (allow teleport to shrine (0, *, 6))
+          // Server-authoritative speed check (allow shrine reset and legitimate sanctuary/compass warps within 230m world radius)
           const isShrineReset = Math.hypot(nx, nz - 6) < 2.5;
-          if (dist / dtSec <= MAX_SPEED_METERS_PER_SEC || isShrineReset || dtSec > 1.0) {
+          const isContinentWarp = Math.hypot(nx, nz) <= 230 && dist > 14.0;
+          if (
+            dist / dtSec <= MAX_SPEED_METERS_PER_SEC ||
+            isShrineReset ||
+            isContinentWarp ||
+            dtSec > 1.0
+          ) {
             currentPeer.x = nx;
             currentPeer.y = ny;
             currentPeer.z = nz;
@@ -463,8 +469,8 @@ async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: {
-        middlewareMode: { server: httpServer },
-        hmr: { server: httpServer },
+        middlewareMode: true,
+        hmr: false,
         watch: null,
       },
       appType: 'spa',
@@ -479,10 +485,11 @@ async function startServer() {
   }
 
   httpServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`[GlimmerServer] Listening on http://0.0.0.0:${PORT} (WS /ws)`);
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
   });
 }
 
 startServer().catch((err) => {
   console.error('[ServerStartup]', err);
 });
+

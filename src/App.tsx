@@ -54,6 +54,7 @@ import {
   buildCoopDoorMesh,
   buildStarlightElevatorMesh,
   buildEdenStatueMesh,
+  buildEasterEggMesh,
   BuiltWorldRefs,
 } from './game/worldBuilder';
 import {
@@ -97,6 +98,7 @@ import {
   computeQualityTierSettingsPure,
   updateAccessibilityAndPerfPure,
   advanceOnboardingTutorialPure,
+  discoverEasterEggPure,
   QualityTierOption,
 } from './core/StorageService';
 import { networkClient } from './core/NetworkClient';
@@ -171,9 +173,7 @@ export default function App() {
   );
   const [nearestInteractable, setNearestInteractable] =
     useState<WorldInteractable | null>(null);
-  const [bannerMessage, setBannerMessage] = useState<string | null>(
-    '欢迎来到《微光旅人 · Rea光遇》！按 [WASD] 漫步，[Space] 振翅飞翔，[X] 星盘与好友树，[P] 自由拍照'
-  );
+  const [bannerMessage, setBannerMessage] = useState<string | null>(null);
   const [wardrobeOpen, setWardrobeOpen] = useState(false);
   const [instrumentOpen, setInstrumentOpen] = useState(false);
   const [instrumentType, setInstrumentType] =
@@ -223,7 +223,15 @@ export default function App() {
   const physicsRef = useRef<PlayerPhysicsState>(physics);
   const saveDataRef = useRef<PersistentSaveData>(saveData);
   const interactablesRef = useRef<WorldInteractable[]>(
-    createWorldInteractables('home')
+    createWorldInteractables('home').map((item) =>
+      (item.type === 'easter_egg' &&
+        saveData.discoveredEasterEggIds?.includes(item.id)) ||
+      (item.type === 'ancestor_spirit' &&
+        item.spiritId &&
+        saveData.relivedSpiritIds?.includes(item.spiritId))
+        ? { ...item, activated: true }
+        : item
+    )
   );
   const nearestInteractableRef = useRef<WorldInteractable | null>(null);
   const wardrobeOpenRef = useRef<boolean>(wardrobeOpen);
@@ -308,7 +316,7 @@ export default function App() {
     if (bannerTimerRef.current) window.clearTimeout(bannerTimerRef.current);
     bannerTimerRef.current = window.setTimeout(() => {
       setBannerMessage(null);
-    }, 4500);
+    }, 3200);
   }, []);
 
   // Connect NetworkClient + EventBus listeners on mount
@@ -406,7 +414,7 @@ export default function App() {
         );
         sceneRef.current.fog = new THREE.FogExp2(
           useAtmo ? atmo.fogColor : realmCfg.fogColor,
-          useAtmo ? atmo.fogDensity : realmCfg.fogDensity
+          (useAtmo ? atmo.fogDensity : realmCfg.fogDensity) * 0.58
         );
       }
       if (sunLightRef.current) {
@@ -468,8 +476,16 @@ export default function App() {
       physicsRef.current = resetPhys;
       setPhysics({ ...resetPhys });
 
-      // Rebuild realm interactables
-      const newInteractables = createWorldInteractables(realmId);
+      // Rebuild realm interactables and preserve persistent discovery state
+      const newInteractables = createWorldInteractables(realmId).map((item) =>
+        (item.type === 'easter_egg' &&
+          saveDataRef.current.discoveredEasterEggIds?.includes(item.id)) ||
+        (item.type === 'ancestor_spirit' &&
+          item.spiritId &&
+          saveDataRef.current.relivedSpiritIds?.includes(item.spiritId))
+          ? { ...item, activated: true }
+          : item
+      );
       interactablesRef.current = newInteractables;
       populateInteractablesFnRef.current?.();
 
@@ -675,7 +691,16 @@ export default function App() {
           currentRealm: targetRealm,
         };
         setProgress({ ...progressRef.current });
-        const newInteractables = createWorldInteractables(targetRealm);
+        const newInteractables = createWorldInteractables(targetRealm).map(
+          (item) =>
+            (item.type === 'easter_egg' &&
+              saveDataRef.current.discoveredEasterEggIds?.includes(item.id)) ||
+            (item.type === 'ancestor_spirit' &&
+              item.spiritId &&
+              saveDataRef.current.relivedSpiritIds?.includes(item.spiritId))
+              ? { ...item, activated: true }
+              : item
+        );
         interactablesRef.current = newInteractables;
         populateInteractablesFnRef.current?.();
         applySceneAtmosphere(targetRealm, dayNightPhaseRef.current);
@@ -1037,7 +1062,7 @@ export default function App() {
         ? [...saveDataRef.current.relivedSpiritIds, target.spiritId]
         : saveDataRef.current.relivedSpiritIds;
 
-    const nextSave: PersistentSaveData = {
+    const baseNextSave: PersistentSaveData = {
       ...saveDataRef.current,
       candles: result.nextProgress.candles,
       candleWax: result.nextProgress.wax,
@@ -1048,7 +1073,30 @@ export default function App() {
       relivedSpiritIds: nextRelivedSpirits,
       dailyQuests: nextQuests,
     };
-    commitSaveData(nextSave);
+
+    let finalBanner = result.bannerMessage;
+    if (target.type === 'easter_egg') {
+      const eggRes = discoverEasterEggPure(saveDataRef.current, target.id);
+      const mergedEggSave: PersistentSaveData = {
+        ...eggRes.nextSave,
+        dailyQuests: nextQuests,
+      };
+      commitSaveData(mergedEggSave);
+      const newMaxWedges = calculateWingWedges(
+        mergedEggSave.wingedLights,
+        loadoutRef.current
+      );
+      physicsRef.current = {
+        ...physicsRef.current,
+        maxWingWedges: newMaxWedges,
+        wingEnergy: newMaxWedges,
+      };
+      skyAudio.playWingedLightAbsorb();
+      spawnBurstRef.current?.(target.x, target.y + 1.8, target.z, 42, 8.5);
+      finalBanner = eggRes.message;
+    } else {
+      commitSaveData(baseNextSave);
+    }
 
     const nextNearest = findNearestInteractable(
       physicsRef.current.x,
@@ -1061,7 +1109,7 @@ export default function App() {
     setProgress({ ...progressRef.current });
     setPhysics({ ...physicsRef.current });
     setNearestInteractable(nextNearest);
-    showBanner(result.bannerMessage);
+    showBanner(finalBanner);
 
     if (result.ascendedAtTemple) {
       gameStateRef.current = 'gameover';
@@ -1971,6 +2019,53 @@ export default function App() {
     [commitSaveData, showBanner]
   );
 
+  // Stage 12: Warp to a Sky Tribute Easter Egg and trigger its discovery & physics launch
+  const handleDiscoverAndWarpEasterEgg = useCallback(
+    (eggId: string) => {
+      const eggRes = discoverEasterEggPure(saveDataRef.current, eggId);
+      if (!eggRes.eggConfig) {
+        showBanner(eggRes.message);
+        return;
+      }
+      const cfg = eggRes.eggConfig;
+      const floorY = groundHeightAt(cfg.x, cfg.z);
+      handleDebugTeleport(cfg.x, floorY, cfg.z + 1.2, cfg.name);
+      commitSaveData(eggRes.nextSave);
+
+      interactablesRef.current = interactablesRef.current.map((item) =>
+        item.id === eggId ? { ...item, activated: true } : item
+      );
+
+      const newMaxWedges = calculateWingWedges(
+        eggRes.nextSave.wingedLights,
+        loadoutRef.current
+      );
+      const launchVy = cfg.launchVy || 0;
+      physicsRef.current = {
+        ...physicsRef.current,
+        maxWingWedges: newMaxWedges,
+        wingEnergy: newMaxWedges,
+        vy: launchVy > 0 ? launchVy : physicsRef.current.vy,
+        grounded: launchVy > 0 ? false : physicsRef.current.grounded,
+        flightMode: launchVy > 0 ? 'glide' : physicsRef.current.flightMode,
+        locomotionMode: launchVy > 0 ? 'fly' : physicsRef.current.locomotionMode,
+      };
+      const nearestAfterEgg = findNearestInteractable(
+        physicsRef.current.x,
+        physicsRef.current.y,
+        physicsRef.current.z,
+        interactablesRef.current
+      );
+      nearestInteractableRef.current = nearestAfterEgg;
+      setNearestInteractable(nearestAfterEgg);
+      setPhysics({ ...physicsRef.current });
+      skyAudio.playWingedLightAbsorb();
+      spawnBurstRef.current?.(cfg.x, floorY + 1.8, cfg.z, 42, 8.5);
+      showBanner(eggRes.message);
+    },
+    [commitSaveData, handleDebugTeleport, showBanner]
+  );
+
   const handleSaveRecordedSong = useCallback(
     (song: RecordedSongSheet) => {
       const nextSave: PersistentSaveData = {
@@ -2074,7 +2169,7 @@ export default function App() {
     scene.background = new THREE.Color(initialRealm.skyHorizonColor);
     scene.fog = new THREE.FogExp2(
       initialRealm.fogColor,
-      initialRealm.fogDensity
+      initialRealm.fogDensity * 0.58
     );
 
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
@@ -2084,7 +2179,7 @@ export default function App() {
     ).texture;
     pmremGenerator.dispose();
 
-    const camera = new THREE.PerspectiveCamera(60, width / height, 0.2, 260);
+    const camera = new THREE.PerspectiveCamera(60, width / height, 0.2, 1100);
     camera.position.set(0, 4.2, 13.5);
     cameraRef.current = camera;
 
@@ -2229,6 +2324,8 @@ export default function App() {
           meshGroup = buildStarlightElevatorMesh(shadowTex);
         } else if (item.type === 'eden_statue') {
           meshGroup = buildEdenStatueMesh(shadowTex, item.activated);
+        } else if (item.type === 'easter_egg') {
+          meshGroup = buildEasterEggMesh(shadowTex, item.id);
         } else {
           meshGroup = buildWingedLightMesh(shadowTex);
           meshGroup.scale.set(1.4, 1.4, 1.4);
@@ -2391,12 +2488,14 @@ export default function App() {
       if (code === 'Space') {
         e.preventDefault();
         handleTriggerFlap();
-      } else if (
-        code === 'ShiftLeft' ||
-        code === 'ShiftRight' ||
-        code === 'KeyF'
-      ) {
+      } else if (code === 'ShiftLeft' || code === 'ShiftRight') {
         toggleFlightJustPressedRef.current = true;
+      } else if (code === 'KeyF') {
+        if (activeSpiritMemoryRef.current || nearestInteractableRef.current) {
+          handleTriggerInteract();
+        } else {
+          toggleFlightJustPressedRef.current = true;
+        }
       } else if (code === 'KeyE') {
         handleTriggerInteract();
       } else if (code === 'KeyQ') {
@@ -3164,6 +3263,8 @@ export default function App() {
           tutorialStep={saveData.tutorialStep}
           onUpdateAccessibilityAndPerf={handleUpdateAccessibilityAndPerf}
           onAdvanceOnboardingTutorial={handleAdvanceOnboardingTutorial}
+          discoveredEasterEggIds={saveData.discoveredEasterEggIds || []}
+          onDiscoverAndWarpEasterEgg={handleDiscoverAndWarpEasterEgg}
           onOpenWardrobe={() => setWardrobeOpen(true)}
           onOpenConstellationHub={(tab) => {
             setConstellationTab(tab);

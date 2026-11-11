@@ -2285,17 +2285,18 @@
   "traveler_8v0vtkh": {
     "playerId": "traveler_8v0vtkh",
     "playerName": "星海旅人",
-    "candles": 95,
-    "candleWax": 75,
-    "dailyCandlesForged": 0,
-    "hearts": 40,
+    "candles": 102,
+    "candleWax": 25,
+    "dailyCandlesForged": 1,
+    "hearts": 42,
     "dailyHeartsReceived": 0,
     "seasonCandles": 24,
-    "ascendedCandles": 26,
+    "ascendedCandles": 28,
     "wingedLights": 21,
     "collectedWingedLightIds": [],
     "relivedSpiritIds": [
-      "spirit_isle_pointing"
+      "spirit_isle_pointing",
+      "spirit_prairie_butterfly"
     ],
     "unlockedConstellationNodes": [
       "node_emote_point_lv1",
@@ -2450,7 +2451,7 @@
       }
     ],
     "dailyRerollsUsed": 0,
-    "lastDailyResetDate": "2026-11-10",
+    "lastDailyResetDate": "2026-11-11",
     "activeSeasonId": "season_aurora_starlight",
     "homeFurnitureInventory": [
       "furn_starlight_brazier",
@@ -2588,10 +2589,33 @@
     "lastMeditationDate": null,
     "blockedPeerIds": [],
     "reportedPeers": [],
-    "tutorialStep": 0,
+    "completedSeasonQuestIds": [],
+    "activeTravelingSpiritIndex": 0,
+    "savedPhotos": [
+      {
+        "id": "photo_preset_1",
+        "realmName": "云野 · 蝴蝶平原",
+        "filter": "warm_dusk",
+        "fov": 55,
+        "rollDeg": 0,
+        "dofMode": "soft",
+        "selfieMode": false,
+        "emoteId": "emote_butterfly",
+        "caption": "与牧蝶先祖在金黄花海共舞",
+        "createdAt": "2026-11-10"
+      }
+    ],
+    "tutorialStep": 3,
     "childSafeMode": false,
     "locale": "zh",
-    "updatedAt": 1794273752802
+    "qualityTier": "auto",
+    "highContrastMode": false,
+    "reducedMotionShake": false,
+    "discoveredEasterEggIds": [
+      "egg_tgc_office_portal",
+      "egg_sanctuary_geyser_whale"
+    ],
+    "updatedAt": 1794380522260
   },
   "traveler_gkzvcd0": {
     "playerId": "traveler_gkzvcd0",
@@ -6353,5 +6377,3308 @@
     "highContrastMode": true,
     "reducedMotionShake": true,
     "updatedAt": 1794310585384
+  },
+  "traveler_qjn8piq": {
+    "playerId": "traveler_qjn8piq",
+    "playerName": "星海旅人",
+    "candles": 88,
+    "candleWax": 40,
+    "dailyCandlesForged": 0,
+    "hearts": 36,
+    "dailyHeartsReceived": 0,
+    "seasonCandles": 24,
+    "ascendedCandles": 18,
+    "wingedLights": 20,
+    "collectedWingedLightIds": [],
+    "relivedSpiritIds": [
+      "spirit_isle_pointing"
+    ],
+    "unlockedConstellationNodes": [
+      "node_emote_point_lv1",
+      "node_emote_butterfly_lv1",
+      "node_emote_cheer_lv1",
+      "node_emote_spin_lv1",
+      "node_guide_pendant",
+      "node_emote_pray_lv1"
+    ],
+    "unlockedCosmeticIds": [
+      "cape_classic_flame",
+      "cape_owl_white",
+      "hair_moth_default",
+      "hair_white_bird",
+      "hat_none",
+      "mask_classic_flame",
+      "mask_anubis",
+      "face_none",
+      "face_star_earrings",
+      "neck_none",
+      "neck_gold_choker",
+      "neck_aurora_pendant",
+      "pants_classic_white",
+      "pants_fire_prophet",
+      "prop_sky_piano"
+    ],
+    "unlockedMusicSheetIds": [
+      "sheet_starlight_lullaby"
+    ],
+    "unlockedCallSoundIds": [
+      "call_default"
+    ],
+    "emoteLevels": {
+      "emote_butterfly": 1,
+      "emote_spin_dance": 3,
+      "emote_bow_respect": 3,
+      "emote_handstand": 3,
+      "emote_cheer_jump": 1,
+      "emote_pray_star": 2
+    },
+    "equippedLoadout": {
+      "cape": "cape_owl_white",
+      "hair": "hair_white_bird",
+      "hat": "hat_none",
+      "mask": "mask_anubis",
+      "faceAccessory": "face_star_earrings",
+      "neckAccessory": "neck_gold_choker",
+      "pants": "pants_fire_prophet",
+      "prop": "prop_sky_piano"
+    },
+    "friends": {
+      "bot_traveller_1": {
+        "peerId": "bot_traveller_1",
+        "nickname": "云野牧蝶人",
+        "ignited": false,
+        "isFriend": false,
+        "unlockedNodes": [],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_sakura_bloom",
+          "hair": "hair_bunny_peeking",
+          "mask": "mask_chibi",
+          "pants": "pants_jelly_cargo",
+          "prop": "prop_golden_harp"
+        }
+      },
+      "bot_traveller_2": {
+        "peerId": "bot_traveller_2",
+        "nickname": "霞谷聆音客",
+        "ignited": true,
+        "isFriend": true,
+        "unlockedNodes": [
+          "ft_ignite",
+          "ft_friend",
+          "ft_highfive",
+          "ft_chat"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_aurora_wings",
+          "hair": "hair_aurora_tiara",
+          "mask": "mask_faceless",
+          "pants": "pants_aurora_gold",
+          "prop": "prop_sky_piano"
+        }
+      },
+      "bot_traveller_3": {
+        "peerId": "bot_traveller_3",
+        "nickname": "晨岛寻星者",
+        "ignited": true,
+        "isFriend": false,
+        "unlockedNodes": [
+          "ft_ignite"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_manta_king",
+          "hair": "hair_moth_default",
+          "mask": "mask_anubis",
+          "pants": "pants_fire_prophet",
+          "prop": "prop_golden_harp"
+        }
+      }
+    },
+    "dailyQuests": [
+      {
+        "id": "dq_light_candles",
+        "title": "点亮 3 处星盘烛火簇",
+        "type": "collection",
+        "currentCount": 0,
+        "targetCount": 3,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_call_stranger",
+        "title": "向旅人发出星音呼唤 [Q] 2 次",
+        "type": "social",
+        "currentCount": 0,
+        "targetCount": 2,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_play_music",
+        "title": "使用云端乐器弹奏 5 个音符",
+        "type": "music",
+        "currentCount": 0,
+        "targetCount": 5,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_relive_spirit",
+        "title": "在任意区域重温 1 位先祖记忆",
+        "type": "exploration",
+        "currentCount": 0,
+        "targetCount": 1,
+        "rewardType": "hearts",
+        "rewardAmount": 1,
+        "claimed": false
+      }
+    ],
+    "dailyRerollsUsed": 0,
+    "lastDailyResetDate": "2026-11-11",
+    "activeSeasonId": "season_aurora_starlight",
+    "homeFurnitureInventory": [
+      "furn_starlight_brazier",
+      "furn_chat_bench"
+    ],
+    "homeFurniturePlacements": [
+      {
+        "instanceId": "placed_brazier_1",
+        "furnitureId": "furn_starlight_brazier",
+        "x": -4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": 0
+      },
+      {
+        "instanceId": "placed_bench_1",
+        "furnitureId": "furn_chat_bench",
+        "x": 4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": -0.4
+      }
+    ],
+    "savedSongs": [
+      {
+        "id": "sheet_starlight_lullaby",
+        "title": "微光星海摇篮曲",
+        "bpm": 108,
+        "notes": [
+          {
+            "keyIndex": 0,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 400
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 800
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 1200
+          },
+          {
+            "keyIndex": 6,
+            "delayMs": 1700
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 2100
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 2500
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 3000
+          },
+          {
+            "keyIndex": 5,
+            "delayMs": 3500
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 3900
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 4300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 4900
+          }
+        ]
+      },
+      {
+        "id": "sheet_cloud_soaring",
+        "title": "云野振翅之歌",
+        "bpm": 120,
+        "notes": [
+          {
+            "keyIndex": 4,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 350
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 700
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1050
+          },
+          {
+            "keyIndex": 12,
+            "delayMs": 1500
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1950
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 2300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 2650
+          }
+        ]
+      }
+    ],
+    "meditationNotes": [
+      {
+        "id": "med_preset_1",
+        "author": "云野牧蝶人",
+        "text": "愿每一缕微光都能穿越云海，照亮独行旅人的夜空。",
+        "createdAt": "2026-11-11"
+      },
+      {
+        "id": "med_preset_2",
+        "author": "霞谷聆音客",
+        "text": "在云野听风声与竖琴共鸣，谢谢身旁素昧平生的陪伴。",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "activeCallVoice": "default",
+    "lastMeditationDate": null,
+    "blockedPeerIds": [],
+    "reportedPeers": [],
+    "completedSeasonQuestIds": [],
+    "activeTravelingSpiritIndex": 0,
+    "savedPhotos": [
+      {
+        "id": "photo_preset_1",
+        "realmName": "云野 · 蝴蝶平原",
+        "filter": "warm_dusk",
+        "fov": 55,
+        "rollDeg": 0,
+        "dofMode": "soft",
+        "selfieMode": false,
+        "emoteId": "emote_butterfly",
+        "caption": "与牧蝶先祖在金黄花海共舞",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "tutorialStep": 0,
+    "childSafeMode": false,
+    "locale": "zh",
+    "qualityTier": "auto",
+    "highContrastMode": false,
+    "reducedMotionShake": false,
+    "discoveredEasterEggIds": [],
+    "updatedAt": 1794376702130
+  },
+  "traveler_zhq6rv8": {
+    "playerId": "traveler_zhq6rv8",
+    "playerName": "星海旅人",
+    "candles": 88,
+    "candleWax": 40,
+    "dailyCandlesForged": 0,
+    "hearts": 36,
+    "dailyHeartsReceived": 0,
+    "seasonCandles": 24,
+    "ascendedCandles": 18,
+    "wingedLights": 20,
+    "collectedWingedLightIds": [],
+    "relivedSpiritIds": [
+      "spirit_isle_pointing"
+    ],
+    "unlockedConstellationNodes": [
+      "node_emote_point_lv1",
+      "node_emote_butterfly_lv1",
+      "node_emote_cheer_lv1",
+      "node_emote_spin_lv1",
+      "node_guide_pendant",
+      "node_emote_pray_lv1"
+    ],
+    "unlockedCosmeticIds": [
+      "cape_classic_flame",
+      "cape_owl_white",
+      "hair_moth_default",
+      "hair_white_bird",
+      "hat_none",
+      "mask_classic_flame",
+      "mask_anubis",
+      "face_none",
+      "face_star_earrings",
+      "neck_none",
+      "neck_gold_choker",
+      "neck_aurora_pendant",
+      "pants_classic_white",
+      "pants_fire_prophet",
+      "prop_sky_piano"
+    ],
+    "unlockedMusicSheetIds": [
+      "sheet_starlight_lullaby"
+    ],
+    "unlockedCallSoundIds": [
+      "call_default"
+    ],
+    "emoteLevels": {
+      "emote_butterfly": 1,
+      "emote_spin_dance": 3,
+      "emote_bow_respect": 3,
+      "emote_handstand": 3,
+      "emote_cheer_jump": 1,
+      "emote_pray_star": 2
+    },
+    "equippedLoadout": {
+      "cape": "cape_owl_white",
+      "hair": "hair_white_bird",
+      "hat": "hat_none",
+      "mask": "mask_anubis",
+      "faceAccessory": "face_star_earrings",
+      "neckAccessory": "neck_gold_choker",
+      "pants": "pants_fire_prophet",
+      "prop": "prop_sky_piano"
+    },
+    "friends": {
+      "bot_traveller_1": {
+        "peerId": "bot_traveller_1",
+        "nickname": "云野牧蝶人",
+        "ignited": false,
+        "isFriend": false,
+        "unlockedNodes": [],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_sakura_bloom",
+          "hair": "hair_bunny_peeking",
+          "mask": "mask_chibi",
+          "pants": "pants_jelly_cargo",
+          "prop": "prop_golden_harp"
+        }
+      },
+      "bot_traveller_2": {
+        "peerId": "bot_traveller_2",
+        "nickname": "霞谷聆音客",
+        "ignited": true,
+        "isFriend": true,
+        "unlockedNodes": [
+          "ft_ignite",
+          "ft_friend",
+          "ft_highfive",
+          "ft_chat"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_aurora_wings",
+          "hair": "hair_aurora_tiara",
+          "mask": "mask_faceless",
+          "pants": "pants_aurora_gold",
+          "prop": "prop_sky_piano"
+        }
+      },
+      "bot_traveller_3": {
+        "peerId": "bot_traveller_3",
+        "nickname": "晨岛寻星者",
+        "ignited": true,
+        "isFriend": false,
+        "unlockedNodes": [
+          "ft_ignite"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_manta_king",
+          "hair": "hair_moth_default",
+          "mask": "mask_anubis",
+          "pants": "pants_fire_prophet",
+          "prop": "prop_golden_harp"
+        }
+      }
+    },
+    "dailyQuests": [
+      {
+        "id": "dq_light_candles",
+        "title": "点亮 3 处星盘烛火簇",
+        "type": "collection",
+        "currentCount": 0,
+        "targetCount": 3,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_call_stranger",
+        "title": "向旅人发出星音呼唤 [Q] 2 次",
+        "type": "social",
+        "currentCount": 0,
+        "targetCount": 2,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_play_music",
+        "title": "使用云端乐器弹奏 5 个音符",
+        "type": "music",
+        "currentCount": 0,
+        "targetCount": 5,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_relive_spirit",
+        "title": "在任意区域重温 1 位先祖记忆",
+        "type": "exploration",
+        "currentCount": 0,
+        "targetCount": 1,
+        "rewardType": "hearts",
+        "rewardAmount": 1,
+        "claimed": false
+      }
+    ],
+    "dailyRerollsUsed": 0,
+    "lastDailyResetDate": "2026-11-11",
+    "activeSeasonId": "season_aurora_starlight",
+    "homeFurnitureInventory": [
+      "furn_starlight_brazier",
+      "furn_chat_bench"
+    ],
+    "homeFurniturePlacements": [
+      {
+        "instanceId": "placed_brazier_1",
+        "furnitureId": "furn_starlight_brazier",
+        "x": -4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": 0
+      },
+      {
+        "instanceId": "placed_bench_1",
+        "furnitureId": "furn_chat_bench",
+        "x": 4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": -0.4
+      }
+    ],
+    "savedSongs": [
+      {
+        "id": "sheet_starlight_lullaby",
+        "title": "微光星海摇篮曲",
+        "bpm": 108,
+        "notes": [
+          {
+            "keyIndex": 0,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 400
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 800
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 1200
+          },
+          {
+            "keyIndex": 6,
+            "delayMs": 1700
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 2100
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 2500
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 3000
+          },
+          {
+            "keyIndex": 5,
+            "delayMs": 3500
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 3900
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 4300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 4900
+          }
+        ]
+      },
+      {
+        "id": "sheet_cloud_soaring",
+        "title": "云野振翅之歌",
+        "bpm": 120,
+        "notes": [
+          {
+            "keyIndex": 4,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 350
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 700
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1050
+          },
+          {
+            "keyIndex": 12,
+            "delayMs": 1500
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1950
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 2300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 2650
+          }
+        ]
+      }
+    ],
+    "meditationNotes": [
+      {
+        "id": "med_preset_1",
+        "author": "云野牧蝶人",
+        "text": "愿每一缕微光都能穿越云海，照亮独行旅人的夜空。",
+        "createdAt": "2026-11-11"
+      },
+      {
+        "id": "med_preset_2",
+        "author": "霞谷聆音客",
+        "text": "在云野听风声与竖琴共鸣，谢谢身旁素昧平生的陪伴。",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "activeCallVoice": "default",
+    "lastMeditationDate": null,
+    "blockedPeerIds": [],
+    "reportedPeers": [],
+    "completedSeasonQuestIds": [],
+    "activeTravelingSpiritIndex": 0,
+    "savedPhotos": [
+      {
+        "id": "photo_preset_1",
+        "realmName": "云野 · 蝴蝶平原",
+        "filter": "warm_dusk",
+        "fov": 55,
+        "rollDeg": 0,
+        "dofMode": "soft",
+        "selfieMode": false,
+        "emoteId": "emote_butterfly",
+        "caption": "与牧蝶先祖在金黄花海共舞",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "tutorialStep": 0,
+    "childSafeMode": false,
+    "locale": "zh",
+    "qualityTier": "auto",
+    "highContrastMode": false,
+    "reducedMotionShake": false,
+    "discoveredEasterEggIds": [],
+    "updatedAt": 1794376795421
+  },
+  "traveler_k5ju8g3": {
+    "playerId": "traveler_k5ju8g3",
+    "playerName": "星海旅人",
+    "candles": 88,
+    "candleWax": 40,
+    "dailyCandlesForged": 0,
+    "hearts": 36,
+    "dailyHeartsReceived": 0,
+    "seasonCandles": 24,
+    "ascendedCandles": 18,
+    "wingedLights": 20,
+    "collectedWingedLightIds": [],
+    "relivedSpiritIds": [
+      "spirit_isle_pointing"
+    ],
+    "unlockedConstellationNodes": [
+      "node_emote_point_lv1",
+      "node_emote_butterfly_lv1",
+      "node_emote_cheer_lv1",
+      "node_emote_spin_lv1",
+      "node_guide_pendant",
+      "node_emote_pray_lv1"
+    ],
+    "unlockedCosmeticIds": [
+      "cape_classic_flame",
+      "cape_owl_white",
+      "hair_moth_default",
+      "hair_white_bird",
+      "hat_none",
+      "mask_classic_flame",
+      "mask_anubis",
+      "face_none",
+      "face_star_earrings",
+      "neck_none",
+      "neck_gold_choker",
+      "neck_aurora_pendant",
+      "pants_classic_white",
+      "pants_fire_prophet",
+      "prop_sky_piano"
+    ],
+    "unlockedMusicSheetIds": [
+      "sheet_starlight_lullaby"
+    ],
+    "unlockedCallSoundIds": [
+      "call_default"
+    ],
+    "emoteLevels": {
+      "emote_butterfly": 1,
+      "emote_spin_dance": 3,
+      "emote_bow_respect": 3,
+      "emote_handstand": 3,
+      "emote_cheer_jump": 1,
+      "emote_pray_star": 2
+    },
+    "equippedLoadout": {
+      "cape": "cape_owl_white",
+      "hair": "hair_white_bird",
+      "hat": "hat_none",
+      "mask": "mask_anubis",
+      "faceAccessory": "face_star_earrings",
+      "neckAccessory": "neck_gold_choker",
+      "pants": "pants_fire_prophet",
+      "prop": "prop_sky_piano"
+    },
+    "friends": {
+      "bot_traveller_1": {
+        "peerId": "bot_traveller_1",
+        "nickname": "云野牧蝶人",
+        "ignited": false,
+        "isFriend": false,
+        "unlockedNodes": [],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_sakura_bloom",
+          "hair": "hair_bunny_peeking",
+          "mask": "mask_chibi",
+          "pants": "pants_jelly_cargo",
+          "prop": "prop_golden_harp"
+        }
+      },
+      "bot_traveller_2": {
+        "peerId": "bot_traveller_2",
+        "nickname": "霞谷聆音客",
+        "ignited": true,
+        "isFriend": true,
+        "unlockedNodes": [
+          "ft_ignite",
+          "ft_friend",
+          "ft_highfive",
+          "ft_chat"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_aurora_wings",
+          "hair": "hair_aurora_tiara",
+          "mask": "mask_faceless",
+          "pants": "pants_aurora_gold",
+          "prop": "prop_sky_piano"
+        }
+      },
+      "bot_traveller_3": {
+        "peerId": "bot_traveller_3",
+        "nickname": "晨岛寻星者",
+        "ignited": true,
+        "isFriend": false,
+        "unlockedNodes": [
+          "ft_ignite"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_manta_king",
+          "hair": "hair_moth_default",
+          "mask": "mask_anubis",
+          "pants": "pants_fire_prophet",
+          "prop": "prop_golden_harp"
+        }
+      }
+    },
+    "dailyQuests": [
+      {
+        "id": "dq_light_candles",
+        "title": "点亮 3 处星盘烛火簇",
+        "type": "collection",
+        "currentCount": 0,
+        "targetCount": 3,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_call_stranger",
+        "title": "向旅人发出星音呼唤 [Q] 2 次",
+        "type": "social",
+        "currentCount": 0,
+        "targetCount": 2,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_play_music",
+        "title": "使用云端乐器弹奏 5 个音符",
+        "type": "music",
+        "currentCount": 0,
+        "targetCount": 5,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_relive_spirit",
+        "title": "在任意区域重温 1 位先祖记忆",
+        "type": "exploration",
+        "currentCount": 0,
+        "targetCount": 1,
+        "rewardType": "hearts",
+        "rewardAmount": 1,
+        "claimed": false
+      }
+    ],
+    "dailyRerollsUsed": 0,
+    "lastDailyResetDate": "2026-11-11",
+    "activeSeasonId": "season_aurora_starlight",
+    "homeFurnitureInventory": [
+      "furn_starlight_brazier",
+      "furn_chat_bench"
+    ],
+    "homeFurniturePlacements": [
+      {
+        "instanceId": "placed_brazier_1",
+        "furnitureId": "furn_starlight_brazier",
+        "x": -4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": 0
+      },
+      {
+        "instanceId": "placed_bench_1",
+        "furnitureId": "furn_chat_bench",
+        "x": 4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": -0.4
+      }
+    ],
+    "savedSongs": [
+      {
+        "id": "sheet_starlight_lullaby",
+        "title": "微光星海摇篮曲",
+        "bpm": 108,
+        "notes": [
+          {
+            "keyIndex": 0,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 400
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 800
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 1200
+          },
+          {
+            "keyIndex": 6,
+            "delayMs": 1700
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 2100
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 2500
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 3000
+          },
+          {
+            "keyIndex": 5,
+            "delayMs": 3500
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 3900
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 4300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 4900
+          }
+        ]
+      },
+      {
+        "id": "sheet_cloud_soaring",
+        "title": "云野振翅之歌",
+        "bpm": 120,
+        "notes": [
+          {
+            "keyIndex": 4,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 350
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 700
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1050
+          },
+          {
+            "keyIndex": 12,
+            "delayMs": 1500
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1950
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 2300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 2650
+          }
+        ]
+      }
+    ],
+    "meditationNotes": [
+      {
+        "id": "med_preset_1",
+        "author": "云野牧蝶人",
+        "text": "愿每一缕微光都能穿越云海，照亮独行旅人的夜空。",
+        "createdAt": "2026-11-11"
+      },
+      {
+        "id": "med_preset_2",
+        "author": "霞谷聆音客",
+        "text": "在云野听风声与竖琴共鸣，谢谢身旁素昧平生的陪伴。",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "activeCallVoice": "default",
+    "lastMeditationDate": null,
+    "blockedPeerIds": [],
+    "reportedPeers": [],
+    "completedSeasonQuestIds": [],
+    "activeTravelingSpiritIndex": 0,
+    "savedPhotos": [
+      {
+        "id": "photo_preset_1",
+        "realmName": "云野 · 蝴蝶平原",
+        "filter": "warm_dusk",
+        "fov": 55,
+        "rollDeg": 0,
+        "dofMode": "soft",
+        "selfieMode": false,
+        "emoteId": "emote_butterfly",
+        "caption": "与牧蝶先祖在金黄花海共舞",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "tutorialStep": 0,
+    "childSafeMode": false,
+    "locale": "zh",
+    "qualityTier": "auto",
+    "highContrastMode": false,
+    "reducedMotionShake": false,
+    "discoveredEasterEggIds": [],
+    "updatedAt": 1794381118607
+  },
+  "traveler_hvq2s2h": {
+    "playerId": "traveler_hvq2s2h",
+    "playerName": "星海旅人",
+    "candles": 93,
+    "candleWax": 10,
+    "dailyCandlesForged": 2,
+    "hearts": 38,
+    "dailyHeartsReceived": 0,
+    "seasonCandles": 24,
+    "ascendedCandles": 18,
+    "wingedLights": 22,
+    "collectedWingedLightIds": [],
+    "relivedSpiritIds": [
+      "spirit_isle_pointing"
+    ],
+    "unlockedConstellationNodes": [
+      "node_emote_point_lv1",
+      "node_emote_butterfly_lv1",
+      "node_emote_cheer_lv1",
+      "node_emote_spin_lv1",
+      "node_guide_pendant",
+      "node_emote_pray_lv1"
+    ],
+    "unlockedCosmeticIds": [
+      "cape_classic_flame",
+      "cape_owl_white",
+      "hair_moth_default",
+      "hair_white_bird",
+      "hat_none",
+      "mask_classic_flame",
+      "mask_anubis",
+      "face_none",
+      "face_star_earrings",
+      "neck_none",
+      "neck_gold_choker",
+      "neck_aurora_pendant",
+      "pants_classic_white",
+      "pants_fire_prophet",
+      "prop_sky_piano"
+    ],
+    "unlockedMusicSheetIds": [
+      "sheet_starlight_lullaby"
+    ],
+    "unlockedCallSoundIds": [
+      "call_default"
+    ],
+    "emoteLevels": {
+      "emote_butterfly": 1,
+      "emote_spin_dance": 3,
+      "emote_bow_respect": 3,
+      "emote_handstand": 3,
+      "emote_cheer_jump": 1,
+      "emote_pray_star": 2
+    },
+    "equippedLoadout": {
+      "cape": "cape_owl_white",
+      "hair": "hair_white_bird",
+      "hat": "hat_none",
+      "mask": "mask_anubis",
+      "faceAccessory": "face_star_earrings",
+      "neckAccessory": "neck_gold_choker",
+      "pants": "pants_fire_prophet",
+      "prop": "prop_sky_piano"
+    },
+    "friends": {
+      "bot_traveller_1": {
+        "peerId": "bot_traveller_1",
+        "nickname": "云野牧蝶人",
+        "ignited": false,
+        "isFriend": false,
+        "unlockedNodes": [],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_sakura_bloom",
+          "hair": "hair_bunny_peeking",
+          "mask": "mask_chibi",
+          "pants": "pants_jelly_cargo",
+          "prop": "prop_golden_harp"
+        }
+      },
+      "bot_traveller_2": {
+        "peerId": "bot_traveller_2",
+        "nickname": "霞谷聆音客",
+        "ignited": true,
+        "isFriend": true,
+        "unlockedNodes": [
+          "ft_ignite",
+          "ft_friend",
+          "ft_highfive",
+          "ft_chat"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_aurora_wings",
+          "hair": "hair_aurora_tiara",
+          "mask": "mask_faceless",
+          "pants": "pants_aurora_gold",
+          "prop": "prop_sky_piano"
+        }
+      },
+      "bot_traveller_3": {
+        "peerId": "bot_traveller_3",
+        "nickname": "晨岛寻星者",
+        "ignited": true,
+        "isFriend": false,
+        "unlockedNodes": [
+          "ft_ignite"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_manta_king",
+          "hair": "hair_moth_default",
+          "mask": "mask_anubis",
+          "pants": "pants_fire_prophet",
+          "prop": "prop_golden_harp"
+        }
+      }
+    },
+    "dailyQuests": [
+      {
+        "id": "dq_light_candles",
+        "title": "点亮 3 处星盘烛火簇",
+        "type": "collection",
+        "currentCount": 0,
+        "targetCount": 3,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_call_stranger",
+        "title": "向旅人发出星音呼唤 [Q] 2 次",
+        "type": "social",
+        "currentCount": 0,
+        "targetCount": 2,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_play_music",
+        "title": "使用云端乐器弹奏 5 个音符",
+        "type": "music",
+        "currentCount": 0,
+        "targetCount": 5,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_relive_spirit",
+        "title": "在任意区域重温 1 位先祖记忆",
+        "type": "exploration",
+        "currentCount": 0,
+        "targetCount": 1,
+        "rewardType": "hearts",
+        "rewardAmount": 1,
+        "claimed": false
+      }
+    ],
+    "dailyRerollsUsed": 0,
+    "lastDailyResetDate": "2026-11-11",
+    "activeSeasonId": "season_aurora_starlight",
+    "homeFurnitureInventory": [
+      "furn_starlight_brazier",
+      "furn_chat_bench"
+    ],
+    "homeFurniturePlacements": [
+      {
+        "instanceId": "placed_brazier_1",
+        "furnitureId": "furn_starlight_brazier",
+        "x": -4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": 0
+      },
+      {
+        "instanceId": "placed_bench_1",
+        "furnitureId": "furn_chat_bench",
+        "x": 4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": -0.4
+      }
+    ],
+    "savedSongs": [
+      {
+        "id": "sheet_starlight_lullaby",
+        "title": "微光星海摇篮曲",
+        "bpm": 108,
+        "notes": [
+          {
+            "keyIndex": 0,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 400
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 800
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 1200
+          },
+          {
+            "keyIndex": 6,
+            "delayMs": 1700
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 2100
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 2500
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 3000
+          },
+          {
+            "keyIndex": 5,
+            "delayMs": 3500
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 3900
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 4300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 4900
+          }
+        ]
+      },
+      {
+        "id": "sheet_cloud_soaring",
+        "title": "云野振翅之歌",
+        "bpm": 120,
+        "notes": [
+          {
+            "keyIndex": 4,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 350
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 700
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1050
+          },
+          {
+            "keyIndex": 12,
+            "delayMs": 1500
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1950
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 2300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 2650
+          }
+        ]
+      }
+    ],
+    "meditationNotes": [
+      {
+        "id": "med_preset_1",
+        "author": "云野牧蝶人",
+        "text": "愿每一缕微光都能穿越云海，照亮独行旅人的夜空。",
+        "createdAt": "2026-11-11"
+      },
+      {
+        "id": "med_preset_2",
+        "author": "霞谷聆音客",
+        "text": "在云野听风声与竖琴共鸣，谢谢身旁素昧平生的陪伴。",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "activeCallVoice": "default",
+    "lastMeditationDate": null,
+    "blockedPeerIds": [],
+    "reportedPeers": [],
+    "completedSeasonQuestIds": [],
+    "activeTravelingSpiritIndex": 0,
+    "savedPhotos": [
+      {
+        "id": "photo_preset_1",
+        "realmName": "云野 · 蝴蝶平原",
+        "filter": "warm_dusk",
+        "fov": 55,
+        "rollDeg": 0,
+        "dofMode": "soft",
+        "selfieMode": false,
+        "emoteId": "emote_butterfly",
+        "caption": "与牧蝶先祖在金黄花海共舞",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "tutorialStep": 0,
+    "childSafeMode": false,
+    "locale": "zh",
+    "qualityTier": "auto",
+    "highContrastMode": false,
+    "reducedMotionShake": false,
+    "discoveredEasterEggIds": [
+      "egg_aurora_concert_wings",
+      "egg_wind_paths_kalimba_chime"
+    ],
+    "updatedAt": 1794381393810
+  },
+  "traveler_ktztk5f": {
+    "playerId": "traveler_ktztk5f",
+    "playerName": "星海旅人",
+    "candles": 88,
+    "candleWax": 40,
+    "dailyCandlesForged": 0,
+    "hearts": 36,
+    "dailyHeartsReceived": 0,
+    "seasonCandles": 24,
+    "ascendedCandles": 18,
+    "wingedLights": 20,
+    "collectedWingedLightIds": [],
+    "relivedSpiritIds": [
+      "spirit_isle_pointing"
+    ],
+    "unlockedConstellationNodes": [
+      "node_emote_point_lv1",
+      "node_emote_butterfly_lv1",
+      "node_emote_cheer_lv1",
+      "node_emote_spin_lv1",
+      "node_guide_pendant",
+      "node_emote_pray_lv1"
+    ],
+    "unlockedCosmeticIds": [
+      "cape_classic_flame",
+      "cape_owl_white",
+      "hair_moth_default",
+      "hair_white_bird",
+      "hat_none",
+      "mask_classic_flame",
+      "mask_anubis",
+      "face_none",
+      "face_star_earrings",
+      "neck_none",
+      "neck_gold_choker",
+      "neck_aurora_pendant",
+      "pants_classic_white",
+      "pants_fire_prophet",
+      "prop_sky_piano"
+    ],
+    "unlockedMusicSheetIds": [
+      "sheet_starlight_lullaby"
+    ],
+    "unlockedCallSoundIds": [
+      "call_default"
+    ],
+    "emoteLevels": {
+      "emote_butterfly": 1,
+      "emote_spin_dance": 3,
+      "emote_bow_respect": 3,
+      "emote_handstand": 3,
+      "emote_cheer_jump": 1,
+      "emote_pray_star": 2
+    },
+    "equippedLoadout": {
+      "cape": "cape_owl_white",
+      "hair": "hair_white_bird",
+      "hat": "hat_none",
+      "mask": "mask_anubis",
+      "faceAccessory": "face_star_earrings",
+      "neckAccessory": "neck_gold_choker",
+      "pants": "pants_fire_prophet",
+      "prop": "prop_sky_piano"
+    },
+    "friends": {
+      "bot_traveller_1": {
+        "peerId": "bot_traveller_1",
+        "nickname": "云野牧蝶人",
+        "ignited": false,
+        "isFriend": false,
+        "unlockedNodes": [],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_sakura_bloom",
+          "hair": "hair_bunny_peeking",
+          "mask": "mask_chibi",
+          "pants": "pants_jelly_cargo",
+          "prop": "prop_golden_harp"
+        }
+      },
+      "bot_traveller_2": {
+        "peerId": "bot_traveller_2",
+        "nickname": "霞谷聆音客",
+        "ignited": true,
+        "isFriend": true,
+        "unlockedNodes": [
+          "ft_ignite",
+          "ft_friend",
+          "ft_highfive",
+          "ft_chat"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_aurora_wings",
+          "hair": "hair_aurora_tiara",
+          "mask": "mask_faceless",
+          "pants": "pants_aurora_gold",
+          "prop": "prop_sky_piano"
+        }
+      },
+      "bot_traveller_3": {
+        "peerId": "bot_traveller_3",
+        "nickname": "晨岛寻星者",
+        "ignited": true,
+        "isFriend": false,
+        "unlockedNodes": [
+          "ft_ignite"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_manta_king",
+          "hair": "hair_moth_default",
+          "mask": "mask_anubis",
+          "pants": "pants_fire_prophet",
+          "prop": "prop_golden_harp"
+        }
+      }
+    },
+    "dailyQuests": [
+      {
+        "id": "dq_light_candles",
+        "title": "点亮 3 处星盘烛火簇",
+        "type": "collection",
+        "currentCount": 0,
+        "targetCount": 3,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_call_stranger",
+        "title": "向旅人发出星音呼唤 [Q] 2 次",
+        "type": "social",
+        "currentCount": 0,
+        "targetCount": 2,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_play_music",
+        "title": "使用云端乐器弹奏 5 个音符",
+        "type": "music",
+        "currentCount": 0,
+        "targetCount": 5,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_relive_spirit",
+        "title": "在任意区域重温 1 位先祖记忆",
+        "type": "exploration",
+        "currentCount": 0,
+        "targetCount": 1,
+        "rewardType": "hearts",
+        "rewardAmount": 1,
+        "claimed": false
+      }
+    ],
+    "dailyRerollsUsed": 0,
+    "lastDailyResetDate": "2026-11-11",
+    "activeSeasonId": "season_aurora_starlight",
+    "homeFurnitureInventory": [
+      "furn_starlight_brazier",
+      "furn_chat_bench"
+    ],
+    "homeFurniturePlacements": [
+      {
+        "instanceId": "placed_brazier_1",
+        "furnitureId": "furn_starlight_brazier",
+        "x": -4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": 0
+      },
+      {
+        "instanceId": "placed_bench_1",
+        "furnitureId": "furn_chat_bench",
+        "x": 4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": -0.4
+      }
+    ],
+    "savedSongs": [
+      {
+        "id": "sheet_starlight_lullaby",
+        "title": "微光星海摇篮曲",
+        "bpm": 108,
+        "notes": [
+          {
+            "keyIndex": 0,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 400
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 800
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 1200
+          },
+          {
+            "keyIndex": 6,
+            "delayMs": 1700
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 2100
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 2500
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 3000
+          },
+          {
+            "keyIndex": 5,
+            "delayMs": 3500
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 3900
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 4300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 4900
+          }
+        ]
+      },
+      {
+        "id": "sheet_cloud_soaring",
+        "title": "云野振翅之歌",
+        "bpm": 120,
+        "notes": [
+          {
+            "keyIndex": 4,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 350
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 700
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1050
+          },
+          {
+            "keyIndex": 12,
+            "delayMs": 1500
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1950
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 2300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 2650
+          }
+        ]
+      }
+    ],
+    "meditationNotes": [
+      {
+        "id": "med_preset_1",
+        "author": "云野牧蝶人",
+        "text": "愿每一缕微光都能穿越云海，照亮独行旅人的夜空。",
+        "createdAt": "2026-11-11"
+      },
+      {
+        "id": "med_preset_2",
+        "author": "霞谷聆音客",
+        "text": "在云野听风声与竖琴共鸣，谢谢身旁素昧平生的陪伴。",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "activeCallVoice": "default",
+    "lastMeditationDate": null,
+    "blockedPeerIds": [],
+    "reportedPeers": [],
+    "completedSeasonQuestIds": [],
+    "activeTravelingSpiritIndex": 0,
+    "savedPhotos": [
+      {
+        "id": "photo_preset_1",
+        "realmName": "云野 · 蝴蝶平原",
+        "filter": "warm_dusk",
+        "fov": 55,
+        "rollDeg": 0,
+        "dofMode": "soft",
+        "selfieMode": false,
+        "emoteId": "emote_butterfly",
+        "caption": "与牧蝶先祖在金黄花海共舞",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "tutorialStep": 0,
+    "childSafeMode": false,
+    "locale": "zh",
+    "qualityTier": "auto",
+    "highContrastMode": false,
+    "reducedMotionShake": false,
+    "discoveredEasterEggIds": [],
+    "updatedAt": 1794383907126
+  },
+  "traveler_voyyxr4": {
+    "playerId": "traveler_voyyxr4",
+    "playerName": "星海旅人",
+    "candles": 88,
+    "candleWax": 40,
+    "dailyCandlesForged": 0,
+    "hearts": 36,
+    "dailyHeartsReceived": 0,
+    "seasonCandles": 24,
+    "ascendedCandles": 18,
+    "wingedLights": 20,
+    "collectedWingedLightIds": [],
+    "relivedSpiritIds": [
+      "spirit_isle_pointing"
+    ],
+    "unlockedConstellationNodes": [
+      "node_emote_point_lv1",
+      "node_emote_butterfly_lv1",
+      "node_emote_cheer_lv1",
+      "node_emote_spin_lv1",
+      "node_guide_pendant",
+      "node_emote_pray_lv1"
+    ],
+    "unlockedCosmeticIds": [
+      "cape_classic_flame",
+      "cape_owl_white",
+      "hair_moth_default",
+      "hair_white_bird",
+      "hat_none",
+      "mask_classic_flame",
+      "mask_anubis",
+      "face_none",
+      "face_star_earrings",
+      "neck_none",
+      "neck_gold_choker",
+      "neck_aurora_pendant",
+      "pants_classic_white",
+      "pants_fire_prophet",
+      "prop_sky_piano"
+    ],
+    "unlockedMusicSheetIds": [
+      "sheet_starlight_lullaby"
+    ],
+    "unlockedCallSoundIds": [
+      "call_default"
+    ],
+    "emoteLevels": {
+      "emote_butterfly": 1,
+      "emote_spin_dance": 3,
+      "emote_bow_respect": 3,
+      "emote_handstand": 3,
+      "emote_cheer_jump": 1,
+      "emote_pray_star": 2
+    },
+    "equippedLoadout": {
+      "cape": "cape_owl_white",
+      "hair": "hair_white_bird",
+      "hat": "hat_none",
+      "mask": "mask_anubis",
+      "faceAccessory": "face_star_earrings",
+      "neckAccessory": "neck_gold_choker",
+      "pants": "pants_fire_prophet",
+      "prop": "prop_sky_piano"
+    },
+    "friends": {
+      "bot_traveller_1": {
+        "peerId": "bot_traveller_1",
+        "nickname": "云野牧蝶人",
+        "ignited": false,
+        "isFriend": false,
+        "unlockedNodes": [],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_sakura_bloom",
+          "hair": "hair_bunny_peeking",
+          "mask": "mask_chibi",
+          "pants": "pants_jelly_cargo",
+          "prop": "prop_golden_harp"
+        }
+      },
+      "bot_traveller_2": {
+        "peerId": "bot_traveller_2",
+        "nickname": "霞谷聆音客",
+        "ignited": true,
+        "isFriend": true,
+        "unlockedNodes": [
+          "ft_ignite",
+          "ft_friend",
+          "ft_highfive",
+          "ft_chat"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_aurora_wings",
+          "hair": "hair_aurora_tiara",
+          "mask": "mask_faceless",
+          "pants": "pants_aurora_gold",
+          "prop": "prop_sky_piano"
+        }
+      },
+      "bot_traveller_3": {
+        "peerId": "bot_traveller_3",
+        "nickname": "晨岛寻星者",
+        "ignited": true,
+        "isFriend": false,
+        "unlockedNodes": [
+          "ft_ignite"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_manta_king",
+          "hair": "hair_moth_default",
+          "mask": "mask_anubis",
+          "pants": "pants_fire_prophet",
+          "prop": "prop_golden_harp"
+        }
+      }
+    },
+    "dailyQuests": [
+      {
+        "id": "dq_light_candles",
+        "title": "点亮 3 处星盘烛火簇",
+        "type": "collection",
+        "currentCount": 0,
+        "targetCount": 3,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_call_stranger",
+        "title": "向旅人发出星音呼唤 [Q] 2 次",
+        "type": "social",
+        "currentCount": 0,
+        "targetCount": 2,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_play_music",
+        "title": "使用云端乐器弹奏 5 个音符",
+        "type": "music",
+        "currentCount": 0,
+        "targetCount": 5,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_relive_spirit",
+        "title": "在任意区域重温 1 位先祖记忆",
+        "type": "exploration",
+        "currentCount": 0,
+        "targetCount": 1,
+        "rewardType": "hearts",
+        "rewardAmount": 1,
+        "claimed": false
+      }
+    ],
+    "dailyRerollsUsed": 0,
+    "lastDailyResetDate": "2026-11-11",
+    "activeSeasonId": "season_aurora_starlight",
+    "homeFurnitureInventory": [
+      "furn_starlight_brazier",
+      "furn_chat_bench"
+    ],
+    "homeFurniturePlacements": [
+      {
+        "instanceId": "placed_brazier_1",
+        "furnitureId": "furn_starlight_brazier",
+        "x": -4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": 0
+      },
+      {
+        "instanceId": "placed_bench_1",
+        "furnitureId": "furn_chat_bench",
+        "x": 4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": -0.4
+      }
+    ],
+    "savedSongs": [
+      {
+        "id": "sheet_starlight_lullaby",
+        "title": "微光星海摇篮曲",
+        "bpm": 108,
+        "notes": [
+          {
+            "keyIndex": 0,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 400
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 800
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 1200
+          },
+          {
+            "keyIndex": 6,
+            "delayMs": 1700
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 2100
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 2500
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 3000
+          },
+          {
+            "keyIndex": 5,
+            "delayMs": 3500
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 3900
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 4300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 4900
+          }
+        ]
+      },
+      {
+        "id": "sheet_cloud_soaring",
+        "title": "云野振翅之歌",
+        "bpm": 120,
+        "notes": [
+          {
+            "keyIndex": 4,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 350
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 700
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1050
+          },
+          {
+            "keyIndex": 12,
+            "delayMs": 1500
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1950
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 2300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 2650
+          }
+        ]
+      }
+    ],
+    "meditationNotes": [
+      {
+        "id": "med_preset_1",
+        "author": "云野牧蝶人",
+        "text": "愿每一缕微光都能穿越云海，照亮独行旅人的夜空。",
+        "createdAt": "2026-11-11"
+      },
+      {
+        "id": "med_preset_2",
+        "author": "霞谷聆音客",
+        "text": "在云野听风声与竖琴共鸣，谢谢身旁素昧平生的陪伴。",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "activeCallVoice": "default",
+    "lastMeditationDate": null,
+    "blockedPeerIds": [],
+    "reportedPeers": [],
+    "completedSeasonQuestIds": [],
+    "activeTravelingSpiritIndex": 0,
+    "savedPhotos": [
+      {
+        "id": "photo_preset_1",
+        "realmName": "云野 · 蝴蝶平原",
+        "filter": "warm_dusk",
+        "fov": 55,
+        "rollDeg": 0,
+        "dofMode": "soft",
+        "selfieMode": false,
+        "emoteId": "emote_butterfly",
+        "caption": "与牧蝶先祖在金黄花海共舞",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "tutorialStep": 0,
+    "childSafeMode": false,
+    "locale": "zh",
+    "qualityTier": "auto",
+    "highContrastMode": false,
+    "reducedMotionShake": false,
+    "discoveredEasterEggIds": [],
+    "updatedAt": 1794384323535
+  },
+  "traveler_crx2zy9": {
+    "playerId": "traveler_crx2zy9",
+    "playerName": "星海旅人",
+    "candles": 88,
+    "candleWax": 40,
+    "dailyCandlesForged": 0,
+    "hearts": 36,
+    "dailyHeartsReceived": 0,
+    "seasonCandles": 24,
+    "ascendedCandles": 18,
+    "wingedLights": 20,
+    "collectedWingedLightIds": [],
+    "relivedSpiritIds": [
+      "spirit_isle_pointing"
+    ],
+    "unlockedConstellationNodes": [
+      "node_emote_point_lv1",
+      "node_emote_butterfly_lv1",
+      "node_emote_cheer_lv1",
+      "node_emote_spin_lv1",
+      "node_guide_pendant",
+      "node_emote_pray_lv1"
+    ],
+    "unlockedCosmeticIds": [
+      "cape_classic_flame",
+      "cape_owl_white",
+      "hair_moth_default",
+      "hair_white_bird",
+      "hat_none",
+      "mask_classic_flame",
+      "mask_anubis",
+      "face_none",
+      "face_star_earrings",
+      "neck_none",
+      "neck_gold_choker",
+      "neck_aurora_pendant",
+      "pants_classic_white",
+      "pants_fire_prophet",
+      "prop_sky_piano"
+    ],
+    "unlockedMusicSheetIds": [
+      "sheet_starlight_lullaby"
+    ],
+    "unlockedCallSoundIds": [
+      "call_default"
+    ],
+    "emoteLevels": {
+      "emote_butterfly": 1,
+      "emote_spin_dance": 3,
+      "emote_bow_respect": 3,
+      "emote_handstand": 3,
+      "emote_cheer_jump": 1,
+      "emote_pray_star": 2
+    },
+    "equippedLoadout": {
+      "cape": "cape_owl_white",
+      "hair": "hair_white_bird",
+      "hat": "hat_none",
+      "mask": "mask_anubis",
+      "faceAccessory": "face_star_earrings",
+      "neckAccessory": "neck_gold_choker",
+      "pants": "pants_fire_prophet",
+      "prop": "prop_sky_piano"
+    },
+    "friends": {
+      "bot_traveller_1": {
+        "peerId": "bot_traveller_1",
+        "nickname": "云野牧蝶人",
+        "ignited": false,
+        "isFriend": false,
+        "unlockedNodes": [],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_sakura_bloom",
+          "hair": "hair_bunny_peeking",
+          "mask": "mask_chibi",
+          "pants": "pants_jelly_cargo",
+          "prop": "prop_golden_harp"
+        }
+      },
+      "bot_traveller_2": {
+        "peerId": "bot_traveller_2",
+        "nickname": "霞谷聆音客",
+        "ignited": true,
+        "isFriend": true,
+        "unlockedNodes": [
+          "ft_ignite",
+          "ft_friend",
+          "ft_highfive",
+          "ft_chat"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_aurora_wings",
+          "hair": "hair_aurora_tiara",
+          "mask": "mask_faceless",
+          "pants": "pants_aurora_gold",
+          "prop": "prop_sky_piano"
+        }
+      },
+      "bot_traveller_3": {
+        "peerId": "bot_traveller_3",
+        "nickname": "晨岛寻星者",
+        "ignited": true,
+        "isFriend": false,
+        "unlockedNodes": [
+          "ft_ignite"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_manta_king",
+          "hair": "hair_moth_default",
+          "mask": "mask_anubis",
+          "pants": "pants_fire_prophet",
+          "prop": "prop_golden_harp"
+        }
+      }
+    },
+    "dailyQuests": [
+      {
+        "id": "dq_light_candles",
+        "title": "点亮 3 处星盘烛火簇",
+        "type": "collection",
+        "currentCount": 0,
+        "targetCount": 3,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_call_stranger",
+        "title": "向旅人发出星音呼唤 [Q] 2 次",
+        "type": "social",
+        "currentCount": 0,
+        "targetCount": 2,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_play_music",
+        "title": "使用云端乐器弹奏 5 个音符",
+        "type": "music",
+        "currentCount": 0,
+        "targetCount": 5,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_relive_spirit",
+        "title": "在任意区域重温 1 位先祖记忆",
+        "type": "exploration",
+        "currentCount": 0,
+        "targetCount": 1,
+        "rewardType": "hearts",
+        "rewardAmount": 1,
+        "claimed": false
+      }
+    ],
+    "dailyRerollsUsed": 0,
+    "lastDailyResetDate": "2026-11-11",
+    "activeSeasonId": "season_aurora_starlight",
+    "homeFurnitureInventory": [
+      "furn_starlight_brazier",
+      "furn_chat_bench"
+    ],
+    "homeFurniturePlacements": [
+      {
+        "instanceId": "placed_brazier_1",
+        "furnitureId": "furn_starlight_brazier",
+        "x": -4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": 0
+      },
+      {
+        "instanceId": "placed_bench_1",
+        "furnitureId": "furn_chat_bench",
+        "x": 4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": -0.4
+      }
+    ],
+    "savedSongs": [
+      {
+        "id": "sheet_starlight_lullaby",
+        "title": "微光星海摇篮曲",
+        "bpm": 108,
+        "notes": [
+          {
+            "keyIndex": 0,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 400
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 800
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 1200
+          },
+          {
+            "keyIndex": 6,
+            "delayMs": 1700
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 2100
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 2500
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 3000
+          },
+          {
+            "keyIndex": 5,
+            "delayMs": 3500
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 3900
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 4300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 4900
+          }
+        ]
+      },
+      {
+        "id": "sheet_cloud_soaring",
+        "title": "云野振翅之歌",
+        "bpm": 120,
+        "notes": [
+          {
+            "keyIndex": 4,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 350
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 700
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1050
+          },
+          {
+            "keyIndex": 12,
+            "delayMs": 1500
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1950
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 2300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 2650
+          }
+        ]
+      }
+    ],
+    "meditationNotes": [
+      {
+        "id": "med_preset_1",
+        "author": "云野牧蝶人",
+        "text": "愿每一缕微光都能穿越云海，照亮独行旅人的夜空。",
+        "createdAt": "2026-11-11"
+      },
+      {
+        "id": "med_preset_2",
+        "author": "霞谷聆音客",
+        "text": "在云野听风声与竖琴共鸣，谢谢身旁素昧平生的陪伴。",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "activeCallVoice": "default",
+    "lastMeditationDate": null,
+    "blockedPeerIds": [],
+    "reportedPeers": [],
+    "completedSeasonQuestIds": [],
+    "activeTravelingSpiritIndex": 0,
+    "savedPhotos": [
+      {
+        "id": "photo_preset_1",
+        "realmName": "云野 · 蝴蝶平原",
+        "filter": "warm_dusk",
+        "fov": 55,
+        "rollDeg": 0,
+        "dofMode": "soft",
+        "selfieMode": false,
+        "emoteId": "emote_butterfly",
+        "caption": "与牧蝶先祖在金黄花海共舞",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "tutorialStep": 0,
+    "childSafeMode": false,
+    "locale": "zh",
+    "qualityTier": "auto",
+    "highContrastMode": false,
+    "reducedMotionShake": false,
+    "discoveredEasterEggIds": [],
+    "updatedAt": 1794384365316
+  },
+  "traveler_1jtsajk": {
+    "playerId": "traveler_1jtsajk",
+    "playerName": "星海旅人",
+    "candles": 88,
+    "candleWax": 40,
+    "dailyCandlesForged": 0,
+    "hearts": 36,
+    "dailyHeartsReceived": 0,
+    "seasonCandles": 24,
+    "ascendedCandles": 18,
+    "wingedLights": 20,
+    "collectedWingedLightIds": [],
+    "relivedSpiritIds": [
+      "spirit_isle_pointing"
+    ],
+    "unlockedConstellationNodes": [
+      "node_emote_point_lv1",
+      "node_emote_butterfly_lv1",
+      "node_emote_cheer_lv1",
+      "node_emote_spin_lv1",
+      "node_guide_pendant",
+      "node_emote_pray_lv1"
+    ],
+    "unlockedCosmeticIds": [
+      "cape_classic_flame",
+      "cape_owl_white",
+      "hair_moth_default",
+      "hair_white_bird",
+      "hat_none",
+      "mask_classic_flame",
+      "mask_anubis",
+      "face_none",
+      "face_star_earrings",
+      "neck_none",
+      "neck_gold_choker",
+      "neck_aurora_pendant",
+      "pants_classic_white",
+      "pants_fire_prophet",
+      "prop_sky_piano"
+    ],
+    "unlockedMusicSheetIds": [
+      "sheet_starlight_lullaby"
+    ],
+    "unlockedCallSoundIds": [
+      "call_default"
+    ],
+    "emoteLevels": {
+      "emote_butterfly": 1,
+      "emote_spin_dance": 3,
+      "emote_bow_respect": 3,
+      "emote_handstand": 3,
+      "emote_cheer_jump": 1,
+      "emote_pray_star": 2
+    },
+    "equippedLoadout": {
+      "cape": "cape_owl_white",
+      "hair": "hair_white_bird",
+      "hat": "hat_none",
+      "mask": "mask_anubis",
+      "faceAccessory": "face_star_earrings",
+      "neckAccessory": "neck_gold_choker",
+      "pants": "pants_fire_prophet",
+      "prop": "prop_sky_piano"
+    },
+    "friends": {
+      "bot_traveller_1": {
+        "peerId": "bot_traveller_1",
+        "nickname": "云野牧蝶人",
+        "ignited": false,
+        "isFriend": false,
+        "unlockedNodes": [],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_sakura_bloom",
+          "hair": "hair_bunny_peeking",
+          "mask": "mask_chibi",
+          "pants": "pants_jelly_cargo",
+          "prop": "prop_golden_harp"
+        }
+      },
+      "bot_traveller_2": {
+        "peerId": "bot_traveller_2",
+        "nickname": "霞谷聆音客",
+        "ignited": true,
+        "isFriend": true,
+        "unlockedNodes": [
+          "ft_ignite",
+          "ft_friend",
+          "ft_highfive",
+          "ft_chat"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_aurora_wings",
+          "hair": "hair_aurora_tiara",
+          "mask": "mask_faceless",
+          "pants": "pants_aurora_gold",
+          "prop": "prop_sky_piano"
+        }
+      },
+      "bot_traveller_3": {
+        "peerId": "bot_traveller_3",
+        "nickname": "晨岛寻星者",
+        "ignited": true,
+        "isFriend": false,
+        "unlockedNodes": [
+          "ft_ignite"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_manta_king",
+          "hair": "hair_moth_default",
+          "mask": "mask_anubis",
+          "pants": "pants_fire_prophet",
+          "prop": "prop_golden_harp"
+        }
+      }
+    },
+    "dailyQuests": [
+      {
+        "id": "dq_light_candles",
+        "title": "点亮 3 处星盘烛火簇",
+        "type": "collection",
+        "currentCount": 0,
+        "targetCount": 3,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_call_stranger",
+        "title": "向旅人发出星音呼唤 [Q] 2 次",
+        "type": "social",
+        "currentCount": 0,
+        "targetCount": 2,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_play_music",
+        "title": "使用云端乐器弹奏 5 个音符",
+        "type": "music",
+        "currentCount": 0,
+        "targetCount": 5,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_relive_spirit",
+        "title": "在任意区域重温 1 位先祖记忆",
+        "type": "exploration",
+        "currentCount": 0,
+        "targetCount": 1,
+        "rewardType": "hearts",
+        "rewardAmount": 1,
+        "claimed": false
+      }
+    ],
+    "dailyRerollsUsed": 0,
+    "lastDailyResetDate": "2026-11-11",
+    "activeSeasonId": "season_aurora_starlight",
+    "homeFurnitureInventory": [
+      "furn_starlight_brazier",
+      "furn_chat_bench"
+    ],
+    "homeFurniturePlacements": [
+      {
+        "instanceId": "placed_brazier_1",
+        "furnitureId": "furn_starlight_brazier",
+        "x": -4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": 0
+      },
+      {
+        "instanceId": "placed_bench_1",
+        "furnitureId": "furn_chat_bench",
+        "x": 4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": -0.4
+      }
+    ],
+    "savedSongs": [
+      {
+        "id": "sheet_starlight_lullaby",
+        "title": "微光星海摇篮曲",
+        "bpm": 108,
+        "notes": [
+          {
+            "keyIndex": 0,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 400
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 800
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 1200
+          },
+          {
+            "keyIndex": 6,
+            "delayMs": 1700
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 2100
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 2500
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 3000
+          },
+          {
+            "keyIndex": 5,
+            "delayMs": 3500
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 3900
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 4300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 4900
+          }
+        ]
+      },
+      {
+        "id": "sheet_cloud_soaring",
+        "title": "云野振翅之歌",
+        "bpm": 120,
+        "notes": [
+          {
+            "keyIndex": 4,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 350
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 700
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1050
+          },
+          {
+            "keyIndex": 12,
+            "delayMs": 1500
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1950
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 2300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 2650
+          }
+        ]
+      }
+    ],
+    "meditationNotes": [
+      {
+        "id": "med_preset_1",
+        "author": "云野牧蝶人",
+        "text": "愿每一缕微光都能穿越云海，照亮独行旅人的夜空。",
+        "createdAt": "2026-11-11"
+      },
+      {
+        "id": "med_preset_2",
+        "author": "霞谷聆音客",
+        "text": "在云野听风声与竖琴共鸣，谢谢身旁素昧平生的陪伴。",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "activeCallVoice": "default",
+    "lastMeditationDate": null,
+    "blockedPeerIds": [],
+    "reportedPeers": [],
+    "completedSeasonQuestIds": [],
+    "activeTravelingSpiritIndex": 0,
+    "savedPhotos": [
+      {
+        "id": "photo_preset_1",
+        "realmName": "云野 · 蝴蝶平原",
+        "filter": "warm_dusk",
+        "fov": 55,
+        "rollDeg": 0,
+        "dofMode": "soft",
+        "selfieMode": false,
+        "emoteId": "emote_butterfly",
+        "caption": "与牧蝶先祖在金黄花海共舞",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "tutorialStep": 0,
+    "childSafeMode": false,
+    "locale": "zh",
+    "qualityTier": "auto",
+    "highContrastMode": false,
+    "reducedMotionShake": false,
+    "discoveredEasterEggIds": [],
+    "updatedAt": 1794394842969
+  },
+  "traveler_is7gd2g": {
+    "playerId": "traveler_is7gd2g",
+    "playerName": "星海旅人",
+    "candles": 88,
+    "candleWax": 40,
+    "dailyCandlesForged": 0,
+    "hearts": 36,
+    "dailyHeartsReceived": 0,
+    "seasonCandles": 24,
+    "ascendedCandles": 18,
+    "wingedLights": 20,
+    "collectedWingedLightIds": [],
+    "relivedSpiritIds": [
+      "spirit_isle_pointing"
+    ],
+    "unlockedConstellationNodes": [
+      "node_emote_point_lv1",
+      "node_emote_butterfly_lv1",
+      "node_emote_cheer_lv1",
+      "node_emote_spin_lv1",
+      "node_guide_pendant",
+      "node_emote_pray_lv1"
+    ],
+    "unlockedCosmeticIds": [
+      "cape_classic_flame",
+      "cape_owl_white",
+      "hair_moth_default",
+      "hair_white_bird",
+      "hat_none",
+      "mask_classic_flame",
+      "mask_anubis",
+      "face_none",
+      "face_star_earrings",
+      "neck_none",
+      "neck_gold_choker",
+      "neck_aurora_pendant",
+      "pants_classic_white",
+      "pants_fire_prophet",
+      "prop_sky_piano"
+    ],
+    "unlockedMusicSheetIds": [
+      "sheet_starlight_lullaby"
+    ],
+    "unlockedCallSoundIds": [
+      "call_default"
+    ],
+    "emoteLevels": {
+      "emote_butterfly": 1,
+      "emote_spin_dance": 3,
+      "emote_bow_respect": 3,
+      "emote_handstand": 3,
+      "emote_cheer_jump": 1,
+      "emote_pray_star": 2
+    },
+    "equippedLoadout": {
+      "cape": "cape_owl_white",
+      "hair": "hair_white_bird",
+      "hat": "hat_none",
+      "mask": "mask_anubis",
+      "faceAccessory": "face_star_earrings",
+      "neckAccessory": "neck_gold_choker",
+      "pants": "pants_fire_prophet",
+      "prop": "prop_sky_piano"
+    },
+    "friends": {
+      "bot_traveller_1": {
+        "peerId": "bot_traveller_1",
+        "nickname": "云野牧蝶人",
+        "ignited": false,
+        "isFriend": false,
+        "unlockedNodes": [],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_sakura_bloom",
+          "hair": "hair_bunny_peeking",
+          "mask": "mask_chibi",
+          "pants": "pants_jelly_cargo",
+          "prop": "prop_golden_harp"
+        }
+      },
+      "bot_traveller_2": {
+        "peerId": "bot_traveller_2",
+        "nickname": "霞谷聆音客",
+        "ignited": true,
+        "isFriend": true,
+        "unlockedNodes": [
+          "ft_ignite",
+          "ft_friend",
+          "ft_highfive",
+          "ft_chat"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_aurora_wings",
+          "hair": "hair_aurora_tiara",
+          "mask": "mask_faceless",
+          "pants": "pants_aurora_gold",
+          "prop": "prop_sky_piano"
+        }
+      },
+      "bot_traveller_3": {
+        "peerId": "bot_traveller_3",
+        "nickname": "晨岛寻星者",
+        "ignited": true,
+        "isFriend": false,
+        "unlockedNodes": [
+          "ft_ignite"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_manta_king",
+          "hair": "hair_moth_default",
+          "mask": "mask_anubis",
+          "pants": "pants_fire_prophet",
+          "prop": "prop_golden_harp"
+        }
+      }
+    },
+    "dailyQuests": [
+      {
+        "id": "dq_light_candles",
+        "title": "点亮 3 处星盘烛火簇",
+        "type": "collection",
+        "currentCount": 0,
+        "targetCount": 3,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_call_stranger",
+        "title": "向旅人发出星音呼唤 [Q] 2 次",
+        "type": "social",
+        "currentCount": 0,
+        "targetCount": 2,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_play_music",
+        "title": "使用云端乐器弹奏 5 个音符",
+        "type": "music",
+        "currentCount": 0,
+        "targetCount": 5,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_relive_spirit",
+        "title": "在任意区域重温 1 位先祖记忆",
+        "type": "exploration",
+        "currentCount": 0,
+        "targetCount": 1,
+        "rewardType": "hearts",
+        "rewardAmount": 1,
+        "claimed": false
+      }
+    ],
+    "dailyRerollsUsed": 0,
+    "lastDailyResetDate": "2026-11-11",
+    "activeSeasonId": "season_aurora_starlight",
+    "homeFurnitureInventory": [
+      "furn_starlight_brazier",
+      "furn_chat_bench"
+    ],
+    "homeFurniturePlacements": [
+      {
+        "instanceId": "placed_brazier_1",
+        "furnitureId": "furn_starlight_brazier",
+        "x": -4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": 0
+      },
+      {
+        "instanceId": "placed_bench_1",
+        "furnitureId": "furn_chat_bench",
+        "x": 4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": -0.4
+      }
+    ],
+    "savedSongs": [
+      {
+        "id": "sheet_starlight_lullaby",
+        "title": "微光星海摇篮曲",
+        "bpm": 108,
+        "notes": [
+          {
+            "keyIndex": 0,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 400
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 800
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 1200
+          },
+          {
+            "keyIndex": 6,
+            "delayMs": 1700
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 2100
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 2500
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 3000
+          },
+          {
+            "keyIndex": 5,
+            "delayMs": 3500
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 3900
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 4300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 4900
+          }
+        ]
+      },
+      {
+        "id": "sheet_cloud_soaring",
+        "title": "云野振翅之歌",
+        "bpm": 120,
+        "notes": [
+          {
+            "keyIndex": 4,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 350
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 700
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1050
+          },
+          {
+            "keyIndex": 12,
+            "delayMs": 1500
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1950
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 2300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 2650
+          }
+        ]
+      }
+    ],
+    "meditationNotes": [
+      {
+        "id": "med_preset_1",
+        "author": "云野牧蝶人",
+        "text": "愿每一缕微光都能穿越云海，照亮独行旅人的夜空。",
+        "createdAt": "2026-11-11"
+      },
+      {
+        "id": "med_preset_2",
+        "author": "霞谷聆音客",
+        "text": "在云野听风声与竖琴共鸣，谢谢身旁素昧平生的陪伴。",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "activeCallVoice": "default",
+    "lastMeditationDate": null,
+    "blockedPeerIds": [],
+    "reportedPeers": [],
+    "completedSeasonQuestIds": [],
+    "activeTravelingSpiritIndex": 0,
+    "savedPhotos": [
+      {
+        "id": "photo_preset_1",
+        "realmName": "云野 · 蝴蝶平原",
+        "filter": "warm_dusk",
+        "fov": 55,
+        "rollDeg": 0,
+        "dofMode": "soft",
+        "selfieMode": false,
+        "emoteId": "emote_butterfly",
+        "caption": "与牧蝶先祖在金黄花海共舞",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "tutorialStep": 0,
+    "childSafeMode": false,
+    "locale": "zh",
+    "qualityTier": "auto",
+    "highContrastMode": false,
+    "reducedMotionShake": false,
+    "discoveredEasterEggIds": [],
+    "updatedAt": 1794395000243
+  },
+  "traveler_aqmof3v": {
+    "playerId": "traveler_aqmof3v",
+    "playerName": "星海旅人",
+    "candles": 88,
+    "candleWax": 40,
+    "dailyCandlesForged": 0,
+    "hearts": 36,
+    "dailyHeartsReceived": 0,
+    "seasonCandles": 24,
+    "ascendedCandles": 18,
+    "wingedLights": 20,
+    "collectedWingedLightIds": [],
+    "relivedSpiritIds": [
+      "spirit_isle_pointing"
+    ],
+    "unlockedConstellationNodes": [
+      "node_emote_point_lv1",
+      "node_emote_butterfly_lv1",
+      "node_emote_cheer_lv1",
+      "node_emote_spin_lv1",
+      "node_guide_pendant",
+      "node_emote_pray_lv1"
+    ],
+    "unlockedCosmeticIds": [
+      "cape_classic_flame",
+      "cape_owl_white",
+      "hair_moth_default",
+      "hair_white_bird",
+      "hat_none",
+      "mask_classic_flame",
+      "mask_anubis",
+      "face_none",
+      "face_star_earrings",
+      "neck_none",
+      "neck_gold_choker",
+      "neck_aurora_pendant",
+      "pants_classic_white",
+      "pants_fire_prophet",
+      "prop_sky_piano"
+    ],
+    "unlockedMusicSheetIds": [
+      "sheet_starlight_lullaby"
+    ],
+    "unlockedCallSoundIds": [
+      "call_default"
+    ],
+    "emoteLevels": {
+      "emote_butterfly": 1,
+      "emote_spin_dance": 3,
+      "emote_bow_respect": 3,
+      "emote_handstand": 3,
+      "emote_cheer_jump": 1,
+      "emote_pray_star": 2
+    },
+    "equippedLoadout": {
+      "cape": "cape_owl_white",
+      "hair": "hair_white_bird",
+      "hat": "hat_none",
+      "mask": "mask_anubis",
+      "faceAccessory": "face_star_earrings",
+      "neckAccessory": "neck_gold_choker",
+      "pants": "pants_fire_prophet",
+      "prop": "prop_sky_piano"
+    },
+    "friends": {
+      "bot_traveller_1": {
+        "peerId": "bot_traveller_1",
+        "nickname": "云野牧蝶人",
+        "ignited": false,
+        "isFriend": false,
+        "unlockedNodes": [],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_sakura_bloom",
+          "hair": "hair_bunny_peeking",
+          "mask": "mask_chibi",
+          "pants": "pants_jelly_cargo",
+          "prop": "prop_golden_harp"
+        }
+      },
+      "bot_traveller_2": {
+        "peerId": "bot_traveller_2",
+        "nickname": "霞谷聆音客",
+        "ignited": true,
+        "isFriend": true,
+        "unlockedNodes": [
+          "ft_ignite",
+          "ft_friend",
+          "ft_highfive",
+          "ft_chat"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_aurora_wings",
+          "hair": "hair_aurora_tiara",
+          "mask": "mask_faceless",
+          "pants": "pants_aurora_gold",
+          "prop": "prop_sky_piano"
+        }
+      },
+      "bot_traveller_3": {
+        "peerId": "bot_traveller_3",
+        "nickname": "晨岛寻星者",
+        "ignited": true,
+        "isFriend": false,
+        "unlockedNodes": [
+          "ft_ignite"
+        ],
+        "lastGiftedDate": null,
+        "online": true,
+        "isBot": true,
+        "loadout": {
+          "cape": "cape_manta_king",
+          "hair": "hair_moth_default",
+          "mask": "mask_anubis",
+          "pants": "pants_fire_prophet",
+          "prop": "prop_golden_harp"
+        }
+      }
+    },
+    "dailyQuests": [
+      {
+        "id": "dq_light_candles",
+        "title": "点亮 3 处星盘烛火簇",
+        "type": "collection",
+        "currentCount": 0,
+        "targetCount": 3,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_call_stranger",
+        "title": "向旅人发出星音呼唤 [Q] 2 次",
+        "type": "social",
+        "currentCount": 0,
+        "targetCount": 2,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_play_music",
+        "title": "使用云端乐器弹奏 5 个音符",
+        "type": "music",
+        "currentCount": 0,
+        "targetCount": 5,
+        "rewardType": "seasonCandles",
+        "rewardAmount": 1,
+        "claimed": false
+      },
+      {
+        "id": "dq_relive_spirit",
+        "title": "在任意区域重温 1 位先祖记忆",
+        "type": "exploration",
+        "currentCount": 0,
+        "targetCount": 1,
+        "rewardType": "hearts",
+        "rewardAmount": 1,
+        "claimed": false
+      }
+    ],
+    "dailyRerollsUsed": 0,
+    "lastDailyResetDate": "2026-11-11",
+    "activeSeasonId": "season_aurora_starlight",
+    "homeFurnitureInventory": [
+      "furn_starlight_brazier",
+      "furn_chat_bench"
+    ],
+    "homeFurniturePlacements": [
+      {
+        "instanceId": "placed_brazier_1",
+        "furnitureId": "furn_starlight_brazier",
+        "x": -4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": 0
+      },
+      {
+        "instanceId": "placed_bench_1",
+        "furnitureId": "furn_chat_bench",
+        "x": 4.6,
+        "y": 1.2,
+        "z": 3.8,
+        "rotY": -0.4
+      }
+    ],
+    "savedSongs": [
+      {
+        "id": "sheet_starlight_lullaby",
+        "title": "微光星海摇篮曲",
+        "bpm": 108,
+        "notes": [
+          {
+            "keyIndex": 0,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 400
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 800
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 1200
+          },
+          {
+            "keyIndex": 6,
+            "delayMs": 1700
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 2100
+          },
+          {
+            "keyIndex": 2,
+            "delayMs": 2500
+          },
+          {
+            "keyIndex": 4,
+            "delayMs": 3000
+          },
+          {
+            "keyIndex": 5,
+            "delayMs": 3500
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 3900
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 4300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 4900
+          }
+        ]
+      },
+      {
+        "id": "sheet_cloud_soaring",
+        "title": "云野振翅之歌",
+        "bpm": 120,
+        "notes": [
+          {
+            "keyIndex": 4,
+            "delayMs": 0
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 350
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 700
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1050
+          },
+          {
+            "keyIndex": 12,
+            "delayMs": 1500
+          },
+          {
+            "keyIndex": 11,
+            "delayMs": 1950
+          },
+          {
+            "keyIndex": 9,
+            "delayMs": 2300
+          },
+          {
+            "keyIndex": 7,
+            "delayMs": 2650
+          }
+        ]
+      }
+    ],
+    "meditationNotes": [
+      {
+        "id": "med_preset_1",
+        "author": "云野牧蝶人",
+        "text": "愿每一缕微光都能穿越云海，照亮独行旅人的夜空。",
+        "createdAt": "2026-11-11"
+      },
+      {
+        "id": "med_preset_2",
+        "author": "霞谷聆音客",
+        "text": "在云野听风声与竖琴共鸣，谢谢身旁素昧平生的陪伴。",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "activeCallVoice": "default",
+    "lastMeditationDate": null,
+    "blockedPeerIds": [],
+    "reportedPeers": [],
+    "completedSeasonQuestIds": [],
+    "activeTravelingSpiritIndex": 0,
+    "savedPhotos": [
+      {
+        "id": "photo_preset_1",
+        "realmName": "云野 · 蝴蝶平原",
+        "filter": "warm_dusk",
+        "fov": 55,
+        "rollDeg": 0,
+        "dofMode": "soft",
+        "selfieMode": false,
+        "emoteId": "emote_butterfly",
+        "caption": "与牧蝶先祖在金黄花海共舞",
+        "createdAt": "2026-11-11"
+      }
+    ],
+    "tutorialStep": 0,
+    "childSafeMode": false,
+    "locale": "zh",
+    "qualityTier": "auto",
+    "highContrastMode": false,
+    "reducedMotionShake": false,
+    "discoveredEasterEggIds": [],
+    "updatedAt": 1794395105285
   }
 }

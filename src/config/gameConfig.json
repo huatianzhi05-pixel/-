@@ -1,7 +1,7 @@
 {
   "meta": {
     "gameTitle": "微光旅人 · Glimmer Travelers",
-    "version": "1.11.0-stage11-final",
+    "version": "3.0.0-stage13-mega-expansion",
     "calibrationNote": "所有核心数值均集中于此配置文件，标注【待对照实机校准】的参数可在不修改代码的情况下直接微调。"
   },
   "locomotion": {
@@ -1438,8 +1438,270 @@
         "reducedShakeLabel": "Reduced Camera Shake"
       }
     }
+  },
+  "stage12Expansion": {
+    "worldRadius": 220.0,
+    "terrainSize": 520.0,
+    "waterSize": 880.0,
+    "outerSanctuaries": [
+      {
+        "id": "sanctuary_geyser_islands",
+        "name": "圣岛 · 海螺间歇泉群岛",
+        "subtitle": "东域外海浮屿 · 蔚蓝海螺喷泉每刻喷涌高空暖流，伴随远古白鲸长吟",
+        "x": 52.0,
+        "y": 4.2,
+        "z": -28.0,
+        "radius": 14.5
+      },
+      {
+        "id": "citadel_sky_island",
+        "name": "千鸟城 · 天际星桥浮岛",
+        "subtitle": "东北高空浮岛 (海拔 14.5m) · 双环黄金星象仪与云端高空光之翼",
+        "x": 46.0,
+        "y": 14.5,
+        "z": -68.0,
+        "radius": 13.5
+      },
+      {
+        "id": "grandma_treehouse_hollow",
+        "name": "秘密花园 · 老奶奶团子树屋",
+        "subtitle": "西域古树秘境 · 温暖烛火长桌与发光星火团子盛宴",
+        "x": -54.0,
+        "y": 3.2,
+        "z": -32.0,
+        "radius": 14.0
+      },
+      {
+        "id": "rainbow_memorial_bridge",
+        "name": "北境天际 · 七彩星光彩虹桥",
+        "subtitle": "神庙北境高空 (海拔 9.2m) · 横跨云海的七彩半透明虹桥奇观",
+        "x": 0.0,
+        "y": 9.2,
+        "z": -88.0,
+        "radius": 14.5
+      },
+      {
+        "id": "wind_paths_cloud_archipelago",
+        "name": "风行网道 · 云端浮空群岛",
+        "subtitle": "东北极远域高空 (海拔 22.0m) · 飞翔季云端风铃群岛与跨岛高速气流网道",
+        "x": 112.0,
+        "y": 22.0,
+        "z": -96.0,
+        "radius": 18.0
+      },
+      {
+        "id": "hermit_valley_snow_peak",
+        "name": "圆梦村 · 雪隐峰日落缆车台",
+        "subtitle": "东南极远域雪山之巅 (海拔 18.5m) · 雪人先祖暖光冰屋与金色云端索道",
+        "x": 96.0,
+        "y": 18.5,
+        "z": 64.0,
+        "radius": 17.5
+      },
+      {
+        "id": "abyss_coral_reef_trench",
+        "name": "潜海季 · 荧光深海珊瑚渊",
+        "subtitle": "西南外海珊瑚环礁 (海拔 2.6m) · 深海观测古塔、荧光巨鲲与海底宝藏泉",
+        "x": -108.0,
+        "y": 2.6,
+        "z": 68.0,
+        "radius": 18.0
+      },
+      {
+        "id": "starlight_colosseum_aurora",
+        "name": "欧若拉 · 千人星光音乐竞技场",
+        "subtitle": "极北天际巨型悬浮剧场 (海拔 12.8m) · 八柱黄金回音廊与流光蝶翼舞台",
+        "x": 0.0,
+        "y": 12.8,
+        "z": -148.0,
+        "radius": 21.0
+      }
+    ],
+    "easterEggs": [
+      {
+        "id": "egg_sanctuary_geyser_whale",
+        "name": "【彩蛋 1/12】圣岛海螺喷泉与远古白鲸跃海",
+        "subtitle": "按 [E] 唤醒圣岛间歇泉 · 喷涌直冲 18.5m 云霄并召唤白鲸星音 (+1 白蜡烛 & +60 滴烛火)",
+        "loreText": "致敬圣岛季（Season of Sanctuary）海螺间歇泉与远古白鲸跃出云海的经典奇景。",
+        "hint": "位于东域「圣岛 · 海螺间歇泉群岛」中央 (52, -28)",
+        "x": 52.0,
+        "z": -28.0,
+        "waxReward": 60,
+        "candlesBonus": 1,
+        "heartsBonus": 0,
+        "ascendedCandlesBonus": 0,
+        "wingedLightBonus": 0,
+        "launchVy": 18.5
+      },
+      {
+        "id": "egg_oreo_plush_shrine",
+        "name": "【彩蛋 2/12】云野八人门 · 奥利奥小狗召唤祭坛",
+        "subtitle": "按 [E] 点亮引蝶召唤石圈 · 唤醒超萌黑白奥利奥小狗欢快跃起 (+2 白蜡烛 & +1 爱心)",
+        "loreText": "致敬云野八人门山顶全员引蝶召唤出的传奇黑白小狗 Oreo！",
+        "hint": "位于东侧云海草甸「八人星阵」高台 (38, -18)",
+        "x": 38.0,
+        "z": -18.0,
+        "waxReward": 60,
+        "candlesBonus": 2,
+        "heartsBonus": 1,
+        "ascendedCandlesBonus": 0,
+        "wingedLightBonus": 0,
+        "launchVy": 6.5
+      },
+      {
+        "id": "egg_grandma_feast_table",
+        "name": "【彩蛋 3/12】雨林秘密树屋 · 老奶奶星光团子盛宴",
+        "subtitle": "按 [E] 围坐古树长桌品尝发光团子 · 瞬间饱餐烛火 (+85 滴烛火 & +1 爱心)",
+        "loreText": "致敬雨林秘密花园古树洞内归属季老奶奶准时奉上的温暖烛火团子盛宴。",
+        "hint": "位于西域「秘密花园 · 老奶奶团子树屋」古树洞内 (-54, -32)",
+        "x": -54.0,
+        "z": -32.0,
+        "waxReward": 85,
+        "candlesBonus": 1,
+        "heartsBonus": 1,
+        "ascendedCandlesBonus": 0,
+        "wingedLightBonus": 0,
+        "launchVy": 0
+      },
+      {
+        "id": "egg_tgc_office_portal",
+        "name": "【彩蛋 4/12】禁阁秘密基地 · TGC 办公室暗门与太空站",
+        "subtitle": "按 [E] 穿越蓝光屏障暗门 · 触发太空微重力跃升与开发者贺礼 (+2 白蜡烛 & +1 爱心)",
+        "loreText": "致敬禁阁一楼暗墙后的 TGC 办公室秘密基地与绿幕国际空间站彩蛋。",
+        "hint": "位于西北隐秘石壁「蓝色微光屏障」处 (-36, -48)",
+        "x": -36.0,
+        "z": -48.0,
+        "waxReward": 50,
+        "candlesBonus": 2,
+        "heartsBonus": 1,
+        "ascendedCandlesBonus": 0,
+        "wingedLightBonus": 0,
+        "launchVy": 14.2
+      },
+      {
+        "id": "egg_rainbow_bridge",
+        "name": "【彩蛋 5/12】云端隐藏彩虹桥 · 七彩天桥之巅",
+        "subtitle": "按 [E] 在七彩高空虹桥之巅共鸣 · 获赐七彩星辉 (+1 永久光之翼 & +80 滴烛火)",
+        "loreText": "致敬晨岛高空云端深处那座无数旅人打卡留念的七彩隐形彩虹桥。",
+        "hint": "位于长老神庙正北方高空「七彩星光彩虹桥」顶端 (0, -88)",
+        "x": 0.0,
+        "z": -88.0,
+        "waxReward": 80,
+        "candlesBonus": 1,
+        "heartsBonus": 0,
+        "ascendedCandlesBonus": 0,
+        "wingedLightBonus": 1,
+        "launchVy": 8.0
+      },
+      {
+        "id": "egg_little_prince_rose",
+        "name": "【彩蛋 6/12】星光沙漠 B612 · 玻璃罩下的发光红玫瑰",
+        "subtitle": "按 [E] 守护 B612 星球唯一红玫瑰 · 聆听星辰寄语 (+2 升华红蜡烛 & +1 爱心)",
+        "loreText": "致敬小王子季（Season of the Little Prince）星光沙漠中那朵独一无二的玫瑰。",
+        "hint": "位于西南外域「星光月牙沙洲」静谧沙丘 (-42, 26)",
+        "x": -42.0,
+        "z": 26.0,
+        "waxReward": 50,
+        "candlesBonus": 0,
+        "heartsBonus": 1,
+        "ascendedCandlesBonus": 2,
+        "wingedLightBonus": 0,
+        "launchVy": 0
+      },
+      {
+        "id": "egg_hermit_yeti_igloo",
+        "name": "【彩蛋 7/12】雪隐峰 · 雪人先祖热可可冰屋与云端滑索",
+        "subtitle": "按 [E] 造访雪隐峰暖光冰屋 · 与熊抱雪人先祖干杯热可可并乘滑索升空 (+2 白蜡烛 & +1 爱心)",
+        "loreText": "致敬梦想季（Season of Dreams）圆梦村最高处雪隐峰的害羞雪人先祖与金色落日云海。",
+        "hint": "位于东南远域「圆梦村 · 雪隐峰日落缆车台」冰屋门前 (96, 64)",
+        "x": 96.0,
+        "z": 64.0,
+        "waxReward": 75,
+        "candlesBonus": 2,
+        "heartsBonus": 1,
+        "ascendedCandlesBonus": 0,
+        "wingedLightBonus": 0,
+        "launchVy": 11.5
+      },
+      {
+        "id": "egg_forgotten_ark_rainbow_spell",
+        "name": "【彩蛋 8/12】遗忘方舟 · 魔法季六色星光浮空方舟",
+        "subtitle": "按 [E] 注入六色心火唤醒远古木方舟 · 绽放绿洲虹光与升华赐福 (+2 白蜡烛 & +1 升华红蜡烛)",
+        "loreText": "致敬魔法季（Season of Enchantment）集齐念之灵、水之灵等六色光芒后重焕生机的遗忘方舟。",
+        "hint": "位于西北远域荒原绿洲「遗忘方舟」船首 (-88, -82)",
+        "x": -88.0,
+        "z": -82.0,
+        "waxReward": 80,
+        "candlesBonus": 2,
+        "heartsBonus": 0,
+        "ascendedCandlesBonus": 1,
+        "wingedLightBonus": 0,
+        "launchVy": 13.0
+      },
+      {
+        "id": "egg_aurora_concert_wings",
+        "name": "【彩蛋 9/12】千人音乐会 · 欧若拉黄金流光蝶翼舞台",
+        "subtitle": "按 [E] 点亮极北千人星光舞台 · 展翅化蝶飞越星海 (+1 永久光之翼 & +2 白蜡烛 & +1 爱心)",
+        "loreText": "致敬欧若拉季（Season of AURORA）打破吉尼斯纪录的万人同屏星光音乐会与金色透明蝶翼。",
+        "hint": "位于极北天际「欧若拉 · 千人星光音乐竞技场」中央舞台 (0, -148)",
+        "x": 0.0,
+        "z": -148.0,
+        "waxReward": 90,
+        "candlesBonus": 2,
+        "heartsBonus": 1,
+        "ascendedCandlesBonus": 0,
+        "wingedLightBonus": 1,
+        "launchVy": 16.5
+      },
+      {
+        "id": "egg_abyss_treasure_leviathan",
+        "name": "【彩蛋 10/12】深海珊瑚渊 · 潜海季发光巨鲲与远古宝箱",
+        "subtitle": "按 [E] 开启深渊珊瑚古塔宝藏 · 伴随荧光巨鲲气泡冲天 (+2 白蜡烛 & +2 升华红蜡烛)",
+        "loreText": "致敬潜海季（Season of Abyss）蔚蓝海底的荧光珊瑚群、远古遗迹水塔与深海光鲲。",
+        "hint": "位于西南外海「潜海季 · 荧光深海珊瑚渊」环礁中心 (-108, 68)",
+        "x": -108.0,
+        "z": 68.0,
+        "waxReward": 85,
+        "candlesBonus": 2,
+        "heartsBonus": 0,
+        "ascendedCandlesBonus": 2,
+        "wingedLightBonus": 0,
+        "launchVy": 15.0
+      },
+      {
+        "id": "egg_wind_paths_kalimba_chime",
+        "name": "【彩蛋 11/12】风行网道 · 飞翔季云端风铃与白鸟信使",
+        "subtitle": "按 [E] 敲响海拔 22m 云端巨型风铃 · 乘跨岛风行急流直冲九霄 (+1 永久光之翼 & +1 爱心)",
+        "loreText": "致敬飞翔季（Season of Flight）连通八大王国秘境的云端风行网道与白鸟领航员。",
+        "hint": "位于东北高空「风行网道 · 云端浮空群岛」主岛 (112, -96)",
+        "x": 112.0,
+        "z": -96.0,
+        "waxReward": 80,
+        "candlesBonus": 1,
+        "heartsBonus": 1,
+        "ascendedCandlesBonus": 0,
+        "wingedLightBonus": 1,
+        "launchVy": 21.0
+      },
+      {
+        "id": "egg_trial_of_fire_brazier",
+        "name": "【彩蛋 12/12】预言山谷 · 四大远古试炼金冠火盆终点",
+        "subtitle": "按 [E] 点亮水土风火四元素试炼金冠圣坛 · 获得无翼试炼最高荣耀 (+1 永久光之翼 & +3 升华红蜡烛)",
+        "loreText": "致敬预言季（Season of Prophecy）水、土、风、火四大远古试炼终点不灭的金色光翼圣火。",
+        "hint": "位于北境东侧高台「预言山谷试炼终点圣坛」 (78, -118)",
+        "x": 78.0,
+        "z": -118.0,
+        "waxReward": 100,
+        "candlesBonus": 0,
+        "heartsBonus": 0,
+        "ascendedCandlesBonus": 3,
+        "wingedLightBonus": 1,
+        "launchVy": 12.0
+      }
+    ]
   }
 }
+
 
 
 

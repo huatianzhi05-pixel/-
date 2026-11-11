@@ -305,6 +305,10 @@ class NetworkManager {
         }
       };
 
+      socket.onerror = () => {
+        // Handled cleanly in socket.onclose
+      };
+
       socket.onclose = () => {
         if (!openedAtLeastOnce) {
           // Proxy does not forward WebSocket upgrades: switch cleanly to HTTP + Autonomous Bot room mode without spamming WS reconnect errors

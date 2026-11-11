@@ -28,6 +28,7 @@ import {
   stepBotTravelerAiPure,
   isInRealmShelterAt,
   flipDarkCrabsWithDeepCallPure,
+  STAGE12_CFG,
 } from './rules';
 import { DEFAULT_LOADOUT, getCosmeticsByCategory } from './cosmetics';
 import {
@@ -71,6 +72,7 @@ import {
   updateAccessibilityAndPerfPure,
   advanceOnboardingTutorialPure,
   translateUiPure,
+  discoverEasterEggPure,
 } from '../core/StorageService';
 import { resolveDeployNetworkStrategyPure } from '../core/NetworkClient';
 
@@ -1690,5 +1692,140 @@ test('Netlify & Edge CDN deployment adapter selects edge_serverless on *.netlify
   assert.equal(customStrat.wsUrl, 'wss://sky-realtime.example.com/ws');
 });
 
+test('Stage 12 & 13 Ultra-Wide Continent Expansion (220m Radius / 11x Area), 8 Outer Sanctuaries, Wind-Path Cloud Rail, and 12 Interactive Sky Tribute Easter Eggs', () => {
+  // 1. Expanded world bounds (220m playable radius vs legacy 66m -> >11x area!)
+  assert.equal(STAGE12_CFG.worldRadius, 220);
+  assert.equal(STAGE12_CFG.outerSanctuaries.length, 8);
+  assert.equal(STAGE12_CFG.easterEggs.length, 12);
 
+  let farPhys = createInitialPhysicsState(DEFAULT_LOADOUT);
+  farPhys.x = 185;
+  farPhys.z = 0;
+  farPhys.y = groundHeightAt(185, 0);
+  const farStep = stepPlayerPhysics(
+    farPhys,
+    {
+      moveX: 0,
+      moveZ: 0,
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: false,
+      cameraYaw: 0,
+      realmId: 'prairie',
+    },
+    0.05,
+    DEFAULT_LOADOUT
+  ).nextState;
+  assert.ok(
+    Math.hypot(farStep.x, farStep.z) > 180,
+    'Expanded 220m world radius allows exploring ultra-outer sanctuaries beyond 180m'
+  );
+
+  // 2. All 8 Outer Sanctuaries terrain plateaus & sub-zone names
+  assert.equal(getSubZoneNameAt('prairie', 52, -28), '圣岛 · 海螺间歇泉群岛');
+  assert.ok(Math.abs(groundHeightAt(52, -28) - 4.2) < 0.05);
+
+  assert.equal(getSubZoneNameAt('valley', 46, -68), '千鸟城 · 天际星桥浮岛');
+  assert.ok(Math.abs(groundHeightAt(46, -68) - 14.5) < 0.05);
+
+  assert.equal(getSubZoneNameAt('forest', -54, -32), '秘密花园 · 老奶奶团子树屋');
+  assert.ok(Math.abs(groundHeightAt(-54, -32) - 3.2) < 0.05);
+
+  assert.equal(getSubZoneNameAt('vault', 0, -88), '北境天际 · 七彩星光彩虹桥');
+  assert.ok(Math.abs(groundHeightAt(0, -88) - 9.2) < 0.05);
+
+  assert.equal(getSubZoneNameAt('prairie', 112, -96), '风行网道 · 云端浮空群岛');
+  assert.ok(Math.abs(groundHeightAt(112, -96) - 22.0) < 0.05);
+
+  assert.equal(getSubZoneNameAt('valley', 96, 64), '圆梦村 · 雪隐峰日落缆车台');
+  assert.ok(Math.abs(groundHeightAt(96, 64) - 18.5) < 0.05);
+
+  assert.equal(getSubZoneNameAt('wasteland', -108, 68), '潜海季 · 荧光深海珊瑚渊');
+  assert.ok(Math.abs(groundHeightAt(-108, 68) - 2.6) < 0.05);
+
+  assert.equal(getSubZoneNameAt('vault', 0, -148), '欧若拉 · 千人星光音乐竞技场');
+  assert.ok(Math.abs(groundHeightAt(0, -148) - 12.8) < 0.05);
+
+  // 3. Outer Wind-Path Cloud Rail grants high-altitude updraft & energy recharge
+  let wpPhys = createInitialPhysicsState(DEFAULT_LOADOUT);
+  wpPhys.x = 112.0;
+  wpPhys.z = -96.0;
+  wpPhys.y = 26.0;
+  wpPhys.vy = 0;
+  wpPhys.grounded = false;
+  wpPhys.wingEnergy = 2.5;
+  const wpStep = stepPlayerPhysics(
+    wpPhys,
+    {
+      moveX: 0,
+      moveZ: 0,
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: false,
+      cameraYaw: 0,
+      realmId: 'prairie',
+    },
+    0.05,
+    DEFAULT_LOADOUT
+  ).nextState;
+  assert.equal(wpStep.inWindTunnel, true);
+  assert.ok(wpStep.vy > 0, 'Outer Wind-Path Cloud Rail lifts player upward');
+  assert.ok(wpStep.wingEnergy > 2.5, 'Outer Wind-Path Cloud Rail recharges wing energy');
+
+  // 4. All 12 Interactive Easter Eggs + 7 Winged Lights per Realm + Geyser & Wind-Path Launches
+  const prairieItems = createWorldInteractables('prairie');
+  const easterEggs = prairieItems.filter((i) => i.type === 'easter_egg');
+  const wingedLights = prairieItems.filter((i) => i.type === 'winged_light');
+  assert.equal(easterEggs.length, 12);
+  assert.equal(wingedLights.length, 7);
+
+  const geyserEgg = easterEggs.find(
+    (e) => e.id === 'egg_sanctuary_geyser_whale'
+  )!;
+  assert.ok(geyserEgg);
+  const geyserRes = applyInteraction(
+    geyserEgg,
+    createInitialProgressState(),
+    createInitialPhysicsState(DEFAULT_LOADOUT),
+    DEFAULT_LOADOUT
+  );
+  assert.equal(geyserRes.updatedTarget.activated, true);
+  assert.equal(geyserRes.nextPhysics.grounded, false);
+  assert.ok(
+    geyserRes.nextPhysics.vy >= 18.0,
+    'Sanctuary Geyser Easter Egg launches player high into the sky (vy >= 18.0)'
+  );
+
+  // 5. Persistent Easter Egg Discovery Album & First-Time Reward Settlement across Stage 12 & 13 eggs
+  let save = buildDefaultSaveData();
+  assert.deepEqual(save.discoveredEasterEggIds, []);
+  const startCandles = save.candles;
+  const startHearts = save.hearts;
+  const startWl = save.wingedLights;
+
+  const oreoRes1 = discoverEasterEggPure(save, 'egg_oreo_plush_shrine');
+  assert.equal(oreoRes1.newlyDiscovered, true);
+  assert.equal(oreoRes1.eggConfig?.candlesBonus, 2);
+  assert.equal(oreoRes1.eggConfig?.heartsBonus, 1);
+  save = oreoRes1.nextSave;
+  assert.ok(save.discoveredEasterEggIds?.includes('egg_oreo_plush_shrine'));
+  assert.ok(save.candles >= startCandles + 2);
+  assert.equal(save.hearts, startHearts + 1);
+
+  // Discover Stage 13 AURORA Concert Wings Easter Egg (+1 permanent Winged Light, +2 Candles, +1 Heart)
+  const auroraRes = discoverEasterEggPure(save, 'egg_aurora_concert_wings');
+  assert.equal(auroraRes.newlyDiscovered, true);
+  assert.equal(auroraRes.eggConfig?.wingedLightBonus, 1);
+  save = auroraRes.nextSave;
+  assert.equal(save.wingedLights, startWl + 1);
+  assert.equal(save.discoveredEasterEggIds?.length, 2);
+
+  // Repeat interaction with the same Easter egg does not duplicate first-time rewards
+  const candlesAfterAurora = save.candles;
+  const oreoRes2 = discoverEasterEggPure(save, 'egg_oreo_plush_shrine');
+  assert.equal(oreoRes2.newlyDiscovered, false);
+  assert.equal(oreoRes2.nextSave.candles, candlesAfterAurora);
+});
 

@@ -7,6 +7,7 @@ import {
   REALMS,
   RealmId,
   SKY_EMOTES,
+  STAGE12_CFG,
   WorldInteractable,
   computeEmoteLevelSpec,
   getDayNightAtmosphere,
@@ -105,6 +106,8 @@ interface GameHudProps {
   onAdvanceOnboardingTutorial?: (
     action: 'move' | 'ignite' | 'fly' | 'complete_all' | 'reset'
   ) => void;
+  discoveredEasterEggIds?: string[];
+  onDiscoverAndWarpEasterEgg?: (eggId: string) => void;
   onOpenWardrobe: () => void;
   onOpenConstellationHub: (
     tab: 'constellation' | 'social' | 'quests' | 'home' | 'save'
@@ -255,6 +258,8 @@ export const GameHud: React.FC<GameHudProps> = ({
   tutorialStep = 0,
   onUpdateAccessibilityAndPerf,
   onAdvanceOnboardingTutorial,
+  discoveredEasterEggIds = [],
+  onDiscoverAndWarpEasterEgg,
   onOpenWardrobe,
   onOpenConstellationHub,
   onOpenPhotoMode,
@@ -267,6 +272,7 @@ export const GameHud: React.FC<GameHudProps> = ({
   const [dockCollapsed, setDockCollapsed] = useState(false);
   const [dockTab, setDockTab] = useState<'actions' | 'emotes' | 'realms'>('actions');
   const [meditationDrawerOpen, setMeditationDrawerOpen] = useState(false);
+  const [easterEggDrawerOpen, setEasterEggDrawerOpen] = useState(false);
   const [meditationInput, setMeditationInput] = useState(
     '愿每一缕微光都能穿越云海，照亮独行旅人的夜空。'
   );
@@ -277,6 +283,13 @@ export const GameHud: React.FC<GameHudProps> = ({
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.repeat) return;
+      if (
+        document.activeElement instanceof HTMLInputElement ||
+        document.activeElement instanceof HTMLTextAreaElement ||
+        document.activeElement instanceof HTMLSelectElement
+      ) {
+        return;
+      }
       if (e.code === 'KeyH' && !document.querySelector('[aria-label="光遇15键云端乐器演奏台"]')) {
         setDockCollapsed((prev) => !prev);
       }
@@ -318,110 +331,103 @@ export const GameHud: React.FC<GameHudProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-20 pointer-events-none select-none flex flex-col justify-between p-4 md:p-5">
-      {/* ================= TOP PERIMETER CLUSTER ================= */}
-      <div className="flex items-start justify-between gap-3">
-        {/* Top-Left: Candles, Hearts, Ascended Candles & Current Realm + Sub-Zone */}
+    <div className="fixed inset-0 z-20 pointer-events-none select-none flex flex-col justify-between p-2.5 sm:p-3.5">
+      {/* ================= TOP PERIMETER: ULTRA-SLIM TRANSLUCENT GLASS RIBBON ================= */}
+      <div className="flex items-center justify-between gap-1.5 w-full">
+        {/* Top-Left Capsule: White Candles, Hearts, Ascended Red Candles & Current Realm */}
         <div
-          className="rounded-2xl border border-amber-200/25 px-4 py-2 text-slate-100 pointer-events-auto shadow-lg"
-          style={{ backgroundColor: 'rgba(15, 23, 42, 0.85)' }}
+          className="h-9 px-2.5 sm:px-3 rounded-full border border-white/15 bg-slate-950/38 backdrop-blur-md text-slate-100 pointer-events-auto shadow-sm flex items-center gap-2 whitespace-nowrap shrink-0"
         >
-          <div className="flex items-center gap-3.5">
-            {/* White Candles */}
-            <div className="flex items-center gap-1.5" title="白蜡烛与烛火进度">
-              <svg viewBox="0 0 24 24" className="w-4 h-4 shrink-0" aria-hidden="true">
-                <path d="M12 2C10 5 9 7 12 10C15 7 14 5 12 2Z" fill="#FDE047" />
-                <rect x="9" y="10" width="6" height="12" rx="1.5" fill="#F8FAFC" stroke="#94A3B8" strokeWidth="1" />
-              </svg>
-              <div>
-                <div className="text-[10px] uppercase tracking-wider text-slate-400">
-                  白蜡烛
-                </div>
-                <div className="text-sm font-bold font-mono tabular-nums text-white leading-tight">
-                  {Math.round(progress.candles)}
-                </div>
-              </div>
-            </div>
-
-            {/* Hearts */}
-            <div className="flex items-center gap-1.5" title="先祖爱心">
-              <svg viewBox="0 0 24 24" className="w-4 h-4 shrink-0" aria-hidden="true">
-                <path
-                  d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-                  fill="#FB7185"
-                />
-              </svg>
-              <div>
-                <div className="text-[10px] uppercase tracking-wider text-slate-400">
-                  先祖爱心
-                </div>
-                <div className="text-sm font-bold font-mono tabular-nums text-rose-200 leading-tight">
-                  {Math.round(progress.hearts)}
-                </div>
-              </div>
-            </div>
-
-            {/* Ascended Candles */}
-            <div className="flex items-center gap-1.5" title="伊甸升华红蜡烛">
-              <svg viewBox="0 0 24 24" className="w-4 h-4 shrink-0" aria-hidden="true">
-                <polygon points="12,1 16,8 12,11 8,8" fill="#FDE047" />
-                <rect x="8.5" y="10" width="7" height="12" rx="1.5" fill="#EF4444" />
-              </svg>
-              <div>
-                <div className="text-[10px] uppercase tracking-wider text-slate-400">
-                  升华红烛
-                </div>
-                <div className="text-sm font-bold font-mono tabular-nums text-amber-300 leading-tight">
-                  {Math.round(progress.ascendedCandles)}
-                </div>
-              </div>
-            </div>
+          {/* White Candles + Inline Wax Progress */}
+          <div className="flex items-center gap-1" title="白蜡烛与烛火合成进度">
+            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 shrink-0" aria-hidden="true">
+              <path d="M12 2C10 5 9 7 12 10C15 7 14 5 12 2Z" fill="#FDE047" />
+              <rect x="9" y="10" width="6" height="12" rx="1.5" fill="#F8FAFC" stroke="#94A3B8" strokeWidth="1" />
+            </svg>
+            <span className="hidden lg:inline text-[11px] text-slate-300">白蜡</span>
+            <span className="text-xs font-bold font-mono tabular-nums text-white">
+              {Math.round(progress.candles)}
+            </span>
+            <span
+              className="text-[10px] font-mono tabular-nums text-amber-300/90"
+              title={`烛火进度 ${Math.round(progress.wax)}/100`}
+            >
+              ({Math.round(progress.wax)}%)
+            </span>
           </div>
 
-          {/* Sub-Zone, Day/Night Phase & Wax Forge Bar */}
-          <div className="mt-1.5 pt-1 border-t border-slate-800 flex items-center justify-between gap-2.5 text-[11px] text-amber-100/85">
-            <span data-testid="hud-subzone-label">
+          <span aria-hidden="true" className="text-white/20 text-xs">·</span>
+
+          {/* Ancestor Hearts */}
+          <div className="flex items-center gap-1" title="先祖爱心">
+            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 shrink-0" aria-hidden="true">
+              <path
+                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                fill="#FB7185"
+              />
+            </svg>
+            <span className="hidden lg:inline text-[11px] text-slate-300">爱心</span>
+            <span className="text-xs font-bold font-mono tabular-nums text-rose-200">
+              {Math.round(progress.hearts)}
+            </span>
+          </div>
+
+          <span aria-hidden="true" className="text-white/20 text-xs">·</span>
+
+          {/* Ascended Red Candles */}
+          <div className="flex items-center gap-1" title="伊甸升华红蜡烛">
+            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 shrink-0" aria-hidden="true">
+              <polygon points="12,1 16,8 12,11 8,8" fill="#FDE047" />
+              <rect x="8.5" y="10" width="7" height="12" rx="1.5" fill="#EF4444" />
+            </svg>
+            <span className="hidden lg:inline text-[11px] text-slate-300">红烛</span>
+            <span className="text-xs font-bold font-mono tabular-nums text-amber-300">
+              {Math.round(progress.ascendedCandles)}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 pl-1.5 border-l border-white/15">
+            <span
+              data-testid="hud-subzone-label"
+              className="hidden xl:inline text-[11px] text-amber-100/90 max-w-[135px] truncate"
+            >
               {realm.name.split(' · ')[0]} · {subZoneName}
             </span>
             <button
               type="button"
               data-testid="cycle-daynight-btn"
               onClick={onCycleDayNightPhase}
-              title="点击或按 [T] 切换昼夜氛围与配乐律动"
-              className="px-2 py-0.5 rounded bg-sky-950/80 hover:bg-sky-900 border border-sky-400/35 text-[10px] font-semibold text-sky-200 cursor-pointer"
+              title={`当前：${realm.name.split(' · ')[0]} · ${subZoneName} — 点击或按 [T] 切换昼夜氛围`}
+              className="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-[10px] font-medium text-sky-100 cursor-pointer whitespace-nowrap shrink-0 transition-colors"
             >
               {dayNightPhase === 'morning'
-                ? '🌅 破晓晨曦 [T]'
+                ? '🌅 晨曦'
                 : dayNightPhase === 'noon'
-                  ? '☀️ 晴空正午 [T]'
+                  ? '☀️ 正午'
                   : dayNightPhase === 'sunset'
-                    ? '🌇 落日流霞 [T]'
-                    : '🌌 星河静夜 [T]'}
+                    ? '🌇 流霞'
+                    : '🌌 星夜'}
             </button>
-            <span className="font-mono tabular-nums text-amber-300">
-              烛火 {Math.round(progress.wax)}/100
-            </span>
           </div>
         </div>
 
-        {/* Top-Center: Iconic Sky Circular Segmented Wing Energy Ring + Wedge Bar */}
+        {/* Top-Center Crest: Compact Sky Wing Energy Ring + Inline Wedge Diamonds */}
         <div
-          className="rounded-2xl border border-amber-300/40 px-4 py-2 flex items-center gap-3.5 pointer-events-auto shadow-xl"
-          style={{ backgroundColor: 'rgba(15, 23, 42, 0.88)' }}
+          className="h-9 px-3 rounded-full border border-amber-200/30 bg-slate-950/38 backdrop-blur-md flex items-center gap-2 pointer-events-auto shadow-sm whitespace-nowrap shrink-0"
         >
-          {/* Stage 2 Segmented Circular Wing Energy Ring */}
+          {/* Compact Segmented Circular Wing Energy Ring */}
           <div
             data-testid="hud-wing-energy-ring"
-            className="relative w-12 h-12 shrink-0 flex items-center justify-center"
+            className="relative w-7 h-7 shrink-0 flex items-center justify-center"
             title={`斗篷能量环：${physics.wingEnergy.toFixed(2)} / ${physics.maxWingWedges} 格 (每次拍翼消耗 1 格)`}
           >
-            <svg viewBox="0 0 56 56" className="w-12 h-12 -rotate-90">
+            <svg viewBox="0 0 56 56" className="w-7 h-7 -rotate-90">
               {Array.from({ length: physics.maxWingWedges }).map((_, idx) => {
                 const total = Math.max(1, physics.maxWingWedges);
                 const r = 22;
                 const cx = 28;
                 const cy = 28;
-                const gapDeg = total > 1 ? 6 : 0;
+                const gapDeg = total > 1 ? 7 : 0;
                 const sweepDeg = 360 / total - gapDeg;
                 const startDeg = idx * (360 / total) + gapDeg / 2;
                 const endDeg = startDeg + sweepDeg;
@@ -446,7 +452,7 @@ export const GameHud: React.FC<GameHudProps> = ({
                     ? '#FDE047'
                     : isPartial
                       ? '#F59E0B'
-                      : '#334155';
+                      : 'rgba(148, 163, 184, 0.35)';
 
                 return (
                   <path
@@ -454,163 +460,166 @@ export const GameHud: React.FC<GameHudProps> = ({
                     d={d}
                     fill="none"
                     stroke={strokeColor}
-                    strokeWidth={isFull || isPartial ? '4.8' : '3.6'}
+                    strokeWidth={isFull || isPartial ? '5.5' : '4.0'}
                     strokeLinecap="round"
                   />
                 );
               })}
             </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
-              <span className="text-xs font-extrabold font-mono text-amber-200">
-                {Math.ceil(Math.max(0, physics.wingEnergy - 0.04))}
-              </span>
-              <span className="text-[8px] text-amber-300/80 uppercase">翼格</span>
-            </div>
+            <span className="absolute inset-0 flex items-center justify-center text-[11px] font-extrabold font-mono text-amber-200">
+              {Math.ceil(Math.max(0, physics.wingEnergy - 0.04))}
+            </span>
           </div>
 
-          <div className="flex flex-col items-center">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[11px] uppercase tracking-wider font-semibold text-amber-200">
-                光之翼能量 · {physics.maxWingWedges} 翼星阶
-              </span>
-              <span className="text-xs font-mono tabular-nums text-amber-300 font-bold">
-                ({progress.wingedLights} 小金人)
-              </span>
-              {physics.tempLostWedges > 0.05 && (
-                <span className="px-1.5 py-0.2 rounded bg-rose-950/90 border border-rose-400/50 text-[10px] font-mono text-rose-300">
-                  受损 -{physics.tempLostWedges.toFixed(1)} 格
-                </span>
-              )}
-            </div>
+          {/* Discrete Wing Energy Wedges */}
+          <div
+            className="hidden lg:flex items-center gap-0.5"
+            role="meter"
+            aria-label="光之翼飞行能量"
+            aria-valuenow={Math.round(physics.wingEnergy)}
+            aria-valuemin={0}
+            aria-valuemax={physics.maxWingWedges}
+          >
+            {Array.from({ length: physics.maxWingWedges }).map((_, idx) => {
+              const isTempLost =
+                idx >= physics.maxWingWedges - physics.tempLostWedges;
+              const isFull = !isTempLost && idx < fullWedges;
+              const isPartial =
+                !isTempLost && idx === fullWedges && partialWedge > 0.08;
+              return (
+                <svg
+                  key={idx}
+                  viewBox="0 0 20 24"
+                  className="w-3 h-3.5 transition-transform"
+                  aria-hidden="true"
+                >
+                  <polygon
+                    points="10,2 18,12 10,22 2,12"
+                    fill={
+                      isTempLost
+                        ? 'rgba(239, 68, 68, 0.4)'
+                        : isFull
+                          ? '#FDE047'
+                          : isPartial
+                            ? '#F59E0B'
+                            : 'rgba(30, 41, 59, 0.7)'
+                    }
+                    stroke={
+                      isTempLost
+                        ? '#EF4444'
+                        : isFull || isPartial
+                          ? '#FEF9C3'
+                          : '#64748B'
+                    }
+                    strokeWidth="1.6"
+                  />
+                </svg>
+              );
+            })}
+          </div>
 
-            {/* Discrete Wing Energy Wedges */}
-            <div
-              className="flex items-center gap-1.5"
-              role="meter"
-              aria-label="光之翼飞行能量"
-              aria-valuenow={Math.round(physics.wingEnergy)}
-              aria-valuemin={0}
-              aria-valuemax={physics.maxWingWedges}
-            >
-              {Array.from({ length: physics.maxWingWedges }).map((_, idx) => {
-                const isTempLost =
-                  idx >= physics.maxWingWedges - physics.tempLostWedges;
-                const isFull = !isTempLost && idx < fullWedges;
-                const isPartial =
-                  !isTempLost && idx === fullWedges && partialWedge > 0.08;
-                return (
-                  <svg
-                    key={idx}
-                    viewBox="0 0 20 24"
-                    className="w-4 h-5 transition-transform"
-                    aria-hidden="true"
-                  >
-                    <polygon
-                      points="10,2 18,12 10,22 2,12"
-                      fill={
-                        isTempLost
-                          ? 'rgba(239, 68, 68, 0.35)'
-                          : isFull
-                            ? '#FDE047'
-                            : isPartial
-                              ? '#F59E0B'
-                              : 'rgba(30, 41, 59, 0.85)'
-                      }
-                      stroke={
-                        isTempLost
-                          ? '#EF4444'
-                          : isFull || isPartial
-                            ? '#FEF9C3'
-                            : '#64748B'
-                      }
-                      strokeWidth="1.6"
-                    />
-                    {isFull && <circle cx="10" cy="12" r="2.5" fill="#FFFFFF" />}
-                  </svg>
-                );
-              })}
-            </div>
+          {/* Winged Light Count & Flight Mode Pill */}
+          <span
+            className="text-[11px] font-mono tabular-nums text-amber-200/95 font-semibold"
+            title={`已收集 ${progress.wingedLights} 个光之翼小金人`}
+          >
+            {physics.maxWingWedges}翼({progress.wingedLights}金)
+          </span>
 
-            {/* Flight Mode & Stage 2 Recharge / Drain Source Telemetry Line */}
-            <div className="mt-1 flex items-center gap-2.5 text-[11px]">
-              <button
-                type="button"
-                tabIndex={-1}
-                data-testid="toggle-flight-mode-btn"
-                onClick={(e) => {
-                  e.currentTarget.blur();
-                  onToggleFlightMode();
-                }}
-                className="text-sky-300 hover:text-sky-200 font-medium cursor-pointer"
+          {physics.tempLostWedges > 0.05 && (
+            <span className="px-1.5 py-0.5 rounded-full bg-rose-950/90 border border-rose-400/50 text-[10px] font-mono text-rose-300">
+              -{physics.tempLostWedges.toFixed(1)}
+            </span>
+          )}
+
+          <button
+            type="button"
+            tabIndex={-1}
+            data-testid="toggle-flight-mode-btn"
+            onClick={(e) => {
+              e.currentTarget.blur();
+              onToggleFlightMode();
+            }}
+            title="点击或按 [Shift] 切换悬停/滑翔模式"
+            className="px-2 py-0.5 rounded-full bg-sky-400/15 hover:bg-sky-400/25 border border-sky-300/30 text-[10px] text-sky-200 font-medium cursor-pointer whitespace-nowrap shrink-0 transition-colors"
+          >
+            {physics.isDiving
+              ? '俯冲 [X]'
+              : physics.flightMode === 'glide'
+                ? '滑翔 [Shift]'
+                : '悬停 [Shift]'}
+          </button>
+
+          {(() => {
+            const srcInfo = formatEnergySourceLabel(physics);
+            return (
+              <span
+                data-testid="hud-energy-source-label"
+                className={`hidden 2xl:inline text-[10px] ${srcInfo.colorClass}`}
               >
-                飞行模式：
-                {physics.isDiving
-                  ? '极速俯冲 [X]'
-                  : physics.flightMode === 'glide'
-                    ? '流光滑翔 (远距拉镜) [Shift]'
-                    : '垂直悬停 (精准升降) [Shift]'}
-              </button>
-              <span aria-hidden="true" className="text-slate-600">
-                ·
+                {srcInfo.text}
               </span>
-              {(() => {
-                const srcInfo = formatEnergySourceLabel(physics);
-                return (
-                  <span
-                    data-testid="hud-energy-source-label"
-                    className={srcInfo.colorClass}
-                  >
-                    {srcInfo.text}
-                  </span>
-                );
-              })()}
-            </div>
-          </div>
+            );
+          })()}
         </div>
 
-        {/* Top-Right: Quick Feature Shortcuts (Constellation, Friends, Quests, Photo, Debug, Mute, Reset, Pause) */}
-        <div className="flex items-center gap-1.5 pointer-events-auto">
+        {/* Top-Right Capsule: Constellation, Friends, Photo, Compass & System Controls */}
+        <div
+          className="h-9 px-2 rounded-full border border-white/15 bg-slate-950/38 backdrop-blur-md flex items-center gap-1 pointer-events-auto shadow-sm whitespace-nowrap shrink-0"
+        >
           <button
             type="button"
             data-testid="open-constellation-hub-btn"
             onClick={() => onOpenConstellationHub('constellation')}
-            className="h-9 px-2.5 rounded-xl border border-amber-200/25 flex items-center gap-1 text-xs font-semibold text-amber-200 hover:border-amber-300 cursor-pointer"
-            style={{ backgroundColor: 'rgba(15, 23, 42, 0.85)' }}
+            title="先祖星盘解锁树 [K]"
+            className="h-7 px-2.5 rounded-full hover:bg-white/15 flex items-center gap-1 text-xs font-medium text-amber-100 cursor-pointer whitespace-nowrap shrink-0 transition-colors"
           >
             <span>✦ 星盘</span>
-            <span className="hidden lg:inline text-[10px] text-slate-400">[K]</span>
           </button>
 
           <button
             type="button"
             data-testid="open-social-hub-btn"
             onClick={() => onOpenConstellationHub('social')}
-            className="h-9 px-2.5 rounded-xl border border-amber-200/25 flex items-center gap-1 text-xs font-semibold text-sky-200 hover:border-sky-300 cursor-pointer"
-            style={{ backgroundColor: 'rgba(15, 23, 42, 0.85)' }}
+            title="好友星盘与联机互动 [G]"
+            className="h-7 px-2.5 rounded-full hover:bg-white/15 flex items-center gap-1 text-xs font-medium text-sky-100 cursor-pointer whitespace-nowrap shrink-0 transition-colors"
           >
             <span>🤝 好友</span>
-            <span className="hidden lg:inline text-[10px] text-slate-400">[G]</span>
           </button>
 
           <button
             type="button"
             data-testid="open-photo-mode-btn"
             onClick={onOpenPhotoMode}
-            className="h-9 px-2.5 rounded-xl border border-amber-200/25 flex items-center gap-1 text-xs font-semibold text-rose-200 hover:border-rose-300 cursor-pointer"
-            style={{ backgroundColor: 'rgba(15, 23, 42, 0.85)' }}
+            title="自由相机与自拍留影 [O/P]"
+            className="h-7 px-2.5 rounded-full hover:bg-white/15 flex items-center gap-1 text-xs font-medium text-rose-100 cursor-pointer whitespace-nowrap shrink-0 transition-colors"
           >
             <span>📷 拍照</span>
-            <span className="hidden lg:inline text-[10px] text-slate-400">[O]</span>
           </button>
 
           <button
             type="button"
-            aria-label={muted ? '取消静音 [M]' : '静音 [M]'}
-            onClick={onToggleMute}
-            className="w-9 h-9 rounded-xl border border-amber-200/25 flex items-center justify-center text-amber-100 hover:border-amber-300 cursor-pointer"
-            style={{ backgroundColor: 'rgba(15, 23, 42, 0.85)' }}
+            data-testid="open-easter-egg-compass-btn"
+            onClick={() => setEasterEggDrawerOpen((prev) => !prev)}
+            className="h-7 px-2.5 rounded-full bg-amber-400/15 hover:bg-amber-400/25 border border-amber-300/35 flex items-center gap-1 text-xs font-medium text-amber-200 cursor-pointer whitespace-nowrap shrink-0 transition-colors"
+            title="打开广域秘境罗盘与 12 大《光·遇》致敬彩蛋图鉴"
           >
-            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
+            <span>🗺️ 秘境</span>
+            <span className="font-mono text-[10px] text-amber-300">
+              {discoveredEasterEggIds.length}/12
+            </span>
+          </button>
+
+          <div className="h-3.5 w-px bg-white/15 mx-0.5" />
+
+          <button
+            type="button"
+            aria-label={muted ? '取消静音 [M]' : '静音 [M]'}
+            title={muted ? '取消静音 [M]' : '静音 [M]'}
+            onClick={onToggleMute}
+            className="w-7 h-7 rounded-full hover:bg-white/15 flex items-center justify-center text-amber-100 cursor-pointer shrink-0 transition-colors"
+          >
+            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2">
               {muted ? (
                 <path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6" />
               ) : (
@@ -622,11 +631,11 @@ export const GameHud: React.FC<GameHudProps> = ({
           <button
             type="button"
             aria-label="重置回遇境星盘 [R]"
+            title="重置回遇境星盘 [R]"
             onClick={onResetPosition}
-            className="w-9 h-9 rounded-xl border border-amber-200/25 flex items-center justify-center text-amber-100 hover:border-amber-300 cursor-pointer"
-            style={{ backgroundColor: 'rgba(15, 23, 42, 0.85)' }}
+            className="w-7 h-7 rounded-full hover:bg-white/15 flex items-center justify-center text-amber-100 cursor-pointer shrink-0 transition-colors"
           >
-            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8" />
               <path d="M3 3v5h5" />
             </svg>
@@ -634,12 +643,12 @@ export const GameHud: React.FC<GameHudProps> = ({
 
           <button
             type="button"
-            aria-label="暂停游戏 [P/Esc]"
+            aria-label="暂停游戏 [Esc]"
+            title="暂停游戏 [Esc]"
             onClick={onPause}
-            className="w-9 h-9 rounded-xl border border-amber-200/25 flex items-center justify-center text-amber-100 hover:border-amber-300 cursor-pointer"
-            style={{ backgroundColor: 'rgba(15, 23, 42, 0.85)' }}
+            className="w-7 h-7 rounded-full hover:bg-white/15 flex items-center justify-center text-amber-100 cursor-pointer shrink-0 transition-colors"
           >
-            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="6" y="4" width="4" height="16" rx="1" />
               <rect x="14" y="4" width="4" height="16" rx="1" />
             </svg>
@@ -651,11 +660,11 @@ export const GameHud: React.FC<GameHudProps> = ({
       {debugMode && (
         <div
           data-testid="debug-telemetry-panel"
-          className="self-start mt-2 px-3.5 py-2.5 rounded-xl border border-emerald-400/40 bg-slate-950/92 text-[11px] font-mono text-emerald-300 pointer-events-auto space-y-1 shadow-xl max-w-xl"
+          className="self-start mt-1.5 px-3 py-2 rounded-xl border border-emerald-400/40 bg-slate-950/92 text-[10px] font-mono text-emerald-300 pointer-events-auto space-y-0.5 shadow-xl max-w-3xl max-h-[48vh] overflow-y-auto"
         >
           <div className="flex items-center justify-between gap-4">
             <span className="font-bold text-emerald-200">
-              [DEBUG PANEL · ?debug=1 · 阶段1–11全量实时遥测]
+              [DEBUG PANEL · ?debug=1 · 阶段1–13全量实时遥测]
             </span>
             <button
               type="button"
@@ -897,7 +906,7 @@ export const GameHud: React.FC<GameHudProps> = ({
                   onClick={() => onOpenConstellationHub('constellation')}
                   className="px-2 py-0.5 rounded bg-indigo-900/70 hover:bg-indigo-800 text-indigo-100 border border-indigo-400/40 cursor-pointer"
                 >
-                  星盘解锁树 [P]
+                  星盘解锁树 [K]
                 </button>
                 {onForgeCandleWax && (
                   <button
@@ -1365,30 +1374,177 @@ export const GameHud: React.FC<GameHudProps> = ({
                   </button>
                 )}
               </div>
+              <div className="pt-1 border-t border-amber-400/40 flex flex-wrap items-center gap-1.5">
+                <span className="text-amber-300 font-semibold">
+                  阶段12广域秘境&彩蛋({discoveredEasterEggIds.length}/12):
+                </span>
+                <button
+                  type="button"
+                  data-testid="debug-stage12-geyser"
+                  onClick={() =>
+                    onDiscoverAndWarpEasterEgg
+                      ? onDiscoverAndWarpEasterEgg('egg_sanctuary_geyser_whale')
+                      : onDebugTeleport(52, 4.2, -26.5, '圣岛·海螺间歇泉与白鲸群岛')
+                  }
+                  className="px-2 py-0.5 rounded bg-sky-900/80 hover:bg-sky-800 text-sky-100 border border-sky-400/40 cursor-pointer"
+                >
+                  圣岛喷泉&白鲸(52,-28)
+                </button>
+                <button
+                  type="button"
+                  data-testid="debug-stage12-citadel"
+                  onClick={() =>
+                    onDebugTeleport(
+                      46,
+                      14.5,
+                      -66.5,
+                      '千鸟城·天际星桥高空浮岛 (高度 14.5m)'
+                    )
+                  }
+                  className="px-2 py-0.5 rounded bg-amber-900/80 hover:bg-amber-800 text-amber-100 border border-amber-400/40 cursor-pointer"
+                >
+                  千鸟高空浮岛(46,14.5,-68)
+                </button>
+                <button
+                  type="button"
+                  data-testid="debug-stage12-grandma"
+                  onClick={() =>
+                    onDiscoverAndWarpEasterEgg
+                      ? onDiscoverAndWarpEasterEgg('egg_grandma_feast_table')
+                      : onDebugTeleport(-54, 3.2, -30.5, '秘密花园·老奶奶团子树屋')
+                  }
+                  className="px-2 py-0.5 rounded bg-emerald-900/80 hover:bg-emerald-800 text-emerald-100 border border-emerald-400/40 cursor-pointer"
+                >
+                  老奶奶团子树屋(-54,-32)
+                </button>
+                <button
+                  type="button"
+                  data-testid="debug-stage12-rainbow"
+                  onClick={() =>
+                    onDiscoverAndWarpEasterEgg
+                      ? onDiscoverAndWarpEasterEgg('egg_rainbow_bridge')
+                      : onDebugTeleport(0, 9.2, -86.5, '北境天际·七彩星光彩虹桥')
+                  }
+                  className="px-2 py-0.5 rounded bg-fuchsia-900/80 hover:bg-fuchsia-800 text-fuchsia-100 border border-fuchsia-400/40 cursor-pointer"
+                >
+                  七彩彩虹桥(0,9.2,-88)
+                </button>
+                <button
+                  type="button"
+                  data-testid="debug-stage12-oreo"
+                  onClick={() =>
+                    onDiscoverAndWarpEasterEgg?.('egg_oreo_plush_shrine')
+                  }
+                  className="px-2 py-0.5 rounded bg-rose-900/80 hover:bg-rose-800 text-rose-100 border border-rose-400/40 cursor-pointer"
+                >
+                  召唤奥利奥小狗(38,-18)
+                </button>
+                <button
+                  type="button"
+                  data-testid="debug-stage12-rose"
+                  onClick={() =>
+                    onDiscoverAndWarpEasterEgg?.('egg_little_prince_rose')
+                  }
+                  className="px-2 py-0.5 rounded bg-pink-900/80 hover:bg-pink-800 text-pink-100 border border-pink-400/40 cursor-pointer"
+                >
+                  B612玻璃玫瑰(-42,26)
+                </button>
+                <button
+                  type="button"
+                  data-testid="debug-stage12-compass"
+                  onClick={() => setEasterEggDrawerOpen((prev) => !prev)}
+                  className="px-2 py-0.5 rounded bg-indigo-900/80 hover:bg-indigo-800 text-indigo-100 border border-indigo-400/40 cursor-pointer"
+                >
+                  秘境&彩蛋图鉴
+                </button>
+              </div>
+              <div className="mt-1 pt-1 border-t border-slate-800 flex flex-wrap items-center gap-1">
+                <span className="text-slate-400">阶段13极远大陆&新彩蛋:</span>
+                <button
+                  type="button"
+                  data-testid="debug-stage13-windpaths"
+                  onClick={() =>
+                    onDiscoverAndWarpEasterEgg?.('egg_wind_paths_kalimba_chime')
+                  }
+                  className="px-2 py-0.5 rounded bg-cyan-900/80 hover:bg-cyan-800 text-cyan-100 border border-cyan-400/40 cursor-pointer"
+                >
+                  风行网道(112,22,-96)
+                </button>
+                <button
+                  type="button"
+                  data-testid="debug-stage13-hermit"
+                  onClick={() =>
+                    onDiscoverAndWarpEasterEgg?.('egg_hermit_yeti_igloo')
+                  }
+                  className="px-2 py-0.5 rounded bg-sky-900/80 hover:bg-sky-800 text-sky-100 border border-sky-400/40 cursor-pointer"
+                >
+                  雪隐峰冰屋(96,18.5,64)
+                </button>
+                <button
+                  type="button"
+                  data-testid="debug-stage13-abyss"
+                  onClick={() =>
+                    onDiscoverAndWarpEasterEgg?.('egg_abyss_treasure_leviathan')
+                  }
+                  className="px-2 py-0.5 rounded bg-teal-900/80 hover:bg-teal-800 text-teal-100 border border-teal-400/40 cursor-pointer"
+                >
+                  深海珊瑚渊(-108,68)
+                </button>
+                <button
+                  type="button"
+                  data-testid="debug-stage13-aurora"
+                  onClick={() =>
+                    onDiscoverAndWarpEasterEgg?.('egg_aurora_concert_wings')
+                  }
+                  className="px-2 py-0.5 rounded bg-amber-900/80 hover:bg-amber-800 text-amber-100 border border-amber-400/40 cursor-pointer"
+                >
+                  欧若拉剧场(0,12.8,-148)
+                </button>
+                <button
+                  type="button"
+                  data-testid="debug-stage13-ark"
+                  onClick={() =>
+                    onDiscoverAndWarpEasterEgg?.('egg_forgotten_ark_rainbow_spell')
+                  }
+                  className="px-2 py-0.5 rounded bg-purple-900/80 hover:bg-purple-800 text-purple-100 border border-purple-400/40 cursor-pointer"
+                >
+                  遗忘方舟(-88,-82)
+                </button>
+                <button
+                  type="button"
+                  data-testid="debug-stage13-trial"
+                  onClick={() =>
+                    onDiscoverAndWarpEasterEgg?.('egg_trial_of_fire_brazier')
+                  }
+                  className="px-2 py-0.5 rounded bg-orange-900/80 hover:bg-orange-800 text-orange-100 border border-orange-400/40 cursor-pointer"
+                >
+                  预言四试炼(78,-118)
+                </button>
+              </div>
             </>
           )}
         </div>
       )}
 
-      {/* ================= TOP-CENTER STATUS TOAST, SPIRIT MEMORY TRACKER & CHAT BUBBLE ================= */}
-      <div className="mt-2 flex flex-col items-center gap-1.5 pointer-events-none mb-auto">
+      {/* ================= DISCREET FLOATING TOASTS & DRAWERS ================= */}
+      <div className="mt-1.5 flex flex-col items-center gap-1.5 pointer-events-none mb-auto">
         {tutorialStep < 3 && onAdvanceOnboardingTutorial && (
           <div
             data-testid="onboarding-tutorial-banner"
-            className="px-3.5 py-1.5 rounded-2xl border border-amber-300/50 bg-slate-950/88 text-[11px] text-amber-100 shadow-lg flex items-center gap-2.5 pointer-events-auto"
+            className="px-3 py-1 rounded-full border border-white/15 bg-slate-950/42 backdrop-blur-md text-[11px] text-amber-100/95 shadow-sm flex items-center gap-2 pointer-events-auto whitespace-nowrap"
           >
             <span>
               {locale === 'en'
                 ? tutorialStep === 0
-                  ? '🧭 Step 1/3: Walk with [WASD]'
+                  ? '🧭 1/3: Walk [WASD]'
                   : tutorialStep === 1
-                    ? '🧭 Step 2/3: Press [E] to ignite or [Q] to call'
-                    : '🧭 Step 3/3: Press [Space] to flap & fly (+2 Candles)'
+                    ? '🧭 2/3: Ignite [E] or Call [Q]'
+                    : '🧭 3/3: Fly [Space] (+2 Candles)'
                 : tutorialStep === 0
-                  ? '🧭 新手旅途 [1/3]：按 [WASD] 在遇境漫步'
+                  ? '🧭 旅途指引 1/3：按 [WASD] 漫步'
                   : tutorialStep === 1
-                    ? '🧭 新手旅途 [2/3]：按 [E] 点亮烛火或按 [Q] 星音呼唤'
-                    : '🧭 新手旅途 [3/3]：按 [Space] 振翅飞翔 (+2 白蜡烛)'}
+                    ? '🧭 旅途指引 2/3：按 [E] 点亮或 [Q] 呼唤'
+                    : '🧭 旅途指引 3/3：按 [Space] 振翅飞翔 (+2 白蜡)'}
             </span>
             <button
               type="button"
@@ -1402,20 +1558,20 @@ export const GameHud: React.FC<GameHudProps> = ({
                       : 'fly'
                 )
               }
-              className="px-2 py-0.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-[10px] cursor-pointer"
+              className="px-2 py-0.5 rounded-full bg-amber-300/90 hover:bg-amber-300 text-slate-950 font-bold text-[10px] cursor-pointer"
             >
-              {locale === 'en' ? 'Next ➔' : '推进步骤 ➔'}
+              {locale === 'en' ? 'Next ➔' : '完成 ➔'}
             </button>
           </div>
         )}
         {activeSpiritMemory && (
           <div
             data-testid="spirit-memory-tracker"
-            className="px-4 py-2 rounded-2xl border border-cyan-300/70 bg-slate-950/92 text-xs text-cyan-100 shadow-2xl flex flex-wrap items-center gap-3 pointer-events-auto"
+            className="px-3.5 py-1.5 rounded-full border border-cyan-300/45 bg-slate-950/55 backdrop-blur-md text-xs text-cyan-100 shadow-lg flex items-center gap-2.5 pointer-events-auto whitespace-nowrap"
           >
             <div>
               <span className="font-bold text-amber-300">
-                🌟 先祖记忆重温中 ({activeSpiritMemory.currentStepIndex}/
+                🌟 先祖记忆 ({activeSpiritMemory.currentStepIndex}/
                 {activeSpiritMemory.totalSteps})：
               </span>
               <span>
@@ -1431,9 +1587,9 @@ export const GameHud: React.FC<GameHudProps> = ({
                 type="button"
                 data-testid="advance-spirit-memory-btn"
                 onClick={onAdvanceSpiritMemory}
-                className="px-3 py-1 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold cursor-pointer"
+                className="px-2.5 py-0.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 text-[11px] font-bold cursor-pointer"
               >
-                ✨ 共鸣推进本幕 [F]
+                ✨ 推进 [F]
               </button>
             )}
           </div>
@@ -1441,8 +1597,7 @@ export const GameHud: React.FC<GameHudProps> = ({
 
         {bannerMessage && (
           <div
-            className="px-5 py-1.5 rounded-xl border border-amber-300/60 text-xs sm:text-sm font-semibold text-amber-100 shadow-xl"
-            style={{ backgroundColor: 'rgba(15, 23, 42, 0.90)' }}
+            className="px-4 py-1 rounded-full border border-amber-200/35 bg-slate-950/50 backdrop-blur-md text-xs font-medium text-amber-100 shadow-md max-w-xl truncate"
             role="status"
           >
             {bannerMessage}
@@ -1450,13 +1605,13 @@ export const GameHud: React.FC<GameHudProps> = ({
         )}
 
         {dualActionStatusText && (
-          <div className="px-4 py-1 rounded-full bg-emerald-950/90 border border-emerald-400/50 text-xs text-emerald-200 font-semibold">
+          <div className="px-3.5 py-1 rounded-full bg-emerald-950/60 backdrop-blur-md border border-emerald-400/40 text-xs text-emerald-200 font-medium">
             {dualActionStatusText}
           </div>
         )}
 
         {latestChatBubble && (
-          <div className="px-4 py-1.5 rounded-2xl bg-slate-900/95 border border-sky-300/50 text-xs text-sky-100 shadow-lg">
+          <div className="px-3.5 py-1 rounded-full bg-slate-950/60 backdrop-blur-md border border-sky-300/40 text-xs text-sky-100 shadow-md">
             💬 <strong className="text-amber-200">{latestChatBubble.senderName}：</strong>
             {latestChatBubble.text}
           </div>
@@ -1519,11 +1674,152 @@ export const GameHud: React.FC<GameHudProps> = ({
             )}
           </div>
         )}
+
+        {/* Stage 12: Outer Sanctuary & 6 Sky Tribute Easter Eggs Compass Drawer */}
+        {easterEggDrawerOpen && (
+          <div
+            data-testid="easter-egg-compass-drawer"
+            className="fixed inset-x-0 top-16 mx-auto z-50 w-[94vw] max-w-3xl p-4 rounded-2xl border border-amber-300/50 bg-slate-950/95 text-slate-100 shadow-2xl pointer-events-auto max-h-[76vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-800">
+              <div>
+                <div className="text-xs sm:text-sm font-bold text-amber-200">
+                  🗺️ 阶段 12–13 · 11 倍超广域大陆罗盘与 12 大《光·遇》传奇彩蛋图鉴 ({discoveredEasterEggIds.length}/12 已收集)
+                </div>
+                <div className="text-[11px] text-slate-400">
+                  探索半径已扩建至 220m（面积超原始地图 11 倍），包含 8 座外围浮岛秘境、跨岛风行网道与 12 处可交互致敬彩蛋
+                </div>
+              </div>
+              <button
+                type="button"
+                data-testid="close-easter-egg-compass-btn"
+                onClick={() => setEasterEggDrawerOpen(false)}
+                className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 cursor-pointer"
+              >
+                关闭 [✕]
+              </button>
+            </div>
+
+            {/* 8 Outer Sanctuaries */}
+            <div className="mb-3">
+              <div className="text-[11px] font-semibold text-sky-300 mb-1.5">
+                🏝️ 八大外围秘境与高空浮岛群（点击可乘风行网道直达）：
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {((STAGE12_CFG?.outerSanctuaries || []) as {
+                  id: string;
+                  name: string;
+                  subtitle: string;
+                  x: number;
+                  y: number;
+                  z: number;
+                }[]).map((s) => (
+                  <div
+                    key={s.id}
+                    className="p-2.5 rounded-xl border border-sky-400/30 bg-slate-900/90 flex items-center justify-between gap-2"
+                  >
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-sky-200 truncate">
+                        {s.name}{' '}
+                        <span className="font-mono text-[10px] text-slate-400">
+                          ({s.x}, {s.y}m, {s.z})
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-400 truncate">
+                        {s.subtitle}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      data-testid={`warp-sanctuary-btn-${s.id}`}
+                      onClick={() => {
+                        onDebugTeleport?.(s.x, s.y, s.z + 1.5, s.name);
+                        setEasterEggDrawerOpen(false);
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-sky-400/20 hover:bg-sky-400/35 border border-sky-300/50 text-[11px] font-bold text-sky-200 shrink-0 cursor-pointer"
+                    >
+                      🌬️ 乘风前往
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 12 Collectible Easter Eggs */}
+            <div>
+              <div className="text-[11px] font-semibold text-amber-300 mb-1.5">
+                🥚 十二大《光·遇》经典致敬彩蛋（首次触发可获丰厚白蜡烛、爱心、红蜡烛与永久小金人）：
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {((STAGE12_CFG?.easterEggs || []) as {
+                  id: string;
+                  name: string;
+                  subtitle: string;
+                  loreText: string;
+                  x: number;
+                  z: number;
+                  launchVy: number;
+                }[]).map((egg) => {
+                  const found = discoveredEasterEggIds.includes(egg.id);
+                  return (
+                    <div
+                      key={egg.id}
+                      className={`p-2.5 rounded-xl border flex flex-col justify-between gap-1.5 ${
+                        found
+                          ? 'border-amber-300/60 bg-amber-950/30'
+                          : 'border-slate-800 bg-slate-900/90'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="text-xs font-bold text-amber-200 truncate">
+                            {egg.name}
+                          </span>
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ${
+                              found
+                                ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-400/40'
+                                : 'bg-slate-800 text-slate-400'
+                            }`}
+                          >
+                            {found ? '✓ 已收录' : '未解锁'}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-amber-100/80 mt-0.5">
+                          {egg.subtitle}
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">
+                          {egg.loreText}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-800/80">
+                        <span className="font-mono text-[10px] text-slate-400">
+                          坐标: ({egg.x}, {egg.z})
+                        </span>
+                        <button
+                          type="button"
+                          data-testid={`warp-easter-egg-btn-${egg.id}`}
+                          onClick={() => {
+                            onDiscoverAndWarpEasterEgg?.(egg.id);
+                            setEasterEggDrawerOpen(false);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-[11px] font-bold cursor-pointer"
+                        >
+                          🌠 跃迁并触发彩蛋
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* ================= BOTTOM ROW: VIRTUAL TOUCH JOYSTICK + STARLIGHT DOCK ================= */}
+      {/* ================= BOTTOM PERIMETER: FEATHERLIGHT TRANSLUCENT DOCK ================= */}
       <div className="relative flex items-end justify-center w-full">
-        {/* Left Virtual Touch Joystick (For Touch / Mobile & Drag Movement; push full to run) */}
+        {/* Left Discreet Translucent Touch Joystick */}
         <div
           ref={joyBaseRef}
           data-testid="touch-virtual-joystick"
@@ -1538,236 +1834,242 @@ export const GameHud: React.FC<GameHudProps> = ({
           onPointerUp={resetJoystick}
           onPointerCancel={resetJoystick}
           title="虚拟摇杆：轻推漫步 (<68%)，推满奔跑 (>=68%)"
-          className="flex w-20 h-20 rounded-full border border-amber-200/35 bg-slate-950/75 items-center justify-center pointer-events-auto cursor-pointer shrink-0 mr-3 mb-1 touch-none relative"
+          className="fixed bottom-3 left-3 flex w-14 h-14 rounded-full border border-white/20 bg-slate-950/28 backdrop-blur-sm items-center justify-center pointer-events-auto cursor-pointer touch-none opacity-65 hover:opacity-100 transition-opacity"
         >
-          <div className="w-12 h-12 rounded-full border border-dashed border-amber-200/20 pointer-events-none absolute" />
+          <div className="w-8 h-8 rounded-full border border-dashed border-amber-200/20 pointer-events-none absolute" />
           <div
-            className="w-8 h-8 rounded-full bg-amber-300/85 border border-white shadow-md transition-transform duration-75"
+            className="w-5 h-5 rounded-full bg-amber-300/80 border border-white/80 shadow-sm transition-transform duration-75"
             style={{
-              transform: `translate(${joyKnob.x}px, ${joyKnob.y}px)`,
+              transform: `translate(${joyKnob.x * 0.65}px, ${joyKnob.y * 0.65}px)`,
             }}
           />
         </div>
 
-        {/* Collapsible Unified Bottom Starlight Dock */}
-        <div className="flex flex-col items-center w-full max-w-4xl pointer-events-none">
+        {/* Centered Compact Translucent Starlight Dock */}
+        <div className="flex flex-col items-center max-w-4xl pointer-events-none">
           {nearestInteractable && (
             <button
               type="button"
               onClick={onTriggerInteract}
-              className="mb-2.5 px-5 py-2 rounded-xl border-2 border-amber-300 bg-amber-300 text-slate-950 font-bold text-xs sm:text-sm shadow-xl flex items-center gap-2 hover:bg-amber-200 active:scale-95 transition-all pointer-events-auto cursor-pointer"
+              className="mb-1.5 px-4 py-1.5 rounded-full border border-amber-300 bg-amber-300/95 text-slate-950 font-bold text-xs shadow-lg flex items-center gap-1.5 hover:bg-amber-200 active:scale-95 transition-all pointer-events-auto cursor-pointer whitespace-nowrap"
             >
-              <span>🔥 [E] {nearestInteractable.name} — {nearestInteractable.subtitle}</span>
+              <span>🔥 [E / F] {nearestInteractable.name} — {nearestInteractable.subtitle}</span>
             </button>
           )}
 
-          {/* Collapse / Expand Zen Mode Toggle Handle */}
-          <button
-            type="button"
-            tabIndex={-1}
-            data-testid="toggle-dock-btn"
-            onClick={(e) => {
-              e.currentTarget.blur();
-              setDockCollapsed((prev) => !prev);
-            }}
-            className="px-4 py-1 rounded-t-xl border border-b-0 border-amber-200/30 text-[11px] font-semibold text-amber-200 hover:text-white pointer-events-auto cursor-pointer"
-            style={{ backgroundColor: 'rgba(15, 23, 42, 0.88)' }}
-          >
-            {dockCollapsed ? '▴ 展开星盘控制坞 [H]' : '▾ 收起星盘 (纯净观赏模式) [H]'}
-          </button>
-
-          {!dockCollapsed && (
-            <div
-              className="w-full rounded-2xl border border-amber-200/30 px-4 py-2.5 text-slate-100 shadow-2xl pointer-events-auto"
-              style={{ backgroundColor: 'rgba(15, 23, 42, 0.90)' }}
+          {dockCollapsed ? (
+            <button
+              type="button"
+              tabIndex={-1}
+              data-testid="toggle-dock-btn"
+              onClick={(e) => {
+                e.currentTarget.blur();
+                setDockCollapsed(false);
+              }}
+              className="px-3.5 py-1 rounded-full border border-white/15 bg-slate-950/38 backdrop-blur-md text-[11px] font-medium text-amber-200 hover:text-white pointer-events-auto cursor-pointer shadow-sm whitespace-nowrap"
             >
-              {/* Dock Mode Switcher */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-2 mb-2 border-b border-slate-800">
-                <div className="flex items-center gap-1.5">
+              ▴ 展开星盘动作坞 [H]
+            </button>
+          ) : (
+            <div
+              className="rounded-full border border-white/15 bg-slate-950/40 backdrop-blur-md px-2.5 py-1 text-slate-100 shadow-lg pointer-events-auto flex flex-col gap-1"
+            >
+              {/* Single-Line Compact Mode & Action Strip */}
+              <div className="flex items-center justify-center gap-1 flex-wrap sm:flex-nowrap">
+                {/* Mode Segmented Pills */}
+                <div className="flex items-center gap-0.5 p-0.5 rounded-full bg-slate-950/50 border border-white/10 shrink-0">
                   <button
                     type="button"
                     onClick={() => setDockTab('actions')}
-                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                    className={`px-2 py-0.5 rounded-full text-[11px] font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
                       dockTab === 'actions'
                         ? 'bg-amber-300 text-slate-950'
                         : 'text-slate-300 hover:text-white'
                     }`}
                   >
-                    核心探索与换装
+                    动作
                   </button>
                   <button
                     type="button"
                     data-testid="dock-tab-emotes"
                     onClick={() => setDockTab('emotes')}
-                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                    className={`px-2 py-0.5 rounded-full text-[11px] font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
                       dockTab === 'emotes'
                         ? 'bg-amber-300 text-slate-950'
                         : 'text-slate-300 hover:text-white'
                     }`}
                   >
-                    呼唤与动作轮盘 (Lv.1–5)
+                    表情
                   </button>
                   <button
                     type="button"
                     onClick={() => setDockTab('realms')}
-                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                    className={`px-2 py-0.5 rounded-full text-[11px] font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
                       dockTab === 'realms'
                         ? 'bg-amber-300 text-slate-950'
                         : 'text-slate-300 hover:text-white'
                     }`}
                   >
-                    八大王国星门传送
+                    星门
                   </button>
                 </div>
 
-                <div
+                <div className="h-3.5 w-px bg-white/15 hidden sm:block shrink-0" />
+
+                {/* Tab 1 Inline Compact Action Chips */}
+                {dockTab === 'actions' && (
+                  <div className="flex items-center justify-center gap-1 flex-wrap sm:flex-nowrap">
+                    <button
+                      type="button"
+                      data-testid="flap-wing-btn"
+                      onClick={onTriggerFlap}
+                      title="消耗1格翼能振翅升空 [Space]"
+                      className="h-7 px-2.5 rounded-full border border-amber-300/35 bg-white/8 hover:bg-white/18 text-xs font-medium text-amber-100 transition-all active:scale-95 cursor-pointer whitespace-nowrap shrink-0"
+                    >
+                      🪽 振翅 <span className="hidden xl:inline text-[10px] text-amber-200/75">[Space]</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      data-testid="dive-boost-btn"
+                      onPointerDown={() => onSetDiveHeld?.(true)}
+                      onPointerUp={() => onSetDiveHeld?.(false)}
+                      onPointerLeave={() => onSetDiveHeld?.(false)}
+                      onClick={() => onSetDiveHeld?.(!physics.isDiving)}
+                      title="空中收翼俯冲转化升力 [X]"
+                      className={`h-7 px-2.5 rounded-full border text-xs font-medium transition-all active:scale-95 cursor-pointer whitespace-nowrap shrink-0 ${
+                        physics.isDiving
+                          ? 'border-cyan-300 bg-cyan-400/25 text-cyan-100'
+                          : 'border-cyan-300/35 bg-white/8 hover:bg-white/18 text-cyan-100'
+                      }`}
+                    >
+                      ☄️ {physics.isDiving ? '拉起' : '俯冲'} <span className="hidden xl:inline text-[10px] text-cyan-200/75">[X]</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      data-testid="call-wave-btn"
+                      onPointerDown={() => {
+                        callPressStartRef.current = performance.now();
+                      }}
+                      onPointerUp={() => {
+                        const heldSec = Math.max(
+                          0.15,
+                          (performance.now() - callPressStartRef.current) / 1000
+                        );
+                        onTriggerCallWave(heldSec);
+                      }}
+                      title="短按星音呼唤 / 长按蓄力深呼唤 [Q]"
+                      className="h-7 px-2.5 rounded-full border border-sky-300/35 bg-white/8 hover:bg-white/18 text-xs font-medium text-sky-100 transition-all active:scale-95 cursor-pointer whitespace-nowrap shrink-0"
+                    >
+                      🔔 呼唤 <span className="hidden xl:inline text-[10px] text-sky-200/75">[Q]</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      data-testid="interact-heart-btn"
+                      onClick={onTriggerInteract}
+                      title={nearestInteractable ? nearestInteractable.name : '点亮蜡烛/拾取小金人 [E/F]'}
+                      className="h-7 px-2.5 rounded-full border border-rose-300/35 bg-white/8 hover:bg-white/18 text-xs font-medium text-rose-100 transition-all active:scale-95 cursor-pointer whitespace-nowrap shrink-0"
+                    >
+                      🔥 共鸣 <span className="hidden xl:inline text-[10px] text-rose-200/75">[E]</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      data-testid="sit-meditate-btn"
+                      onClick={() => {
+                        onToggleSit();
+                        setMeditationDrawerOpen(true);
+                      }}
+                      title="地面打坐 / 神龛冥想留言 [Z]"
+                      className={`h-7 px-2.5 rounded-full border text-xs font-medium transition-all active:scale-95 cursor-pointer whitespace-nowrap shrink-0 ${
+                        physics.sitMode !== 'none'
+                          ? 'border-emerald-300 bg-emerald-400/25 text-emerald-100'
+                          : 'border-emerald-300/35 bg-white/8 hover:bg-white/18 text-emerald-100'
+                      }`}
+                    >
+                      🧘 {physics.sitMode !== 'none' ? '起身' : '冥想'} <span className="hidden xl:inline text-[10px] text-emerald-200/75">[Z]</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      data-testid="open-wardrobe-btn"
+                      onClick={onOpenWardrobe}
+                      title="8部位换装衣橱 [C]"
+                      className="h-7 px-2.5 rounded-full border border-amber-300/50 bg-amber-400/15 hover:bg-amber-400/25 text-xs font-medium text-amber-100 transition-all active:scale-95 cursor-pointer whitespace-nowrap shrink-0"
+                    >
+                      🧥 衣橱 <span className="hidden xl:inline text-[10px] text-amber-200/75">[C]</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      data-testid="open-instrument-btn"
+                      onClick={onToggleInstrument}
+                      title="竖琴/钢琴/长笛/录制回放 [V]"
+                      className="h-7 px-2.5 rounded-full border border-purple-300/35 bg-white/8 hover:bg-white/18 text-xs font-medium text-purple-100 transition-all active:scale-95 cursor-pointer whitespace-nowrap shrink-0"
+                    >
+                      🎵 乐器 <span className="hidden xl:inline text-[10px] text-purple-200/75">[V]</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Tab 3 Inline 8 Sky Realms Portal Pills */}
+                {dockTab === 'realms' && (
+                  <div className="flex items-center justify-center gap-1 flex-wrap sm:flex-nowrap">
+                    {(Object.keys(REALMS) as RealmId[]).map((rKey) => {
+                      const r = REALMS[rKey];
+                      const active = progress.currentRealm === rKey;
+                      return (
+                        <button
+                          key={rKey}
+                          type="button"
+                          onClick={() => onSelectRealm(rKey)}
+                          title={r.name}
+                          className={`h-7 px-2.5 rounded-full border text-xs font-medium transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                            active
+                              ? 'border-amber-300 bg-amber-300/25 text-amber-100 font-bold'
+                              : 'border-white/12 bg-white/8 hover:bg-white/18 text-slate-200'
+                          }`}
+                        >
+                          {r.name.split(' · ')[0]}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <div className="h-3.5 w-px bg-white/15 hidden sm:block shrink-0" />
+
+                {/* Quiet Inline Room Status & Collapse Toggle */}
+                <span
                   data-testid="hud-dock-room-status"
-                  className="text-[11px] text-amber-200/85 truncate"
+                  className="hidden 2xl:inline text-[10px] text-amber-100/75 whitespace-nowrap shrink-0"
                 >
-                  房间：{netStatus.roomId} · 在线旅人：{netStatus.onlineCount}/
-                  {netStatus.maxRoomSize ?? 8} 人 · 斗篷：{equippedCape.name}
-                </div>
+                  {netStatus.roomId} ({netStatus.onlineCount}/{netStatus.maxRoomSize ?? 8}人)
+                </span>
+
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  data-testid="toggle-dock-btn"
+                  onClick={(e) => {
+                    e.currentTarget.blur();
+                    setDockCollapsed(true);
+                  }}
+                  title="收起底部星盘坞进入纯净观赏模式 [H]"
+                  className="h-7 px-2 rounded-full hover:bg-white/15 text-[11px] font-medium text-amber-200/90 hover:text-white cursor-pointer whitespace-nowrap shrink-0"
+                >
+                  ▾ 收起
+                </button>
               </div>
 
-              {/* Tab 1: Core Exploration, Flight, Dive, Call, Wardrobe & Instrument */}
-              {dockTab === 'actions' && (
-                <div className="grid grid-cols-2 sm:grid-cols-7 gap-2">
-                  <button
-                    type="button"
-                    data-testid="flap-wing-btn"
-                    onClick={onTriggerFlap}
-                    className="px-3 py-2 rounded-xl border border-amber-300/40 bg-slate-900 hover:border-amber-200 text-left transition-all active:scale-95 cursor-pointer"
-                  >
-                    <div className="text-xs font-bold text-amber-200">
-                      振翅高飞 [Space]
-                    </div>
-                    <div className="text-[11px] text-slate-400 truncate">
-                      消耗1格翼能升空
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    data-testid="dive-boost-btn"
-                    onPointerDown={() => onSetDiveHeld?.(true)}
-                    onPointerUp={() => onSetDiveHeld?.(false)}
-                    onPointerLeave={() => onSetDiveHeld?.(false)}
-                    onClick={() => onSetDiveHeld?.(!physics.isDiving)}
-                    className={`px-3 py-2 rounded-xl border text-left transition-all active:scale-95 cursor-pointer ${
-                      physics.isDiving
-                        ? 'border-cyan-300 bg-cyan-400/25 text-cyan-100'
-                        : 'border-cyan-300/40 bg-slate-900 hover:border-cyan-200'
-                    }`}
-                  >
-                    <div className="text-xs font-bold text-cyan-200">
-                      {physics.isDiving ? '拉起升空 [X]' : '俯冲加速 [X]'}
-                    </div>
-                    <div className="text-[11px] text-slate-400 truncate">
-                      {physics.isDiving
-                        ? `蓄势 ${physics.diveMomentum.toFixed(1)} · 松开拉升`
-                        : '空中收翼俯冲转化升力'}
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    data-testid="call-wave-btn"
-                    onPointerDown={() => {
-                      callPressStartRef.current = performance.now();
-                    }}
-                    onPointerUp={() => {
-                      const heldSec = Math.max(
-                        0.15,
-                        (performance.now() - callPressStartRef.current) / 1000
-                      );
-                      onTriggerCallWave(heldSec);
-                    }}
-                    className="px-3 py-2 rounded-xl border border-sky-300/40 bg-slate-900 hover:border-sky-200 text-left transition-all active:scale-95 cursor-pointer"
-                  >
-                    <div className="text-xs font-bold text-sky-200">
-                      星音呼唤 [Q]
-                    </div>
-                    <div className="text-[11px] text-slate-400 truncate">
-                      短按鸣叫 / 长按蓄力深呼唤
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    data-testid="interact-heart-btn"
-                    onClick={onTriggerInteract}
-                    className="px-3 py-2 rounded-xl border border-rose-300/40 bg-slate-900 hover:border-rose-200 text-left transition-all active:scale-95 cursor-pointer"
-                  >
-                    <div className="text-xs font-bold text-rose-200">
-                      心火共鸣 [E]
-                    </div>
-                    <div className="text-[11px] text-slate-400 truncate">
-                      {nearestInteractable ? nearestInteractable.name : '点亮蜡烛/拾取小金人'}
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    data-testid="sit-meditate-btn"
-                    onClick={() => {
-                      onToggleSit();
-                      setMeditationDrawerOpen(true);
-                    }}
-                    className={`px-3 py-2 rounded-xl border text-left transition-all active:scale-95 cursor-pointer ${
-                      physics.sitMode !== 'none'
-                        ? 'border-emerald-300 bg-emerald-400/20 text-emerald-100'
-                        : 'border-emerald-300/40 bg-slate-900 hover:border-emerald-200'
-                    }`}
-                  >
-                    <div className="text-xs font-bold text-emerald-200">
-                      {physics.sitMode !== 'none' ? '起身站立 [Z]' : '坐下 / 冥想 [Z]'}
-                    </div>
-                    <div className="text-[11px] text-slate-400 truncate">
-                      {physics.sitMode === 'meditate_shrine'
-                        ? '正在神龛打坐冥想'
-                        : physics.sitMode === 'sit_bench'
-                          ? '正与旅人长椅并排坐'
-                          : '地面坐下/神龛冥想留言'}
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    data-testid="open-wardrobe-btn"
-                    onClick={onOpenWardrobe}
-                    className="px-3 py-2 rounded-xl border border-amber-300/60 bg-amber-400/15 hover:bg-amber-400/25 text-left transition-all active:scale-95 cursor-pointer"
-                  >
-                    <div className="text-xs font-bold text-amber-200">
-                      8部位换装衣橱 [C]
-                    </div>
-                    <div className="text-[11px] text-amber-100/80 truncate">
-                      斗篷/发/帽/面/脸/颈/裤/背
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    data-testid="open-instrument-btn"
-                    onClick={onToggleInstrument}
-                    className="px-3 py-2 rounded-xl border border-purple-300/40 bg-slate-900 hover:border-purple-200 text-left transition-all active:scale-95 cursor-pointer"
-                  >
-                    <div className="text-xs font-bold text-purple-200">
-                      云端乐器 [V]
-                    </div>
-                    <div className="text-[11px] text-slate-400 truncate">
-                      竖琴/钢琴/长笛/录制回放
-                    </div>
-                  </button>
-                </div>
-              )}
-
-              {/* Tab 2: Stage 5 Call Timbres + 7 Ancestor Emotes with Lv.1-5 Upgrade Wheel */}
+              {/* Tab 2: Compact Emotes & Call Timbres Strip */}
               {dockTab === 'emotes' && (
-                <div className="space-y-2">
-                  {/* Call Voice Switcher & Deep Call Trigger Row */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b border-slate-800/80 text-[11px]">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="font-semibold text-sky-200">🔊 呼唤音色：</span>
+                <div className="pt-1 border-t border-white/10 flex flex-col gap-1.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                    <div className="flex items-center gap-1">
+                      <span className="text-sky-200/90">音色:</span>
                       {(
                         [
                           { id: 'default', label: '初心星音' },
@@ -1781,10 +2083,10 @@ export const GameHud: React.FC<GameHudProps> = ({
                           type="button"
                           data-testid={`call-voice-btn-${v.id}`}
                           onClick={() => onChangeCallVoice?.(v.id)}
-                          className={`px-2 py-0.5 rounded-md font-medium cursor-pointer ${
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-medium cursor-pointer whitespace-nowrap ${
                             activeCallVoice === v.id
                               ? 'bg-sky-300 text-slate-950 font-bold'
-                              : 'bg-slate-800 text-slate-300 hover:text-white'
+                              : 'bg-white/10 text-slate-300 hover:text-white'
                           }`}
                         >
                           {v.label}
@@ -1792,28 +2094,27 @@ export const GameHud: React.FC<GameHudProps> = ({
                       ))}
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1">
                       <button
                         type="button"
                         data-testid="deep-call-trigger-btn"
                         onClick={() => onTriggerCallWave(0.95)}
-                        className="px-2.5 py-0.5 rounded-md bg-amber-300/20 border border-amber-300/50 text-amber-200 font-semibold hover:bg-amber-300/30 cursor-pointer"
+                        className="px-2 py-0.5 rounded-full bg-amber-300/20 border border-amber-300/40 text-[10px] text-amber-200 font-medium hover:bg-amber-300/30 cursor-pointer whitespace-nowrap"
                       >
-                        🌟 蓄力深呼唤 (+1.5格翼能 & 掀翻暗蟹)
+                        🌟 蓄力深呼唤
                       </button>
                       <button
                         type="button"
                         data-testid="open-meditation-drawer-btn"
                         onClick={() => setMeditationDrawerOpen((prev) => !prev)}
-                        className="px-2.5 py-0.5 rounded-md bg-emerald-400/20 border border-emerald-300/50 text-emerald-200 font-semibold hover:bg-emerald-400/30 cursor-pointer"
+                        className="px-2 py-0.5 rounded-full bg-emerald-400/20 border border-emerald-300/40 text-[10px] text-emerald-200 font-medium hover:bg-emerald-400/30 cursor-pointer whitespace-nowrap"
                       >
-                        🧘 神龛冥想留言
+                        🧘 冥想留言
                       </button>
                     </div>
                   </div>
 
-                  {/* 7 Ancestor Emotes with Lv.1-5 Level Badge & Upgrade Trigger */}
-                  <div className="grid grid-cols-2 sm:grid-cols-7 gap-2">
+                  <div className="flex flex-wrap items-center justify-center gap-1.5">
                     {SKY_EMOTES.map((emote) => {
                       const isActive = progress.activeEmote === emote.id;
                       const unlockedLv = emoteLevels[emote.id] || 1;
@@ -1821,89 +2122,47 @@ export const GameHud: React.FC<GameHudProps> = ({
                       return (
                         <div
                           key={emote.id}
-                          className={`p-2 rounded-xl border transition-all flex flex-col justify-between ${
+                          title={`${emote.name} · ${spec.auraDescription}`}
+                          className={`px-2 py-1 rounded-full border flex items-center gap-1.5 whitespace-nowrap ${
                             isActive
-                              ? 'border-amber-300 bg-amber-300/20 text-amber-100'
-                              : 'border-slate-800 bg-slate-900 hover:border-slate-600 text-slate-200'
+                              ? 'border-amber-300 bg-amber-300/25 text-amber-100'
+                              : 'border-white/12 bg-white/8 text-slate-200'
                           }`}
                         >
                           <button
                             type="button"
                             data-testid={`emote-btn-${emote.id}`}
                             onClick={() => onTriggerEmote(emote.id, unlockedLv)}
-                            className="text-left cursor-pointer w-full"
+                            className="text-xs font-medium cursor-pointer hover:text-amber-200"
                           >
-                            <div className="flex items-center justify-between gap-1">
-                              <span className="text-xs font-bold truncate">
-                                {emote.name}
-                              </span>
-                              <span className="px-1.5 py-0.2 rounded bg-amber-400/25 text-amber-200 text-[10px] font-mono font-bold">
-                                Lv.{unlockedLv}
-                              </span>
-                            </div>
-                            <div className="text-[10px] text-slate-400 truncate mt-0.5">
-                              {spec.auraDescription}
-                            </div>
+                            {emote.name} <span className="font-mono text-[10px] text-amber-300">Lv.{unlockedLv}</span>
                           </button>
-
-                          <div className="mt-1.5 pt-1 border-t border-slate-800 flex items-center justify-between gap-1">
-                            <span className="text-[9px] text-amber-200/75 font-mono">
-                              ★×{spec.particleCount} ({spec.motionScale}x)
-                            </span>
-                            <button
-                              type="button"
-                              data-testid={`upgrade-emote-btn-${emote.id}`}
-                              onClick={() => {
-                                const nextLv = unlockedLv >= 5 ? 1 : unlockedLv + 1;
-                                onUpgradeEmoteLevel?.(emote.id, nextLv);
-                                onTriggerEmote(emote.id, nextLv);
-                              }}
-                              className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-amber-300 hover:text-slate-950 text-[9px] font-semibold text-amber-200 cursor-pointer"
-                            >
-                              {unlockedLv < 5 ? `⬆️ 升至Lv.${unlockedLv + 1}` : '↺ 切回Lv.1'}
-                            </button>
-                          </div>
+                          <button
+                            type="button"
+                            data-testid={`upgrade-emote-btn-${emote.id}`}
+                            onClick={() => {
+                              const nextLv = unlockedLv >= 5 ? 1 : unlockedLv + 1;
+                              onUpgradeEmoteLevel?.(emote.id, nextLv);
+                              onTriggerEmote(emote.id, nextLv);
+                            }}
+                            title="升级/切换动作等级 (Lv.1–5)"
+                            className="px-1.5 py-0.2 rounded-full bg-white/12 hover:bg-amber-300 hover:text-slate-950 text-[9px] font-semibold text-amber-200 cursor-pointer"
+                          >
+                            {unlockedLv < 5 ? '⬆️' : '↺'}
+                          </button>
                         </div>
                       );
                     })}
                   </div>
+
                   {progress.activeEmote && (
                     <div
                       data-testid="active-emote-status"
-                      className="text-[11px] text-amber-200 font-semibold text-center"
+                      className="text-[10px] text-amber-200 font-medium text-center"
                     >
                       ✨ 当前施展动作：{progress.activeEmote} (Lv.{activeEmoteLevel})
                     </div>
                   )}
-                </div>
-              )}
-
-              {/* Tab 3: 8 Sky Realms Instant Portal Switcher */}
-              {dockTab === 'realms' && (
-                <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
-                  {(Object.keys(REALMS) as RealmId[]).map((rKey) => {
-                    const r = REALMS[rKey];
-                    const active = progress.currentRealm === rKey;
-                    return (
-                      <button
-                        key={rKey}
-                        type="button"
-                        onClick={() => onSelectRealm(rKey)}
-                        className={`px-2.5 py-1.5 rounded-xl border text-left transition-all cursor-pointer ${
-                          active
-                            ? 'border-amber-300 bg-amber-300/20 text-amber-100'
-                            : 'border-slate-800 bg-slate-900 hover:border-slate-600 text-slate-200'
-                        }`}
-                      >
-                        <div className="text-xs font-bold truncate">
-                          {r.name.split(' · ')[0]}
-                        </div>
-                        <div className="text-[10px] text-slate-400 truncate">
-                          {r.name.split(' · ')[1]}
-                        </div>
-                      </button>
-                    );
-                  })}
                 </div>
               )}
             </div>

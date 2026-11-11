@@ -99,6 +99,7 @@ export interface PersistentSaveData {
   qualityTier?: 'auto' | 'low' | 'medium' | 'high';
   highContrastMode?: boolean;
   reducedMotionShake?: boolean;
+  discoveredEasterEggIds?: string[];
 }
 
 export interface SavedPhotoRecord {
@@ -324,6 +325,7 @@ export function buildDefaultSaveData(now = new Date()): PersistentSaveData {
     qualityTier: 'auto',
     highContrastMode: false,
     reducedMotionShake: false,
+    discoveredEasterEggIds: [],
   };
 }
 
@@ -2140,6 +2142,100 @@ export function translateUiPure(locale: 'zh' | 'en', key: string): string {
     (GAME_CONFIG as any).stage11Polish?.i18n?.zh ||
     {}) as Record<string, string>;
   return dict[key] || key;
+}
+
+// ============================================================================
+// Stage 12: V2.0 World Expansion — 4 Outer Sanctuaries & 6 Sky Tribute Easter Eggs
+// ============================================================================
+
+export interface EasterEggConfigItem {
+  id: string;
+  name: string;
+  subtitle: string;
+  loreText: string;
+  x: number;
+  z: number;
+  radius: number;
+  waxReward: number;
+  candlesBonus: number;
+  heartsBonus: number;
+  ascendedCandlesBonus: number;
+  wingedLightBonus: number;
+  launchVy: number;
+}
+
+/**
+ * Stage 12 Pure Function: Discovers and records a Sky Tribute Easter Egg (`eggId`),
+ * granting first-time discovery rewards (Candles, Hearts, Ascended Candles, Winged Light, Wax)
+ * and updating `discoveredEasterEggIds`.
+ */
+export function discoverEasterEggPure(
+  save: PersistentSaveData,
+  eggId: string
+): {
+  newlyDiscovered: boolean;
+  eggConfig: EasterEggConfigItem | null;
+  nextSave: PersistentSaveData;
+  message: string;
+} {
+  const eggs = (((GAME_CONFIG as any).stage12Expansion?.easterEggs || []) as EasterEggConfigItem[]);
+  const eggConfig = eggs.find((e) => e.id === eggId) || null;
+  if (!eggConfig) {
+    return {
+      newlyDiscovered: false,
+      eggConfig: null,
+      nextSave: save,
+      message: '未找到该秘境彩蛋记录',
+    };
+  }
+
+  const discovered = save.discoveredEasterEggIds || [];
+  if (discovered.includes(eggId)) {
+    return {
+      newlyDiscovered: false,
+      eggConfig,
+      nextSave: save,
+      message: `✨ 再次触发「${eggConfig.name}」· ${eggConfig.loreText}`,
+    };
+  }
+
+  const forgeRes = forgeCandlesFromWaxPure(save, eggConfig.waxReward || 50);
+  const nextDiscovered = [...discovered, eggId];
+
+  const nextSave: PersistentSaveData = {
+    ...forgeRes.nextSave,
+    candles: forgeRes.nextSave.candles + (eggConfig.candlesBonus || 0),
+    hearts: forgeRes.nextSave.hearts + (eggConfig.heartsBonus || 0),
+    ascendedCandles:
+      forgeRes.nextSave.ascendedCandles + (eggConfig.ascendedCandlesBonus || 0),
+    wingedLights:
+      forgeRes.nextSave.wingedLights + (eggConfig.wingedLightBonus || 0),
+    discoveredEasterEggIds: nextDiscovered,
+  };
+
+  const rewardParts: string[] = [];
+  if (eggConfig.wingedLightBonus > 0) {
+    rewardParts.push(`+${eggConfig.wingedLightBonus} 永久光之翼`);
+  }
+  if (eggConfig.candlesBonus > 0) {
+    rewardParts.push(`+${eggConfig.candlesBonus} 白蜡烛`);
+  }
+  if (eggConfig.heartsBonus > 0) {
+    rewardParts.push(`+${eggConfig.heartsBonus} 爱心`);
+  }
+  if (eggConfig.ascendedCandlesBonus > 0) {
+    rewardParts.push(`+${eggConfig.ascendedCandlesBonus} 升华红蜡烛`);
+  }
+  if (eggConfig.waxReward > 0) {
+    rewardParts.push(`+${eggConfig.waxReward} 滴烛火`);
+  }
+
+  return {
+    newlyDiscovered: true,
+    eggConfig,
+    nextSave,
+    message: `🎉 首次解锁隐藏彩蛋 (${nextDiscovered.length}/${eggs.length}) ${eggConfig.name}！获得 ${rewardParts.join('、')} · ${eggConfig.loreText}`,
+  };
 }
 
 /**
