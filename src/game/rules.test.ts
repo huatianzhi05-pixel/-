@@ -29,6 +29,17 @@ import {
   isInRealmShelterAt,
   flipDarkCrabsWithDeepCallPure,
   STAGE12_CFG,
+  CONTINENTAL_ARCHITECTURAL_HUBS,
+  SKY_ALCHEMY_SPELLS,
+  SUNSET_RACE_CHECKPOINTS,
+  createInitialSunsetRaceStatePure,
+  stepSunsetRaceTrialPure,
+  STATIC_WORLD_OBSTACLES,
+  SKY_INSTRUMENT_VOICES,
+  SKY_ENSEMBLE_PRACTICE_SONGS,
+  createInitialEnsemblePracticeStatePure,
+  stepEnsemblePracticeNotePure,
+  evaluateEnsembleAccuracyRatingPure,
 } from './rules';
 import { DEFAULT_LOADOUT, getCosmeticsByCategory } from './cosmetics';
 import {
@@ -73,6 +84,8 @@ import {
   advanceOnboardingTutorialPure,
   translateUiPure,
   discoverEasterEggPure,
+  evaluateSunsetRaceMedalPure,
+  recordSunsetRaceCompletionPure,
 } from '../core/StorageService';
 import { resolveDeployNetworkStrategyPure } from '../core/NetworkClient';
 
@@ -766,8 +779,8 @@ test('Stage 3 Daylight Prairie (云野) supports 3 Sub-Zones, Candle Clusters, G
   const candles = prairieItems.filter((i) => i.type === 'candle_cluster');
   const blooms = prairieItems.filter((i) => i.type === 'light_bloom');
   const spirits = prairieItems.filter((i) => i.type === 'ancestor_spirit');
-  assert.equal(candles.length, 4);
-  assert.equal(blooms.length, 3);
+  assert.ok(candles.length >= 4);
+  assert.ok(blooms.length >= 3);
   assert.equal(spirits.length, 2);
   assert.equal(spirits[0].emoteUnlocked, 'emote_butterfly');
   assert.equal(spirits[1].emoteUnlocked, 'emote_cheer_jump');
@@ -1324,7 +1337,7 @@ test('Stage 8 All 8 Sky Realms & Eye of Eden Rebirth Cycle: Forest mushroom shel
   // 2. Valley of Triumph (霞谷): Flying Race Ring grants wax + high-speed forward glide boost
   const valleyItems = createWorldInteractables('valley');
   const raceRings = valleyItems.filter((i) => i.type === 'race_ring');
-  assert.equal(raceRings.length, 3);
+  assert.ok(raceRings.length >= 3);
   prog.currentRealm = 'valley';
   const ringRes = applyInteraction(
     raceRings[0],
@@ -1779,7 +1792,7 @@ test('Stage 12 & 13 Ultra-Wide Continent Expansion (220m Radius / 11x Area), 8 O
   const easterEggs = prairieItems.filter((i) => i.type === 'easter_egg');
   const wingedLights = prairieItems.filter((i) => i.type === 'winged_light');
   assert.equal(easterEggs.length, 12);
-  assert.equal(wingedLights.length, 7);
+  assert.ok(wingedLights.length >= 7);
 
   const geyserEgg = easterEggs.find(
     (e) => e.id === 'egg_sanctuary_geyser_whale'
@@ -1828,4 +1841,504 @@ test('Stage 12 & 13 Ultra-Wide Continent Expansion (220m Radius / 11x Area), 8 O
   assert.equal(oreoRes2.newlyDiscovered, false);
   assert.equal(oreoRes2.nextSave.candles, candlesAfterAurora);
 });
+
+test('Locomotion & Collision Polish: Smooth uphill/downhill ground tracking, tangential building sliding, and zero invisible prop/slope walls', () => {
+  // 1. Walking downhill from Northern Temple ramp (z = -40 toward z = -33) stays grounded every single frame without chattering into fly mode
+  let downState = createInitialPhysicsState(DEFAULT_LOADOUT);
+  downState.x = 0;
+  downState.z = -40.0;
+  downState.y = groundHeightAt(0, -40.0);
+  downState.grounded = true;
+  for (let i = 0; i < 40; i++) {
+    downState = stepPlayerPhysics(
+      downState,
+      {
+        moveX: 0,
+        moveZ: 1.0, // Walk south downhill (+Z)
+        jumpJustPressed: false,
+        jumpHeld: false,
+        toggleFlightModeJustPressed: false,
+        sprintHeld: true,
+        cameraYaw: 0,
+      },
+      0.016,
+      DEFAULT_LOADOUT
+    ).nextState;
+    assert.equal(
+      downState.grounded,
+      true,
+      `Frame ${i}: Player must stay firmly grounded while running downhill (no walk/fly chattering)`
+    );
+    assert.ok(
+      downState.locomotionMode === 'run' || downState.locomotionMode === 'walk',
+      `Frame ${i}: LocomotionMode must remain walk/run on downhill grade`
+    );
+  }
+
+  // 2. Walking uphill on outer sanctuary skirts (e.g. Sanctuary Islands at x=64, z=-61) does NOT trigger involuntary slide-back ("invisible wall")
+  let sancSlopeState = createInitialPhysicsState(DEFAULT_LOADOUT);
+  sancSlopeState.x = 64.0;
+  sancSlopeState.z = -61.0; // Steep outer skirt of Sanctuary Islands (center 64, -72, r=15)
+  sancSlopeState.y = groundHeightAt(64.0, -61.0);
+  sancSlopeState.grounded = true;
+  for (let i = 0; i < 20; i++) {
+    sancSlopeState = stepPlayerPhysics(
+      sancSlopeState,
+      {
+        moveX: 0,
+        moveZ: -1.0, // Walk north (-Z) uphill toward sanctuary center (64, -72)
+        jumpJustPressed: false,
+        jumpHeld: false,
+        toggleFlightModeJustPressed: false,
+        sprintHeld: true,
+        cameraYaw: 0,
+      },
+      0.02,
+      DEFAULT_LOADOUT
+    ).nextState;
+  }
+  assert.equal(sancSlopeState.isSlidingSlope, false);
+  assert.ok(
+    sancSlopeState.z < -61.5,
+    'Player walks smoothly uphill onto outer sanctuary skirt without hitting a slope slide-back wall'
+  );
+
+  // 3. Tangential velocity sliding along Shrine Pillar (6.4, 0) eliminates inward velocity fighting
+  let slidePillarState = createInitialPhysicsState(DEFAULT_LOADOUT);
+  slidePillarState.x = 5.45;
+  slidePillarState.z = 0.25;
+  slidePillarState.y = groundHeightAt(5.45, 0.25);
+  slidePillarState.vx = 6.5; // Moving +X into pillar at (6.4, 0) with slight +Z offset
+  slidePillarState.vz = 1.5;
+  const pillarStep = stepPlayerPhysics(
+    slidePillarState,
+    {
+      moveX: 1.0,
+      moveZ: 0.2,
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: true,
+      cameraYaw: 0,
+    },
+    0.03,
+    DEFAULT_LOADOUT
+  ).nextState;
+  const distToPillar = Math.hypot(pillarStep.x - 6.4, pillarStep.z - 0);
+  assert.ok(distToPillar >= 0.52 + 0.44 - 1e-4);
+  const nx = (pillarStep.x - 6.4) / distToPillar;
+  const nz = (pillarStep.z - 0) / distToPillar;
+  const inwardVel = pillarStep.vx * nx + pillarStep.vz * nz;
+  assert.ok(
+    inwardVel >= -1e-4,
+    'Inward velocity into building pillar is zeroed out for smooth tangential sliding'
+  );
+
+  // 4. Causeway center roadway, meadow candle, and spirit coordinates have zero invisible prop walls
+  const bridgeCenterCheck = resolveObstacleCollisions(0, 1.2, -18.4, 0.44);
+  assert.equal(bridgeCenterCheck.hitObstacle, false);
+  const candleCheck = resolveObstacleCollisions(0, 1.2, -28.0, 0.44);
+  assert.equal(candleCheck.hitObstacle, false);
+  const spiritCheck = resolveObstacleCollisions(-14.5, 1.2, -14.0, 0.44);
+  assert.equal(spiritCheck.hitObstacle, false);
+});
+
+test('Building Anti-Clipping & Platform Floor Alignment: Solid 3D structures block clipping while platforms, doorways, and altars remain flush and accessible', () => {
+  // 1. Stone platforms match 3D visual plinths (zero floor sinking)
+  assert.equal(groundHeightAt(6.7, 0), 1.2, 'Shrine outerTier edge is flush at 1.2m');
+  assert.equal(groundHeightAt(0, -50), 4.6, 'Northern Temple plinth center is flush at 4.6m');
+  assert.equal(groundHeightAt(6.0, -50), 4.6, 'Northern Temple plinth outer terrace is flush at 4.6m');
+  assert.equal(groundHeightAt(16.5, -24.5), 2.0, 'Three-Tower Bell Village plinth is flush at 2.0m');
+  assert.equal(groundHeightAt(0, -148), 12.8, 'AURORA Colosseum center is flush at 12.8m');
+  assert.equal(groundHeightAt(13.5, -148), 12.8, 'AURORA Colosseum colonnade ring is flush at 12.8m');
+
+  // 2. Solid 3D buildings across all zones push player out and prevent getting stuck inside
+  const solidChecks = [
+    { name: 'Causeway Stone Lantern', x: -2.8, y: 1.2, z: -18.4 },
+    { name: 'Meadow Stone Arch Left Leg', x: -3.6, y: 1.2, z: -8.0 },
+    { name: 'Northern Temple Main Hall', x: 0, y: 5.0, z: -55.0 },
+    { name: 'Northern Temple Left Bell Tower', x: -11.0, y: 5.0, z: -47.5 },
+    { name: 'Echo Cavern Arch Left Wall', x: -22.42, y: 1.5, z: -13.6 },
+    { name: 'Three-Tower Bell Village Pillar', x: 15.15, y: 2.3, z: -24.5 },
+    { name: 'Sanctuary Conch Spire', x: 47.8, y: 4.5, z: -30.5 },
+    { name: 'Grandma Hollow Treehouse Back Bark Wall', x: -58.5, y: 4.0, z: -34.5 },
+    { name: 'Hermit Valley Snow Igloo', x: 92.8, y: 18.5, z: 61.8 },
+    { name: 'Abyss Sunken Stone Tower', x: -112.5, y: 2.6, z: 64.5 },
+    { name: 'AURORA Colosseum Golden Column', x: 12.2, y: 12.8, z: -148.0 },
+    { name: 'Forgotten Ark Wooden Hull', x: -88.0, y: 2.8, z: -86.5 },
+  ];
+
+  for (const b of solidChecks) {
+    const res = resolveObstacleCollisions(b.x, b.y, b.z, 0.44);
+    assert.equal(res.hitObstacle, true, `${b.name} must block clipping`);
+    const recheck = resolveObstacleCollisions(res.x, b.y, res.z, 0.44);
+    assert.equal(
+      recheck.hitObstacle,
+      false,
+      `${b.name} must cleanly push player outside all overlapping colliders in 1 step without getting stuck`
+    );
+  }
+
+  // 3. Grandma's Hollow Treehouse SE Doorway (-52.2, -27.2) and Interior Dining Table (-54, -32) are open and accessible!
+  const doorwayCheck = resolveObstacleCollisions(-52.2, 3.8, -27.2, 0.44);
+  assert.equal(doorwayCheck.hitObstacle, false, 'Grandma Treehouse doorway is open for walking inside');
+  const interiorCheck = resolveObstacleCollisions(-54.0, 3.8, -32.0, 0.44);
+  assert.equal(interiorCheck.hitObstacle, false, 'Grandma Treehouse interior feast table is accessible');
+
+  // 4. Forgotten Ark Easter Egg Altar (-88, -82) and Northern Temple Altar (0, -48) are unobstructed
+  const arkEggAltarCheck = resolveObstacleCollisions(-88.0, 2.5, -82.0, 0.44);
+  assert.equal(arkEggAltarCheck.hitObstacle, false, 'Forgotten Ark Easter Egg altar (-88, -82) is unobstructed');
+  const templeAltarCheck = resolveObstacleCollisions(0, 4.6, -48.0, 0.44);
+  assert.equal(templeAltarCheck.hitObstacle, false, 'Northern Temple front altar (0, -48) is unobstructed');
+});
+
+test('Continental Ground Architectural Hubs (8 Complexes): Terrace heights, sub-zone names, 18 new playable interactables, solid building colliders, and thermal updrafts', () => {
+  // 1. All 8 Continental Architectural Hubs exist with flush stone terraces and sub-zone names
+  assert.equal(CONTINENTAL_ARCHITECTURAL_HUBS.length, 8);
+  for (const hub of CONTINENTAL_ARCHITECTURAL_HUBS) {
+    assert.equal(groundHeightAt(hub.x, hub.z), hub.y, `${hub.name} terrace center is flush at ${hub.y}m`);
+    assert.equal(getSubZoneNameAt('prairie', hub.x, hub.z), hub.name);
+  }
+
+  // 2. 18 new interactive items across the 8 ground hubs (total 10 candle clusters, 6 light blooms, 11 winged lights in Prairie)
+  const items = createWorldInteractables('prairie');
+  const hubItems = items.filter((i) => i.id.includes('_hub_'));
+  assert.equal(hubItems.length, 18);
+  assert.equal(items.filter((i) => i.type === 'candle_cluster').length, 10);
+  assert.equal(items.filter((i) => i.type === 'light_bloom').length, 6);
+  assert.equal(items.filter((i) => i.type === 'winged_light').length, 11);
+
+  // 3. Solid architectural colliders at the new ground hubs block clipping while keeping plazas accessible
+  const hubSolidChecks = [
+    { name: 'Aviary West Stone Cottage', x: -7.5, y: 2.0, z: 26.5 },
+    { name: 'Aviary East Music Shop', x: 7.5, y: 2.0, z: 26.5 },
+    { name: 'Sundial Central Obelisk', x: 0.0, y: 3.5, z: 62.0 },
+    { name: 'Southeast Windmill Tower', x: 34.0, y: 3.5, z: 26.0 },
+    { name: 'East Sunset Race North Tower', x: 58.0, y: 4.0, z: 3.2 },
+    { name: 'West Twilight Castle North Keep', x: -60.5, y: 3.5, z: 3.8 },
+    { name: 'Northeast Cloud Lighthouse', x: 36.0, y: 4.0, z: -44.0 },
+    { name: 'Southwest Oasis West Obelisk', x: -52.5, y: 3.0, z: 53.0 },
+  ];
+  for (const hc of hubSolidChecks) {
+    const col = resolveObstacleCollisions(hc.x, hc.y, hc.z, 0.44);
+    assert.equal(col.hitObstacle, true, `${hc.name} must block player clipping`);
+    const recheck = resolveObstacleCollisions(col.x, hc.y, col.z, 0.44);
+    assert.equal(recheck.hitObstacle, false, `${hc.name} must cleanly push player outside`);
+  }
+
+  // 4. Thermal Updraft at Southeast Windmill Observatory (34, 26) lifts airborne player and recharges wing energy
+  let wmPhys = createInitialPhysicsState(DEFAULT_LOADOUT);
+  wmPhys.x = 34.0;
+  wmPhys.z = 26.0;
+  wmPhys.y = 6.0;
+  wmPhys.vy = 0;
+  wmPhys.grounded = false;
+  wmPhys.wingEnergy = 2.0;
+  const wmStep = stepPlayerPhysics(
+    wmPhys,
+    {
+      moveX: 0,
+      moveZ: 0,
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: false,
+      cameraYaw: 0,
+      realmId: 'prairie',
+    },
+    0.1,
+    DEFAULT_LOADOUT
+  ).nextState;
+  assert.equal(wmStep.inWindTunnel, true);
+  assert.ok(wmStep.vy > 0.25, 'Windmill Observatory thermal updraft lifts airborne player');
+  assert.ok(wmStep.wingEnergy > 2.0, 'Windmill Observatory recharges wing energy');
+});
+
+test('Stage 14 Aviary Alchemy Spell Buffs (4 Spells) & 4-Checkpoint Sunset Speedrun Time-Trial Leaderboard', () => {
+  // 1. All 4 Sky Alchemy Spells exist with 180s duration
+  assert.equal(SKY_ALCHEMY_SPELLS.length, 4);
+  for (const sp of SKY_ALCHEMY_SPELLS) {
+    assert.equal(sp.durationSec, 180);
+  }
+
+  // 2. spell_wind_speed grants +25% faster running speed compared to baseline
+  const baseRun = stepPlayerPhysics(
+    createInitialPhysicsState(DEFAULT_LOADOUT),
+    {
+      moveX: 0,
+      moveZ: -1.0,
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: true,
+      cameraYaw: 0,
+    },
+    0.05,
+    DEFAULT_LOADOUT
+  ).nextState;
+
+  const spellRun = stepPlayerPhysics(
+    createInitialPhysicsState(DEFAULT_LOADOUT),
+    {
+      moveX: 0,
+      moveZ: -1.0,
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: true,
+      cameraYaw: 0,
+      activeSpellId: 'spell_wind_speed',
+    },
+    0.05,
+    DEFAULT_LOADOUT
+  ).nextState;
+  assert.ok(
+    Math.hypot(spellRun.vx, spellRun.vz) > Math.hypot(baseRun.vx, baseRun.vz) * 1.2,
+    'spell_wind_speed boosts ground running speed by ~25%'
+  );
+
+  // 3. spell_antigravity_feather boosts jump/flap lift by +30% and reduces airborne gravity
+  const baseJump = stepPlayerPhysics(
+    createInitialPhysicsState(DEFAULT_LOADOUT),
+    {
+      moveX: 0,
+      moveZ: 0,
+      jumpJustPressed: true,
+      jumpHeld: true,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: false,
+      cameraYaw: 0,
+    },
+    0.02,
+    DEFAULT_LOADOUT
+  ).nextState;
+  const featherJump = stepPlayerPhysics(
+    createInitialPhysicsState(DEFAULT_LOADOUT),
+    {
+      moveX: 0,
+      moveZ: 0,
+      jumpJustPressed: true,
+      jumpHeld: true,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: false,
+      cameraYaw: 0,
+      activeSpellId: 'spell_antigravity_feather',
+    },
+    0.02,
+    DEFAULT_LOADOUT
+  ).nextState;
+  assert.ok(
+    featherJump.vy > baseJump.vy * 1.25,
+    'spell_antigravity_feather increases vertical jump/flap lift and lowers gravity'
+  );
+
+  // 4. spell_golden_aegis prevents dark water energy drain at (-15.5, -12.0) and recharges up to maxWingWedges + 2
+  let aegisPhys = createInitialPhysicsState(DEFAULT_LOADOUT);
+  aegisPhys.x = -15.5;
+  aegisPhys.z = -12.0;
+  aegisPhys.y = groundHeightAt(-15.5, -12.0);
+  const startCap = aegisPhys.maxWingWedges;
+  const aegisStep = stepPlayerPhysics(
+    aegisPhys,
+    {
+      moveX: 0,
+      moveZ: 0,
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: false,
+      cameraYaw: 0,
+      realmId: 'home',
+      activeSpellId: 'spell_golden_aegis',
+    },
+    0.5,
+    DEFAULT_LOADOUT
+  ).nextState;
+  assert.equal(aegisStep.isInDarkWater, false);
+  assert.ok(aegisStep.wingEnergy > startCap, 'spell_golden_aegis grants +2 bonus wing wedges capacity and protects against dark water');
+
+  // 5. 4-Checkpoint Sunset Speedrun Time-Trial Progression & Medal Settlement
+  assert.equal(SUNSET_RACE_CHECKPOINTS.length, 4);
+  let race = createInitialSunsetRaceStatePure();
+  race.active = true;
+  for (let i = 0; i < SUNSET_RACE_CHECKPOINTS.length; i++) {
+    const cp = SUNSET_RACE_CHECKPOINTS[i];
+    const step = stepSunsetRaceTrialPure(race, cp.x, cp.z, 8500);
+    assert.equal(step.reachedCheckpoint?.id, cp.id);
+    assert.equal(step.justCompletedRace, i === SUNSET_RACE_CHECKPOINTS.length - 1);
+    race = step.nextState;
+  }
+  assert.equal(race.completed, true);
+  assert.equal(race.elapsedMs, 34000);
+
+  assert.equal(evaluateSunsetRaceMedalPure(34000).medal, 'gold');
+  assert.equal(evaluateSunsetRaceMedalPure(62000).medal, 'silver');
+  assert.equal(evaluateSunsetRaceMedalPure(89000).medal, 'bronze');
+
+  const save = buildDefaultSaveData();
+  const settle = recordSunsetRaceCompletionPure(save, 34000);
+  assert.equal(settle.isNewRecord, true);
+  assert.equal(settle.medal, 'gold');
+  assert.equal(settle.candlesAwarded, 3);
+  assert.equal(settle.heartsAwarded, 1);
+  assert.equal(settle.nextSave.bestRaceTimeMs, 34000);
+  assert.equal(settle.nextSave.bestRaceMedal, 'gold');
+  assert.equal(settle.nextSave.completedRaceCount, 1);
+});
+
+test('Bugfix Audit: East Sunset Race Ring +X Boost, Alchemy Cauldron Collider & Wall Clearance, Rainbow Trail +15% Speed, and Relative Starlight Elevator Lift', () => {
+  const progress = createInitialProgressState();
+
+  // 1. East Sunset Race Ring boosts Eastward (+X) along the race corridor instead of North (-Z)
+  const homeItems = createWorldInteractables('home');
+  const eastRing = homeItems.find((i) => i.id === 'home_hub_east_race_ring_1')!;
+  assert.ok(eastRing, 'home_hub_east_race_ring_1 exists in home interactables');
+  const basePhys = createInitialPhysicsState(DEFAULT_LOADOUT);
+  basePhys.x = eastRing.x;
+  basePhys.z = eastRing.z;
+  basePhys.y = eastRing.y;
+  const eastBoost = applyInteraction(eastRing, progress, basePhys, DEFAULT_LOADOUT);
+  assert.ok(eastBoost.nextPhysics.vx > 12, 'East Sunset Race Ring boosts velocity in +X direction');
+  assert.equal(eastBoost.nextPhysics.vz, 0, 'East Sunset Race Ring does not push sideways in Z');
+  assert.ok(Math.abs(eastBoost.nextPhysics.yaw - Math.PI * 0.5) < 0.001, 'East Sunset Race Ring faces +X');
+
+  // Valley race ring still boosts North (-Z)
+  const valleyItems = createWorldInteractables('valley');
+  const valleyRing = valleyItems.find((i) => i.type === 'race_ring')!;
+  assert.ok(valleyRing, 'Valley race_ring exists');
+  const valleyBoost = applyInteraction(valleyRing, progress, basePhys, DEFAULT_LOADOUT);
+  assert.ok(valleyBoost.nextPhysics.vz < -12, 'Valley race ring boosts velocity in -Z direction');
+  assert.equal(valleyBoost.nextPhysics.vx, 0);
+
+  // 2. Aviary Alchemy Cauldron is separated from aviary_shop_west wall and has a solid obstacle collider
+  const cauldronObs = STATIC_WORLD_OBSTACLES.find((o) => o.id === 'aviary_alchemy_cauldron')!;
+  const westShopObs = STATIC_WORLD_OBSTACLES.find((o) => o.id === 'aviary_shop_west')!;
+  const finishArchL = STATIC_WORLD_OBSTACLES.find((o) => o.id === 'sunset_finish_arch_l')!;
+  assert.ok(cauldronObs, 'aviary_alchemy_cauldron obstacle registered');
+  assert.ok(westShopObs, 'aviary_shop_west obstacle registered');
+  assert.ok(finishArchL, 'sunset_finish_arch_l obstacle registered');
+
+  const centerDist = Math.hypot(cauldronObs.x - westShopObs.x, cauldronObs.z - westShopObs.z);
+  assert.ok(
+    centerDist > cauldronObs.radius + westShopObs.radius + 0.4,
+    'Alchemy cauldron has generous walkable clearance from West Aviary Shop wall'
+  );
+
+  const pushedFromCauldron = resolveObstacleCollisions(
+    cauldronObs.x + 0.1,
+    groundHeightAt(cauldronObs.x, cauldronObs.z),
+    cauldronObs.z,
+    0.44
+  );
+  assert.equal(pushedFromCauldron.hitObstacle, true, 'Player cannot clip inside aviary_alchemy_cauldron');
+
+  // 3. spell_rainbow_trail grants +15% ground running speed
+  const normalWalk = stepPlayerPhysics(
+    createInitialPhysicsState(DEFAULT_LOADOUT),
+    {
+      moveX: 0,
+      moveZ: -1.0,
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: true,
+      cameraYaw: 0,
+    },
+    0.05,
+    DEFAULT_LOADOUT
+  ).nextState;
+  const rainbowWalk = stepPlayerPhysics(
+    createInitialPhysicsState(DEFAULT_LOADOUT),
+    {
+      moveX: 0,
+      moveZ: -1.0,
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: true,
+      cameraYaw: 0,
+      activeSpellId: 'spell_rainbow_trail',
+    },
+    0.05,
+    DEFAULT_LOADOUT
+  ).nextState;
+  assert.ok(
+    Math.hypot(rainbowWalk.vx, rainbowWalk.vz) > Math.hypot(normalWalk.vx, normalWalk.vz) * 1.12,
+    'spell_rainbow_trail increases ground speed by ~15%'
+  );
+
+  // 4. starlight_elevator lifts at least 12m above local terrain floor
+  const sundialElevator = homeItems.find((i) => i.id === 'home_hub_sundial_elevator')!;
+  assert.ok(sundialElevator, 'home_hub_sundial_elevator exists');
+  const elevRes = applyInteraction(sundialElevator, progress, basePhys, DEFAULT_LOADOUT);
+  const localFloor = groundHeightAt(sundialElevator.x, sundialElevator.z);
+  assert.ok(
+    elevRes.nextPhysics.y >= localFloor + 12.0 - 0.01,
+    'starlight_elevator lifts player at least 12m above local ground height'
+  );
+});
+
+test('8 Sky Instrument Timbres (Xylophone, Wind Chime, Flute, Music Box, etc.) & Beginner Auto-Ensemble Practice Mode', () => {
+  // 1. All 8 instrument timbres exist including xylophone, wind_chime, flute, and music_box
+  assert.equal(SKY_INSTRUMENT_VOICES.length, 8);
+  const voiceIds = SKY_INSTRUMENT_VOICES.map((v) => v.id);
+  assert.ok(voiceIds.includes('xylophone'), 'xylophone (森灵木琴) is registered');
+  assert.ok(voiceIds.includes('wind_chime'), 'wind_chime (云端风铃) is registered');
+  assert.ok(voiceIds.includes('flute'), 'flute (星语长笛) is registered');
+  assert.ok(voiceIds.includes('music_box'), 'music_box (星河八音盒) is registered');
+
+  // Verify skyAudio.playInstrumentNote safely accepts all 8 voices in headless/Node environment
+  for (const v of SKY_INSTRUMENT_VOICES) {
+    skyAudio.playInstrumentNote(523.25, v.id, 0.9);
+  }
+
+  // 2. 4 Multi-part Ensemble Practice Songs exist with valid 0..14 lead & harmony key indices
+  assert.equal(SKY_ENSEMBLE_PRACTICE_SONGS.length, 4);
+  for (const song of SKY_ENSEMBLE_PRACTICE_SONGS) {
+    assert.ok(song.steps.length >= 8);
+    for (const step of song.steps) {
+      assert.ok(step.leadKeyIndex >= 0 && step.leadKeyIndex < 15);
+      assert.ok(step.harmonyKeyIndex >= 0 && step.harmonyKeyIndex < 15);
+    }
+  }
+
+  // 3. Beginner Any-Key Assist Mode allows any key input to play the target lead note + harmony accompaniment and complete with S rating
+  const prairieSong = SKY_ENSEMBLE_PRACTICE_SONGS[0];
+  let practice = createInitialEnsemblePracticeStatePure(prairieSong.id, true);
+  practice.active = true;
+  for (let i = 0; i < prairieSong.steps.length; i++) {
+    // Even if beginner presses key 0 every time, anyKeyAssist resolves to target leadKeyIndex
+    const res = stepEnsemblePracticeNotePure(practice, 0, false);
+    assert.equal(res.isCorrect, true);
+    assert.equal(res.resolvedLeadKeyIndex, prairieSong.steps[i].leadKeyIndex);
+    assert.equal(res.harmonyKeyIndex, prairieSong.steps[i].harmonyKeyIndex);
+    assert.equal(res.justCompleted, i === prairieSong.steps.length - 1);
+    practice = res.nextState;
+  }
+  assert.equal(practice.completed, true);
+  assert.equal(practice.maxCombo, prairieSong.steps.length);
+  assert.equal(practice.rating, 'S');
+
+  // 4. Strict Practice Mode (anyKeyAssist = false) tracks misses and resets combo on wrong key
+  let strictPractice = createInitialEnsemblePracticeStatePure(prairieSong.id, false);
+  const firstTarget = prairieSong.steps[0].leadKeyIndex;
+  const wrongKey = (firstTarget + 1) % 15;
+  const missRes = stepEnsemblePracticeNotePure(strictPractice, wrongKey, false);
+  assert.equal(missRes.isCorrect, false);
+  assert.equal(missRes.nextState.misses, 1);
+  assert.equal(missRes.nextState.combo, 0);
+  assert.equal(missRes.nextState.stepIndex, 0);
+
+  const hitRes = stepEnsemblePracticeNotePure(missRes.nextState, firstTarget, false);
+  assert.equal(hitRes.isCorrect, true);
+  assert.equal(hitRes.nextState.hits, 1);
+  assert.equal(hitRes.nextState.combo, 1);
+  assert.equal(hitRes.nextState.stepIndex, 1);
+
+  assert.equal(evaluateEnsembleAccuracyRatingPure(10, 0), 'S');
+  assert.equal(evaluateEnsembleAccuracyRatingPure(8, 2), 'A');
+  assert.equal(evaluateEnsembleAccuracyRatingPure(5, 5), 'B');
+});
+
+
 

@@ -8,6 +8,11 @@ import {
   RealmId,
   SKY_EMOTES,
   STAGE12_CFG,
+  CONTINENTAL_ARCHITECTURAL_HUBS,
+  SKY_ALCHEMY_SPELLS,
+  SkySpellId,
+  SUNSET_RACE_CHECKPOINTS,
+  SunsetRaceTrialState,
   WorldInteractable,
   computeEmoteLevelSpec,
   getDayNightAtmosphere,
@@ -108,6 +113,14 @@ interface GameHudProps {
   ) => void;
   discoveredEasterEggIds?: string[];
   onDiscoverAndWarpEasterEgg?: (eggId: string) => void;
+  activeSpellId?: SkySpellId | null;
+  activeSpellRemainingSec?: number;
+  onActivateSkySpell?: (spellId: SkySpellId | null) => void;
+  sunsetRaceState?: SunsetRaceTrialState;
+  bestRaceTimeMs?: number | null;
+  bestRaceMedal?: 'gold' | 'silver' | 'bronze' | null;
+  onStartSunsetRace?: () => void;
+  onCompleteSunsetRaceQuickTest?: () => void;
   onOpenWardrobe: () => void;
   onOpenConstellationHub: (
     tab: 'constellation' | 'social' | 'quests' | 'home' | 'save'
@@ -127,7 +140,7 @@ function formatEnergySourceLabel(physics: PlayerPhysicsState): {
   if (physics.krillAlertLevel > 0.1) {
     return {
       text: '⚠️ 冥龙红光锁定！速躲掩体',
-      colorClass: 'text-red-400 font-bold animate-pulse',
+      colorClass: 'text-red-400 font-bold',
     };
   }
   if (physics.isDiving) {
@@ -144,7 +157,7 @@ function formatEnergySourceLabel(physics: PlayerPhysicsState): {
     case 'dark_water':
       return {
         text: `⚠️ 暗水侵蚀耗能 (${rateStr})`,
-        colorClass: 'text-rose-400 font-bold animate-pulse',
+        colorClass: 'text-rose-400 font-bold',
       };
     case 'dark_rain':
       return {
@@ -260,6 +273,14 @@ export const GameHud: React.FC<GameHudProps> = ({
   onAdvanceOnboardingTutorial,
   discoveredEasterEggIds = [],
   onDiscoverAndWarpEasterEgg,
+  activeSpellId = null,
+  activeSpellRemainingSec = 0,
+  onActivateSkySpell,
+  sunsetRaceState,
+  bestRaceTimeMs = null,
+  bestRaceMedal = null,
+  onStartSunsetRace,
+  onCompleteSunsetRaceQuickTest,
   onOpenWardrobe,
   onOpenConstellationHub,
   onOpenPhotoMode,
@@ -301,8 +322,8 @@ export const GameHud: React.FC<GameHudProps> = ({
   const realm = REALMS[progress.currentRealm];
   const subZoneName = getSubZoneNameAt(progress.currentRealm, physics.x, physics.z);
   const equippedCape = getCosmeticById(loadout.cape);
-  const fullWedges = Math.floor(physics.wingEnergy);
-  const partialWedge = physics.wingEnergy - fullWedges;
+  const fullWedges = Math.min(physics.maxWingWedges, Math.floor(physics.wingEnergy));
+  const partialWedge = Math.max(0, physics.wingEnergy - fullWedges);
 
   const handleJoyPointer = (clientX: number, clientY: number) => {
     if (!joyBaseRef.current || !onTouchJoystickChange) return;
@@ -336,7 +357,7 @@ export const GameHud: React.FC<GameHudProps> = ({
       <div className="flex items-center justify-between gap-1.5 w-full">
         {/* Top-Left Capsule: White Candles, Hearts, Ascended Red Candles & Current Realm */}
         <div
-          className="h-9 px-2.5 sm:px-3 rounded-full border border-white/15 bg-slate-950/38 backdrop-blur-md text-slate-100 pointer-events-auto shadow-sm flex items-center gap-2 whitespace-nowrap shrink-0"
+          className="h-9 px-2.5 sm:px-3 rounded-full border border-white/15 bg-slate-950/65 text-slate-100 pointer-events-auto shadow-sm flex items-center gap-2 whitespace-nowrap shrink-0"
         >
           {/* White Candles + Inline Wax Progress */}
           <div className="flex items-center gap-1" title="白蜡烛与烛火合成进度">
@@ -413,7 +434,7 @@ export const GameHud: React.FC<GameHudProps> = ({
 
         {/* Top-Center Crest: Compact Sky Wing Energy Ring + Inline Wedge Diamonds */}
         <div
-          className="h-9 px-3 rounded-full border border-amber-200/30 bg-slate-950/38 backdrop-blur-md flex items-center gap-2 pointer-events-auto shadow-sm whitespace-nowrap shrink-0"
+          className="h-9 px-3 rounded-full border border-amber-200/30 bg-slate-950/65 flex items-center gap-2 pointer-events-auto shadow-sm whitespace-nowrap shrink-0"
         >
           {/* Compact Segmented Circular Wing Energy Ring */}
           <div
@@ -526,6 +547,12 @@ export const GameHud: React.FC<GameHudProps> = ({
             {physics.maxWingWedges}翼({progress.wingedLights}金)
           </span>
 
+          {physics.wingEnergy > physics.maxWingWedges + 0.05 && (
+            <span className="px-1.5 py-0.5 rounded-full bg-amber-400/25 border border-amber-300/60 text-[10px] font-mono font-bold text-amber-200">
+              +{Math.round(physics.wingEnergy - physics.maxWingWedges)}⚡
+            </span>
+          )}
+
           {physics.tempLostWedges > 0.05 && (
             <span className="px-1.5 py-0.5 rounded-full bg-rose-950/90 border border-rose-400/50 text-[10px] font-mono text-rose-300">
               -{physics.tempLostWedges.toFixed(1)}
@@ -565,7 +592,7 @@ export const GameHud: React.FC<GameHudProps> = ({
 
         {/* Top-Right Capsule: Constellation, Friends, Photo, Compass & System Controls */}
         <div
-          className="h-9 px-2 rounded-full border border-white/15 bg-slate-950/38 backdrop-blur-md flex items-center gap-1 pointer-events-auto shadow-sm whitespace-nowrap shrink-0"
+          className="h-9 px-2 rounded-full border border-white/15 bg-slate-950/65 flex items-center gap-1 pointer-events-auto shadow-sm whitespace-nowrap shrink-0"
         >
           <button
             type="button"
@@ -1531,7 +1558,7 @@ export const GameHud: React.FC<GameHudProps> = ({
         {tutorialStep < 3 && onAdvanceOnboardingTutorial && (
           <div
             data-testid="onboarding-tutorial-banner"
-            className="px-3 py-1 rounded-full border border-white/15 bg-slate-950/42 backdrop-blur-md text-[11px] text-amber-100/95 shadow-sm flex items-center gap-2 pointer-events-auto whitespace-nowrap"
+            className="px-3 py-1 rounded-full border border-white/15 bg-slate-950/70 text-[11px] text-amber-100/95 shadow-sm flex items-center gap-2 pointer-events-auto whitespace-nowrap"
           >
             <span>
               {locale === 'en'
@@ -1564,10 +1591,57 @@ export const GameHud: React.FC<GameHudProps> = ({
             </button>
           </div>
         )}
+        {activeSpellId && (
+          <div
+            data-testid="active-sky-spell-pill"
+            className="px-3 py-1 rounded-full border border-fuchsia-300/45 bg-slate-950/75 text-[11px] text-fuchsia-100 shadow-sm flex items-center gap-2 pointer-events-auto whitespace-nowrap"
+          >
+            <span>
+              {SKY_ALCHEMY_SPELLS.find((s) => s.id === activeSpellId)?.icon}{' '}
+              <strong className="text-amber-200">
+                {SKY_ALCHEMY_SPELLS.find((s) => s.id === activeSpellId)?.name}
+              </strong>{' '}
+              ({Math.max(1, Math.ceil(activeSpellRemainingSec))}s)
+            </span>
+            <button
+              type="button"
+              data-testid="cancel-sky-spell-btn"
+              onClick={() => onActivateSkySpell?.(null)}
+              className="px-1.5 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-[10px] text-slate-300 cursor-pointer"
+            >
+              散去
+            </button>
+          </div>
+        )}
+        {sunsetRaceState?.active && (
+          <div
+            data-testid="active-sunset-race-pill"
+            className="px-3.5 py-1 rounded-full border border-amber-300/60 bg-slate-950/80 text-xs text-amber-100 shadow-lg flex items-center gap-2.5 pointer-events-auto whitespace-nowrap"
+          >
+            <span className="font-bold text-amber-300 font-mono">
+              🏁 霞光竞速 {(sunsetRaceState.elapsedMs / 1000).toFixed(2)}s
+            </span>
+            <span className="text-sky-200 text-[11px]">
+              下一站 ({sunsetRaceState.currentCheckpointIndex + 1}/
+              {SUNSET_RACE_CHECKPOINTS.length})：
+              {SUNSET_RACE_CHECKPOINTS[sunsetRaceState.currentCheckpointIndex]?.name}
+            </span>
+            {onCompleteSunsetRaceQuickTest && (
+              <button
+                type="button"
+                data-testid="hud-race-finish-quick-btn"
+                onClick={onCompleteSunsetRaceQuickTest}
+                className="px-2 py-0.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 text-[10px] font-bold cursor-pointer"
+              >
+                ⚡ 冲线结算
+              </button>
+            )}
+          </div>
+        )}
         {activeSpiritMemory && (
           <div
             data-testid="spirit-memory-tracker"
-            className="px-3.5 py-1.5 rounded-full border border-cyan-300/45 bg-slate-950/55 backdrop-blur-md text-xs text-cyan-100 shadow-lg flex items-center gap-2.5 pointer-events-auto whitespace-nowrap"
+            className="px-3.5 py-1.5 rounded-full border border-cyan-300/45 bg-slate-950/75 text-xs text-cyan-100 shadow-lg flex items-center gap-2.5 pointer-events-auto whitespace-nowrap"
           >
             <div>
               <span className="font-bold text-amber-300">
@@ -1597,7 +1671,7 @@ export const GameHud: React.FC<GameHudProps> = ({
 
         {bannerMessage && (
           <div
-            className="px-4 py-1 rounded-full border border-amber-200/35 bg-slate-950/50 backdrop-blur-md text-xs font-medium text-amber-100 shadow-md max-w-xl truncate"
+            className="px-4 py-1 rounded-full border border-amber-200/35 bg-slate-950/75 text-xs font-medium text-amber-100 shadow-md max-w-xl truncate"
             role="status"
           >
             {bannerMessage}
@@ -1605,13 +1679,13 @@ export const GameHud: React.FC<GameHudProps> = ({
         )}
 
         {dualActionStatusText && (
-          <div className="px-3.5 py-1 rounded-full bg-emerald-950/60 backdrop-blur-md border border-emerald-400/40 text-xs text-emerald-200 font-medium">
+          <div className="px-3.5 py-1 rounded-full bg-emerald-950/80 border border-emerald-400/40 text-xs text-emerald-200 font-medium">
             {dualActionStatusText}
           </div>
         )}
 
         {latestChatBubble && (
-          <div className="px-3.5 py-1 rounded-full bg-slate-950/60 backdrop-blur-md border border-sky-300/40 text-xs text-sky-100 shadow-md">
+          <div className="px-3.5 py-1 rounded-full bg-slate-950/80 border border-sky-300/40 text-xs text-sky-100 shadow-md">
             💬 <strong className="text-amber-200">{latestChatBubble.senderName}：</strong>
             {latestChatBubble.text}
           </div>
@@ -1684,10 +1758,10 @@ export const GameHud: React.FC<GameHudProps> = ({
             <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-800">
               <div>
                 <div className="text-xs sm:text-sm font-bold text-amber-200">
-                  🗺️ 阶段 12–13 · 11 倍超广域大陆罗盘与 12 大《光·遇》传奇彩蛋图鉴 ({discoveredEasterEggIds.length}/12 已收集)
+                  🗺️ 阶段 12–13 · 11 倍超广域大陆罗盘、8 大地面建筑群落与 12 大《光·遇》传奇彩蛋图鉴 ({discoveredEasterEggIds.length}/12 已收集)
                 </div>
                 <div className="text-[11px] text-slate-400">
-                  探索半径已扩建至 220m（面积超原始地图 11 倍），包含 8 座外围浮岛秘境、跨岛风行网道与 12 处可交互致敬彩蛋
+                  探索半径已扩建至 220m，包含 8 座地面建筑群落与互动玩法区、8 座外围高空秘境与 12 处可交互致敬彩蛋
                 </div>
               </div>
               <button
@@ -1698,6 +1772,167 @@ export const GameHud: React.FC<GameHudProps> = ({
               >
                 关闭 [✕]
               </button>
+            </div>
+
+            {/* Stage 14: Aviary Alchemy Spell Workshop & Sunset Speedrun Time-Trial */}
+            <div className="mb-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {/* Aviary Alchemy Spell Workshop */}
+              <div className="p-3 rounded-xl border border-fuchsia-400/35 bg-slate-900/90">
+                <div className="text-[11px] font-bold text-fuchsia-200 mb-1">
+                  ✨ 南境云巢 · 炼金魔法工坊（免费赐福 180 秒增益）：
+                </div>
+                <div className="grid grid-cols-1 gap-1.5">
+                  {SKY_ALCHEMY_SPELLS.map((spell) => {
+                    const isCurrent = activeSpellId === spell.id;
+                    return (
+                      <div
+                        key={spell.id}
+                        className={`px-2.5 py-1.5 rounded-lg border flex items-center justify-between gap-2 ${
+                          isCurrent
+                            ? 'border-fuchsia-300 bg-fuchsia-950/45'
+                            : 'border-slate-800 bg-slate-950/60'
+                        }`}
+                      >
+                        <div className="min-w-0">
+                          <div className="text-xs font-bold text-fuchsia-100 truncate">
+                            {spell.icon} {spell.name}
+                          </div>
+                          <div className="text-[10px] text-slate-400 truncate">
+                            {spell.subtitle}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          data-testid={`activate-spell-btn-${spell.id}`}
+                          onClick={() => {
+                            onActivateSkySpell?.(isCurrent ? null : spell.id);
+                          }}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 cursor-pointer ${
+                            isCurrent
+                              ? 'bg-fuchsia-400 text-slate-950'
+                              : 'bg-fuchsia-500/20 hover:bg-fuchsia-500/35 border border-fuchsia-300/40 text-fuchsia-200'
+                          }`}
+                        >
+                          {isCurrent ? '✓ 生效中' : '✨ 施放魔法'}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Sunset Speedrun Time-Trial Challenge */}
+              <div className="p-3 rounded-xl border border-amber-400/35 bg-slate-900/90 flex flex-col justify-between gap-2">
+                <div>
+                  <div className="flex items-center justify-between gap-1 mb-1">
+                    <span className="text-[11px] font-bold text-amber-200">
+                      🏁 霞光环大陆流光竞速赛（4 站滑翔计时挑战）
+                    </span>
+                    <span
+                      data-testid="sunset-race-best-badge"
+                      className="px-2 py-0.5 rounded-full bg-amber-400/20 border border-amber-300/40 text-[10px] font-mono text-amber-200"
+                    >
+                      {bestRaceTimeMs
+                        ? `最佳: ${(bestRaceTimeMs / 1000).toFixed(2)}s (${
+                            bestRaceMedal === 'gold'
+                              ? '🥇黄金'
+                              : bestRaceMedal === 'silver'
+                                ? '🥈白银'
+                                : '🥉青铜'
+                          })`
+                        : '最佳: 暂无纪录'}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-slate-400 mb-2">
+                    路线：东境竞速拱廊 (36,8) ➔ 霞光双子塔 (58,8) ➔ 东南风车观星台 (34,26) ➔ 正南远古日晷终点 (0,62)。45秒内冲线获🥇黄金飞翼奖章及 +3 白蜡烛 & +1 爱心！
+                  </div>
+                  <div className="space-y-1">
+                    {SUNSET_RACE_CHECKPOINTS.map((cp) => {
+                      const passed =
+                        Boolean(sunsetRaceState?.active) &&
+                        (sunsetRaceState?.currentCheckpointIndex || 0) > cp.index;
+                      const current =
+                        Boolean(sunsetRaceState?.active) &&
+                        sunsetRaceState?.currentCheckpointIndex === cp.index;
+                      return (
+                        <div
+                          key={cp.id}
+                          className="flex items-center justify-between text-[10px] px-2 py-1 rounded bg-slate-950/70 border border-slate-800"
+                        >
+                          <span className="text-slate-200 font-medium">{cp.name}</span>
+                          <span className="font-mono text-amber-300">
+                            {passed ? '✓ 已通过' : current ? '🎯 当前目标' : `(${cp.x}, ${cp.z})`}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    data-testid="start-sunset-race-btn"
+                    onClick={() => {
+                      onStartSunsetRace?.();
+                      setEasterEggDrawerOpen(false);
+                    }}
+                    className="flex-1 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold cursor-pointer"
+                  >
+                    🏁 传送起点并开启竞速赛
+                  </button>
+                  {onCompleteSunsetRaceQuickTest && (
+                    <button
+                      type="button"
+                      data-testid="drawer-race-finish-quick-btn"
+                      onClick={() => {
+                        onCompleteSunsetRaceQuickTest();
+                        setEasterEggDrawerOpen(false);
+                      }}
+                      className="px-2.5 py-1.5 rounded-lg bg-sky-400/20 hover:bg-sky-400/35 border border-sky-300/50 text-sky-200 text-xs font-bold cursor-pointer"
+                    >
+                      ⚡ 冲线结算
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* 8 Continental Ground Architectural Hubs */}
+            <div className="mb-3">
+              <div className="text-[11px] font-semibold text-emerald-300 mb-1.5">
+                🏛️ 八大地面建筑群落与互动玩法区（分布于全大陆东南西北中域，含烛火、光之翼、竞速金环、上升气流与升空星盘）：
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {CONTINENTAL_ARCHITECTURAL_HUBS.map((hub) => (
+                  <div
+                    key={hub.id}
+                    className="p-2.5 rounded-xl border border-emerald-400/35 bg-slate-900/90 flex items-center justify-between gap-2"
+                  >
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-emerald-200 truncate">
+                        {hub.name}{' '}
+                        <span className="font-mono text-[10px] text-slate-400">
+                          ({hub.x}, {hub.y}m, {hub.z})
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-400 truncate">
+                        {hub.subtitle}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      data-testid={`warp-continental-hub-btn-${hub.id}`}
+                      onClick={() => {
+                        onDebugTeleport?.(hub.x, hub.y, hub.z + 1.2, hub.name);
+                        setEasterEggDrawerOpen(false);
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-emerald-400/20 hover:bg-emerald-400/35 border border-emerald-300/50 text-[11px] font-bold text-emerald-200 shrink-0 cursor-pointer"
+                    >
+                      🏛️ 传送探索
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* 8 Outer Sanctuaries */}
@@ -1834,7 +2069,7 @@ export const GameHud: React.FC<GameHudProps> = ({
           onPointerUp={resetJoystick}
           onPointerCancel={resetJoystick}
           title="虚拟摇杆：轻推漫步 (<68%)，推满奔跑 (>=68%)"
-          className="fixed bottom-3 left-3 flex w-14 h-14 rounded-full border border-white/20 bg-slate-950/28 backdrop-blur-sm items-center justify-center pointer-events-auto cursor-pointer touch-none opacity-65 hover:opacity-100 transition-opacity"
+          className="fixed bottom-3 left-3 flex w-14 h-14 rounded-full border border-white/20 bg-slate-950/55 items-center justify-center pointer-events-auto cursor-pointer touch-none opacity-65 hover:opacity-100 transition-opacity"
         >
           <div className="w-8 h-8 rounded-full border border-dashed border-amber-200/20 pointer-events-none absolute" />
           <div
@@ -1866,13 +2101,13 @@ export const GameHud: React.FC<GameHudProps> = ({
                 e.currentTarget.blur();
                 setDockCollapsed(false);
               }}
-              className="px-3.5 py-1 rounded-full border border-white/15 bg-slate-950/38 backdrop-blur-md text-[11px] font-medium text-amber-200 hover:text-white pointer-events-auto cursor-pointer shadow-sm whitespace-nowrap"
+              className="px-3.5 py-1 rounded-full border border-white/15 bg-slate-950/65 text-[11px] font-medium text-amber-200 hover:text-white pointer-events-auto cursor-pointer shadow-sm whitespace-nowrap"
             >
               ▴ 展开星盘动作坞 [H]
             </button>
           ) : (
             <div
-              className="rounded-full border border-white/15 bg-slate-950/40 backdrop-blur-md px-2.5 py-1 text-slate-100 shadow-lg pointer-events-auto flex flex-col gap-1"
+              className="rounded-full border border-white/15 bg-slate-950/68 px-2.5 py-1 text-slate-100 shadow-lg pointer-events-auto flex flex-col gap-1"
             >
               {/* Single-Line Compact Mode & Action Strip */}
               <div className="flex items-center justify-center gap-1 flex-wrap sm:flex-nowrap">

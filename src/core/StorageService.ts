@@ -100,6 +100,9 @@ export interface PersistentSaveData {
   highContrastMode?: boolean;
   reducedMotionShake?: boolean;
   discoveredEasterEggIds?: string[];
+  bestRaceTimeMs?: number | null;
+  bestRaceMedal?: 'gold' | 'silver' | 'bronze' | null;
+  completedRaceCount?: number;
 }
 
 export interface SavedPhotoRecord {
@@ -326,6 +329,9 @@ export function buildDefaultSaveData(now = new Date()): PersistentSaveData {
     highContrastMode: false,
     reducedMotionShake: false,
     discoveredEasterEggIds: [],
+    bestRaceTimeMs: null,
+    bestRaceMedal: null,
+    completedRaceCount: 0,
   };
 }
 
@@ -2235,6 +2241,99 @@ export function discoverEasterEggPure(
     eggConfig,
     nextSave,
     message: `🎉 首次解锁隐藏彩蛋 (${nextDiscovered.length}/${eggs.length}) ${eggConfig.name}！获得 ${rewardParts.join('、')} · ${eggConfig.loreText}`,
+  };
+}
+
+// ============================================================================
+// Stage 14: Sunset Speedrun Time-Trial Medal & Personal Best Settlement
+// ============================================================================
+
+export type SunsetRaceMedal = 'gold' | 'silver' | 'bronze';
+
+export function evaluateSunsetRaceMedalPure(elapsedMs: number): {
+  medal: SunsetRaceMedal;
+  medalLabel: string;
+  candlesReward: number;
+  heartsReward: number;
+} {
+  if (elapsedMs <= 45000) {
+    return {
+      medal: 'gold',
+      medalLabel: '🥇 黄金飞翼奖章',
+      candlesReward: 3,
+      heartsReward: 1,
+    };
+  }
+  if (elapsedMs <= 75000) {
+    return {
+      medal: 'silver',
+      medalLabel: '🥈 白银流光奖章',
+      candlesReward: 2,
+      heartsReward: 0,
+    };
+  }
+  return {
+    medal: 'bronze',
+    medalLabel: '🥉 青铜微光奖章',
+    candlesReward: 1,
+    heartsReward: 0,
+  };
+}
+
+export function recordSunsetRaceCompletionPure(
+  save: PersistentSaveData,
+  elapsedMs: number
+): {
+  isNewRecord: boolean;
+  medal: SunsetRaceMedal;
+  medalLabel: string;
+  candlesAwarded: number;
+  heartsAwarded: number;
+  nextSave: PersistentSaveData;
+  message: string;
+} {
+  const clampedMs = Math.max(1500, Math.round(elapsedMs));
+  const evalRes = evaluateSunsetRaceMedalPure(clampedMs);
+  const prevBest = save.bestRaceTimeMs ?? null;
+  const isNewRecord = prevBest === null || clampedMs < prevBest;
+  const isFirstCompletion = (save.completedRaceCount || 0) === 0;
+
+  const candlesAwarded = isFirstCompletion || isNewRecord ? evalRes.candlesReward : 1;
+  const heartsAwarded = isFirstCompletion ? evalRes.heartsReward : 0;
+
+  const medalRank: Record<SunsetRaceMedal, number> = {
+    gold: 3,
+    silver: 2,
+    bronze: 1,
+  };
+  const nextBestMedal =
+    !save.bestRaceMedal || medalRank[evalRes.medal] >= medalRank[save.bestRaceMedal]
+      ? evalRes.medal
+      : save.bestRaceMedal;
+
+  const nextSave: PersistentSaveData = {
+    ...save,
+    candles: save.candles + candlesAwarded,
+    hearts: save.hearts + heartsAwarded,
+    bestRaceTimeMs: isNewRecord ? clampedMs : prevBest,
+    bestRaceMedal: nextBestMedal,
+    completedRaceCount: (save.completedRaceCount || 0) + 1,
+  };
+
+  const secStr = (clampedMs / 1000).toFixed(2);
+  const rewardStr =
+    heartsAwarded > 0
+      ? `+${candlesAwarded} 白蜡烛 & +${heartsAwarded} 爱心`
+      : `+${candlesAwarded} 白蜡烛`;
+
+  return {
+    isNewRecord,
+    medal: evalRes.medal,
+    medalLabel: evalRes.medalLabel,
+    candlesAwarded,
+    heartsAwarded,
+    nextSave,
+    message: `🏁 霞光环大陆竞速冲线！用时 ${secStr}s · 斩获「${evalRes.medalLabel}」${isNewRecord ? '（🌟 刷新个人最佳纪录！）' : ''}，获得 ${rewardStr}！`,
   };
 }
 

@@ -1,6 +1,14 @@
 // Zero-404 Procedural Web Audio Synthesizer for Glimmer Travelers (微光旅人)
 
-export type InstrumentVoice = 'piano' | 'harp' | 'flute' | 'drum' | 'kalimba';
+export type InstrumentVoice =
+  | 'piano'
+  | 'harp'
+  | 'flute'
+  | 'xylophone'
+  | 'wind_chime'
+  | 'music_box'
+  | 'drum'
+  | 'kalimba';
 export type CallVoiceType = 'default' | 'manta' | 'jellyfish' | 'bell';
 
 export interface AudioMixerSettings {
@@ -346,16 +354,21 @@ class SkyAudioEngine {
     osc.stop(now + 0.52);
   }
 
-  // 15键乐器弹奏 (Crystal Piano / Golden Harp / Celestial Flute / Starlight Drum / Kalimba)
-  public playInstrumentNote(freq: number, instrument: InstrumentVoice = 'piano') {
+  // 15键乐器弹奏 (8 Timbres: Piano / Harp / Flute / Xylophone / Wind Chime / Music Box / Drum / Kalimba)
+  public playInstrumentNote(
+    freq: number,
+    instrument: InstrumentVoice = 'piano',
+    volumeMult = 1.0
+  ) {
     const ctx = this.ensureContext();
-    const instScale = this.masterVolume * this.instrumentVolume;
+    const instScale = this.masterVolume * this.instrumentVolume * Math.max(0.1, Math.min(1.5, volumeMult));
     if (!ctx || instScale <= 0.01) return;
 
     const now = ctx.currentTime;
     const osc1 = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
     const gain = ctx.createGain();
+    let stopAfterSec = 1.5;
 
     if (instrument === 'piano') {
       osc1.type = 'sine';
@@ -365,6 +378,7 @@ class SkyAudioEngine {
       gain.gain.setValueAtTime(0.001, now);
       gain.gain.linearRampToValueAtTime(0.16 * instScale, now + 0.015);
       gain.gain.exponentialRampToValueAtTime(0.0008, now + 1.1);
+      stopAfterSec = 1.2;
     } else if (instrument === 'harp') {
       osc1.type = 'triangle';
       osc2.type = 'sine';
@@ -373,15 +387,64 @@ class SkyAudioEngine {
       gain.gain.setValueAtTime(0.001, now);
       gain.gain.linearRampToValueAtTime(0.15 * instScale, now + 0.025);
       gain.gain.exponentialRampToValueAtTime(0.0008, now + 1.35);
+      stopAfterSec = 1.45;
     } else if (instrument === 'flute') {
+      // 星语长笛: Soft breathy attack + warm harmonic vibrato & sustained air resonance
       osc1.type = 'sine';
       osc2.type = 'triangle';
-      osc1.frequency.setValueAtTime(freq * 0.99, now);
-      osc1.frequency.exponentialRampToValueAtTime(freq * 1.005, now + 0.18);
+      osc1.frequency.setValueAtTime(freq * 0.992, now);
+      osc1.frequency.exponentialRampToValueAtTime(freq * 1.004, now + 0.16);
+      osc1.frequency.exponentialRampToValueAtTime(freq * 0.998, now + 0.45);
+      osc1.frequency.exponentialRampToValueAtTime(freq * 1.003, now + 0.85);
       osc2.frequency.setValueAtTime(freq * 2.0, now);
       gain.gain.setValueAtTime(0.001, now);
-      gain.gain.linearRampToValueAtTime(0.14 * instScale, now + 0.09);
-      gain.gain.exponentialRampToValueAtTime(0.0008, now + 1.45);
+      gain.gain.linearRampToValueAtTime(0.15 * instScale, now + 0.085);
+      gain.gain.exponentialRampToValueAtTime(0.0008, now + 1.55);
+      stopAfterSec = 1.65;
+    } else if (instrument === 'xylophone') {
+      // 森灵木琴: Crisp wooden mallet attack (1x fundamental + 4x marimba harmonic) & warm hollow decay
+      osc1.type = 'sine';
+      osc2.type = 'triangle';
+      osc1.frequency.setValueAtTime(freq, now);
+      osc2.frequency.setValueAtTime(freq * 4.0, now);
+      osc2.frequency.exponentialRampToValueAtTime(freq * 3.96, now + 0.12);
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.21 * instScale, now + 0.005);
+      gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.55);
+      stopAfterSec = 0.65;
+    } else if (instrument === 'wind_chime') {
+      // 云端风铃: Shimmering crystal/metallic chime (1x + 2.76x bell partial + 5.4x sparkle)
+      osc1.type = 'sine';
+      osc2.type = 'sine';
+      osc1.frequency.setValueAtTime(freq * 1.5, now);
+      osc2.frequency.setValueAtTime(freq * 2.76, now);
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.13 * instScale, now + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0008, now + 1.85);
+      stopAfterSec = 1.95;
+
+      // Secondary high-sparkle wind chime partial
+      const chimeOsc = ctx.createOscillator();
+      const chimeGain = ctx.createGain();
+      chimeOsc.type = 'sine';
+      chimeOsc.frequency.setValueAtTime(freq * 4.15, now + 0.02);
+      chimeGain.gain.setValueAtTime(0.0005, now + 0.02);
+      chimeGain.gain.linearRampToValueAtTime(0.06 * instScale, now + 0.035);
+      chimeGain.gain.exponentialRampToValueAtTime(0.0005, now + 1.25);
+      chimeOsc.connect(chimeGain);
+      chimeGain.connect(ctx.destination);
+      chimeOsc.start(now + 0.02);
+      chimeOsc.stop(now + 1.3);
+    } else if (instrument === 'music_box') {
+      // 星河八音盒: Delicate silver tine pluck with crystal octave shimmer
+      osc1.type = 'sine';
+      osc2.type = 'sine';
+      osc1.frequency.setValueAtTime(freq * 2.0, now);
+      osc2.frequency.setValueAtTime(freq * 4.0, now);
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.14 * instScale, now + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.0008, now + 1.25);
+      stopAfterSec = 1.35;
     } else if (instrument === 'drum') {
       osc1.type = 'triangle';
       osc2.type = 'sine';
@@ -391,6 +454,7 @@ class SkyAudioEngine {
       gain.gain.setValueAtTime(0.001, now);
       gain.gain.linearRampToValueAtTime(0.22 * instScale, now + 0.008);
       gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.42);
+      stopAfterSec = 0.5;
     } else {
       // Kalimba bell
       osc1.type = 'sine';
@@ -400,6 +464,7 @@ class SkyAudioEngine {
       gain.gain.setValueAtTime(0.001, now);
       gain.gain.linearRampToValueAtTime(0.14 * instScale, now + 0.01);
       gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.75);
+      stopAfterSec = 0.85;
     }
 
     osc1.connect(gain);
@@ -407,8 +472,8 @@ class SkyAudioEngine {
     gain.connect(ctx.destination);
     osc1.start(now);
     osc2.start(now);
-    osc1.stop(now + 1.5);
-    osc2.stop(now + 1.5);
+    osc1.stop(now + stopAfterSec);
+    osc2.stop(now + stopAfterSec);
   }
 }
 

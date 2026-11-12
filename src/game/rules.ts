@@ -253,6 +253,11 @@ export function getSubZoneNameAt(realmId: RealmId, x: number, z: number): string
       return s.name;
     }
   }
+  for (const hub of CONTINENTAL_ARCHITECTURAL_HUBS) {
+    if (Math.hypot(x - hub.x, z - hub.z) <= hub.outerRadius) {
+      return hub.name;
+    }
+  }
 
   if (realmId === 'prairie') {
     // Stage 3 Data-driven 3 Prairie Sub-Zones:
@@ -571,6 +576,176 @@ export interface PlayerInputFrame {
   cameraYaw: number;
   realmId?: RealmId;
   elapsed?: number;
+  activeSpellId?: SkySpellId | null;
+}
+
+export type SkySpellId =
+  | 'spell_rainbow_trail'
+  | 'spell_antigravity_feather'
+  | 'spell_wind_speed'
+  | 'spell_golden_aegis';
+
+export interface SkyAlchemySpell {
+  id: SkySpellId;
+  name: string;
+  icon: string;
+  subtitle: string;
+  durationSec: number;
+  colorHex: string;
+}
+
+export const SKY_ALCHEMY_SPELLS: SkyAlchemySpell[] = [
+  {
+    id: 'spell_rainbow_trail',
+    name: '七彩流光尾迹魔法',
+    icon: '🌈',
+    subtitle: '飞翔绽放七彩星芒尾迹 · 全场景翼能回复速度 +35% (180秒)',
+    durationSec: 180,
+    colorHex: '#F472B6',
+  },
+  {
+    id: 'spell_antigravity_feather',
+    name: '轻羽失重漂浮魔法',
+    icon: '🪶',
+    subtitle: '空中下坠重力降低 40% · 振翅升空推力 +30% (180秒)',
+    durationSec: 180,
+    colorHex: '#38BDF8',
+  },
+  {
+    id: 'spell_wind_speed',
+    name: '疾风冲刺滑翔魔法',
+    icon: '⚡',
+    subtitle: '地面奔跑与高空滑翔极速提升 +25% · 竞速破纪录利器 (180秒)',
+    durationSec: 180,
+    colorHex: '#FACC15',
+  },
+  {
+    id: 'spell_golden_aegis',
+    name: '璀璨金身满翼魔法',
+    icon: '✨',
+    subtitle: '临时赐予 +2 格额外翼能上限 · 免疫黑水与淋雨损耗 (180秒)',
+    durationSec: 180,
+    colorHex: '#FDE047',
+  },
+];
+
+export interface SunsetRaceCheckpoint {
+  index: number;
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  z: number;
+  radius: number;
+}
+
+export const SUNSET_RACE_CHECKPOINTS: SunsetRaceCheckpoint[] = [
+  {
+    index: 0,
+    id: 'cp_1_arcade_start',
+    name: 'CP1 · 东境竞速拱廊起点',
+    x: 36.0,
+    y: 3.5,
+    z: 8.0,
+    radius: 8.5,
+  },
+  {
+    index: 1,
+    id: 'cp_2_twin_towers',
+    name: 'CP2 · 霞光双子塔天桥',
+    x: 58.0,
+    y: 5.0,
+    z: 8.0,
+    radius: 9.0,
+  },
+  {
+    index: 2,
+    id: 'cp_3_windmill_observatory',
+    name: 'CP3 · 东南星盘风车观星台',
+    x: 34.0,
+    y: 4.5,
+    z: 26.0,
+    radius: 9.5,
+  },
+  {
+    index: 3,
+    id: 'cp_4_sundial_finish',
+    name: 'CP4 · 正南远古日晷终点',
+    x: 0.0,
+    y: 4.5,
+    z: 62.0,
+    radius: 10.5,
+  },
+];
+
+export interface SunsetRaceTrialState {
+  active: boolean;
+  elapsedMs: number;
+  currentCheckpointIndex: number; // 0..3
+  completed: boolean;
+}
+
+export function createInitialSunsetRaceStatePure(): SunsetRaceTrialState {
+  return {
+    active: false,
+    elapsedMs: 0,
+    currentCheckpointIndex: 0,
+    completed: false,
+  };
+}
+
+export function stepSunsetRaceTrialPure(
+  state: SunsetRaceTrialState,
+  playerX: number,
+  playerZ: number,
+  dtMs: number
+): {
+  nextState: SunsetRaceTrialState;
+  reachedCheckpoint: SunsetRaceCheckpoint | null;
+  justCompletedRace: boolean;
+} {
+  if (!state.active || state.completed) {
+    return {
+      nextState: state,
+      reachedCheckpoint: null,
+      justCompletedRace: false,
+    };
+  }
+
+  const nextElapsedMs = state.elapsedMs + Math.max(0, dtMs);
+  const targetCp = SUNSET_RACE_CHECKPOINTS[state.currentCheckpointIndex];
+  if (!targetCp) {
+    return {
+      nextState: { ...state, elapsedMs: nextElapsedMs, active: false, completed: true },
+      reachedCheckpoint: null,
+      justCompletedRace: true,
+    };
+  }
+
+  const dist = Math.hypot(playerX - targetCp.x, playerZ - targetCp.z);
+  if (dist <= targetCp.radius) {
+    const nextIdx = state.currentCheckpointIndex + 1;
+    const finished = nextIdx >= SUNSET_RACE_CHECKPOINTS.length;
+    return {
+      nextState: {
+        active: !finished,
+        elapsedMs: nextElapsedMs,
+        currentCheckpointIndex: nextIdx,
+        completed: finished,
+      },
+      reachedCheckpoint: targetCp,
+      justCompletedRace: finished,
+    };
+  }
+
+  return {
+    nextState: {
+      ...state,
+      elapsedMs: nextElapsedMs,
+    },
+    reachedCheckpoint: null,
+    justCompletedRace: false,
+  };
 }
 
 export interface GameProgressState {
@@ -619,8 +794,8 @@ export function groundHeightAt(x: number, z: number): number {
   const distSq = x * x + z * z;
   const dist = Math.sqrt(distSq);
 
-  // 1. Central Starlight Shrine Plaza (flat stepped circular altar at radius < 11m)
-  if (dist < 6.5) {
+  // 1. Central Starlight Shrine Plaza (flat stepped circular altar flush with outerTier radius 6.8m)
+  if (dist < 6.95) {
     return 1.2;
   }
 
@@ -648,17 +823,21 @@ export function groundHeightAt(x: number, z: number): number {
   }
 
   if (dist < 11.0) {
-    const t = (dist - 6.5) / 4.5;
+    const t = (dist - 6.95) / 4.05;
     return 1.2 * (1 - t) + 0.35 * t;
   }
 
-  // 4. Northern Elder Temple Sanctuary Mound (around x: 0, z: -48)
+  // 4. Northern Elder Temple Sanctuary Plinth & Ramp (centered at x: 0, z: -50, flat radius 9.5m matching plinth1!)
   const dxTemple = x - 0;
-  const dzTemple = z + 48;
+  const dzTemple = z + 50;
   const distTemple = Math.sqrt(dxTemple * dxTemple + dzTemple * dzTemple);
-  if (distTemple < 14) {
-    const templePlateau = Math.max(0, 1 - distTemple / 14);
-    return 0.4 + templePlateau * 4.8;
+  if (distTemple < 16.0) {
+    if (distTemple <= 9.5) {
+      return 4.6;
+    }
+    const rampT = Math.max(0, 1 - (distTemple - 9.5) / 6.5);
+    const smoothT = rampT * rampT * (3 - 2 * rampT);
+    return 0.65 + smoothT * 3.95;
   }
 
   // 4b. Stage 3 Sub-Zone 2: Echo Cavern Terrace (幽光洞窟高台 around x: -18.5, z: -16.0)
@@ -668,14 +847,17 @@ export function groundHeightAt(x: number, z: number): number {
     return 0.55 + cavernT * 0.95;
   }
 
-  // 4c. Stage 3 Sub-Zone 3: Three-Tower Bell Village Island Terrace (三塔钟楼村落浮屿 around x: 15.5, z: -24.5)
-  const distVillage = Math.hypot(x - 15.5, z - -24.5);
+  // 4c. Stage 3 Sub-Zone 3: Three-Tower Bell Village Island Terrace (三塔钟楼村落浮屿 around x: 16.5, z: -24.5)
+  const distVillage = Math.hypot(x - 16.5, z - -24.5);
   if (distVillage < 10.5) {
-    const villageT = Math.max(0, 1 - distVillage / 10.5);
+    if (distVillage <= 2.9) {
+      return 2.0;
+    }
+    const villageT = Math.max(0, 1 - (distVillage - 2.9) / 7.6);
     return 0.65 + villageT * 1.35;
   }
 
-  // 4d. Stage 12 Outer Sanctuaries & High-Altitude Sky Islands
+  // 4d. Stage 12 & 13 Outer Sanctuaries & High-Altitude Sky Islands (innerFlat = 0.70 * rSanc so stone plinths never clip)
   const outerSanctuaries = (STAGE12_CFG?.outerSanctuaries || []) as {
     id: string;
     x: number;
@@ -687,7 +869,7 @@ export function groundHeightAt(x: number, z: number): number {
     const dSanc = Math.hypot(x - s.x, z - s.z);
     const rSanc = s.radius || 14.0;
     if (dSanc < rSanc) {
-      const innerFlat = rSanc * 0.58;
+      const innerFlat = rSanc * 0.70;
       if (dSanc <= innerFlat) {
         return s.y;
       }
@@ -722,6 +904,19 @@ export function groundHeightAt(x: number, z: number): number {
   if (distTrial < 11.5) {
     const tTrial = Math.max(0, 1 - distTrial / 11.5);
     return 1.4 + tTrial * 5.0;
+  }
+
+  // 4f. 8 Continental Ground Architectural Villages, Pavilions, Ruins & Towers (filling the mid/outer continent)
+  for (const hub of CONTINENTAL_ARCHITECTURAL_HUBS) {
+    const dHub = Math.hypot(x - hub.x, z - hub.z);
+    if (dHub < hub.outerRadius) {
+      if (dHub <= hub.flatRadius) {
+        return hub.y;
+      }
+      const blendT = 1 - (dHub - hub.flatRadius) / (hub.outerRadius - hub.flatRadius);
+      const smooth = blendT * blendT * (3 - 2 * blendT);
+      return 0.75 + (hub.y - 0.75) * smooth;
+    }
   }
 
   // 5. Gentle rolling meadow hills & floating island ridges across the 220m expanded continent
@@ -779,48 +974,289 @@ export function getTerrainSlopeAt(
   };
 }
 
+/**
+ * Pure check for whether `(x, z)` is on the dedicated East Sand/Snow Slide Ramp (`x = 12..25, z = -6..6`).
+ * Prevents normal hills, temple stairs, and outer sanctuary skirts from acting like reverse-pushing "invisible walls".
+ */
+export function isInDedicatedSlideRampAt(x: number, z: number): boolean {
+  return x >= 12.0 && x <= 25.0 && Math.abs(z) <= 6.0;
+}
+
+export interface ContinentalArchitecturalHub {
+  id: string;
+  name: string;
+  subtitle: string;
+  x: number;
+  y: number;
+  z: number;
+  flatRadius: number;
+  outerRadius: number;
+  hasUpdraftThermal?: boolean;
+}
+
+export const CONTINENTAL_ARCHITECTURAL_HUBS: ContinentalArchitecturalHub[] = [
+  {
+    id: 'hub_aviary_tea_village',
+    name: '南境 · 云巢商店街与八角茶亭',
+    subtitle: '八角飞檐茶歇亭、魔法石屋工坊、乐器回音坊与围炉烛火长桌',
+    x: 0.0,
+    y: 1.8,
+    z: 28.0,
+    flatRadius: 11.2,
+    outerRadius: 14.8,
+  },
+  {
+    id: 'hub_sundial_amphitheater',
+    name: '正南中域 · 远古日晷八星柱剧场',
+    subtitle: '八柱环形巨石星阵、中央黄金日晷方尖碑与南境升空星盘',
+    x: 0.0,
+    y: 3.2,
+    z: 62.0,
+    flatRadius: 9.2,
+    outerRadius: 14.5,
+    hasUpdraftThermal: true,
+  },
+  {
+    id: 'hub_southeast_windmill',
+    name: '东南近域 · 星盘风车观星台',
+    subtitle: '旋转四叶黄金风车高塔、观星双柱拱门与上升热气流',
+    x: 34.0,
+    y: 3.0,
+    z: 26.0,
+    flatRadius: 6.2,
+    outerRadius: 10.5,
+    hasUpdraftThermal: true,
+  },
+  {
+    id: 'hub_southwest_mushroom_bridge',
+    name: '西南近域 · 荧光溪谷与古石拱桥',
+    subtitle: '四角飞檐溪谷石亭、古石拱桥与巨型荧光避雨伞菇群',
+    x: -24.0,
+    y: 1.6,
+    z: 18.0,
+    flatRadius: 5.8,
+    outerRadius: 8.8,
+  },
+  {
+    id: 'hub_east_sunset_race_towers',
+    name: '正东中域 · 霞光竞速拱廊与双子塔',
+    subtitle: '双子黄金滑翔塔楼、空中天桥与霞光加速流光环走廊',
+    x: 58.0,
+    y: 3.5,
+    z: 8.0,
+    flatRadius: 7.2,
+    outerRadius: 11.5,
+  },
+  {
+    id: 'hub_west_twilight_castle',
+    name: '正西中域 · 暮光古堡遗迹与圣火庭院',
+    subtitle: '双角古堡石塔、断垣拱廊、篝火回能祭坛与古堡光之翼',
+    x: -56.0,
+    y: 2.8,
+    z: 8.0,
+    flatRadius: 7.4,
+    outerRadius: 11.5,
+  },
+  {
+    id: 'hub_northeast_lighthouse',
+    name: '东北中域 · 云海引航灯塔与浮石阶梯',
+    subtitle: '旋转金芒引航高塔、云端跑酷跳台石柱与高空上升气流',
+    x: 36.0,
+    y: 3.6,
+    z: -44.0,
+    flatRadius: 5.5,
+    outerRadius: 9.5,
+    hasUpdraftThermal: true,
+  },
+  {
+    id: 'hub_southwest_oasis_caravanserai',
+    name: '西南远域 · 星漠驼铃驿站与方尖碑群',
+    subtitle: '星漠穹顶石亭、双子黄金方尖碑与绿洲升空星盘',
+    x: -48.0,
+    y: 2.6,
+    z: 56.0,
+    flatRadius: 6.8,
+    outerRadius: 11.0,
+  },
+];
+
 export interface WorldObstacleCollider {
   id: string;
   x: number;
   z: number;
+  x2?: number;
+  z2?: number;
   radius: number;
   maxY: number;
+  hollowShellThickness?: number;
+  doorwayAngle?: number;
+  doorwayHalfWidthRad?: number;
 }
 
 const SHRINE_PILLAR_ANGLES = [-0.35, 0, 0.35, Math.PI - 0.35, Math.PI, Math.PI + 0.35];
 
 export const STATIC_WORLD_OBSTACLES: WorldObstacleCollider[] = [
-  // 6 Shrine Flanking Stone Pillars
+  // 1. 6 Central Shrine Flanking Stone Pillars + Shrine Stone Brazier Basin
   ...SHRINE_PILLAR_ANGLES.map((angle, idx) => ({
     id: `shrine_pillar_${idx}`,
     x: Math.cos(angle) * 6.4,
     z: Math.sin(angle) * 6.4,
     radius: 0.55,
-    maxY: 4.5,
+    maxY: 4.6,
   })),
-  // 8 Causeway Lantern Posts
+  { id: 'shrine_brazier_pot', x: -4.6, z: 3.8, radius: 0.48, maxY: 2.2 },
+
+  // 2. Butterfly Meadow Welcome Stone Archway Legs at (±3.6, -8.0)
+  { id: 'meadow_arch_l', x: -3.6, z: -8.0, radius: 0.42, maxY: 3.8 },
+  { id: 'meadow_arch_r', x: 3.6, z: -8.0, radius: 0.42, maxY: 3.8 },
+
+  // 3. 8 Causeway Stone Lantern Pillars (x = ±2.8, z = -10, -18.4, -26.8, -35.2)
   ...[0, 2, 4, 6].flatMap((s) => {
     const sz = -10 - s * 4.2;
     return [
-      { id: `lantern_l_${s}`, x: -2.8, z: sz, radius: 0.35, maxY: 3.5 },
-      { id: `lantern_r_${s}`, x: 2.8, z: sz, radius: 0.35, maxY: 3.5 },
+      { id: `lantern_l_${s}`, x: -2.8, z: sz, radius: 0.28, maxY: 3.6 },
+      { id: `lantern_r_${s}`, x: 2.8, z: sz, radius: 0.28, maxY: 3.6 },
     ];
   }),
-  // Northern Elder Temple Main Hall (shifted back to z = -55 so altar at z = -48 is completely clear)
-  { id: 'temple_main_hall', x: 0, z: -55.0, radius: 5.2, maxY: 24.0 },
-  // Flanking Bell Towers
-  { id: 'temple_tower_l', x: -11, z: -47.5, radius: 2.2, maxY: 18.0 },
-  { id: 'temple_tower_r', x: 11, z: -47.5, radius: 2.2, maxY: 18.0 },
-  // Candle Cluster Stone Pedestals & Spirit Statues
-  { id: 'obs_candle_shrine', x: -5.5, z: -2.5, radius: 0.92, maxY: 2.4 },
-  { id: 'obs_candle_bridge', x: 5.8, z: -4.2, radius: 0.92, maxY: 2.4 },
-  { id: 'obs_candle_meadow', x: 0, z: -28.0, radius: 0.92, maxY: 2.4 },
-  { id: 'obs_spirit_west', x: -14.5, z: -14.0, radius: 0.72, maxY: 2.8 },
-  { id: 'obs_spirit_east', x: 14.5, z: -26.0, radius: 0.72, maxY: 2.8 },
+
+  // 4. East Slide Slope Gate Posts & Summit Golden Pillar
+  { id: 'slide_gate_l', x: 12.2, z: -3.8, radius: 0.32, maxY: 4.2 },
+  { id: 'slide_gate_r', x: 12.2, z: 3.8, radius: 0.32, maxY: 4.2 },
+  { id: 'slide_summit_pillar', x: 23.5, z: 0.0, radius: 0.44, maxY: 9.8 },
+
+  // 5. Northern Elder Temple Main Hall (z = -55) & Flanking Bell Towers (±11, -47.5)
+  { id: 'temple_main_hall', x: 0, z: -55.0, radius: 5.42, maxY: 26.0 },
+  { id: 'temple_tower_l', x: -11, z: -47.5, radius: 2.25, maxY: 20.0 },
+  { id: 'temple_tower_r', x: 11, z: -47.5, radius: 2.25, maxY: 20.0 },
+
+  // 6. Sub-Zone 2: Echo Cavern Double Stone Arch Walls & Crystal Spires around (-18.5, -16.0)
+  { id: 'cavern_arch1_l', x: -22.42, z: -13.6, radius: 0.88, maxY: 5.5 },
+  { id: 'cavern_arch1_r', x: -14.58, z: -18.4, radius: 0.88, maxY: 5.5 },
+  { id: 'cavern_arch2_l', x: -23.32, z: -16.15, radius: 0.76, maxY: 4.8 },
+  { id: 'cavern_arch2_r', x: -16.48, z: -19.45, radius: 0.76, maxY: 4.8 },
+  { id: 'cavern_crystal_0', x: -21.1, z: -14.8, radius: 0.4, maxY: 4.5 },
+  { id: 'cavern_crystal_1', x: -16.1, z: -14.8, radius: 0.4, maxY: 4.5 },
+  { id: 'cavern_crystal_2', x: -19.3, z: -18.4, radius: 0.4, maxY: 4.8 },
+
+  // 7. Sub-Zone 3: Three-Tower Bell Village Belfry Stone Pillars at (16.5 ± 1.35, -24.5)
+  { id: 'village_bell_pillar_l', x: 15.15, z: -24.5, radius: 0.44, maxY: 9.5 },
+  { id: 'village_bell_pillar_r', x: 17.85, z: -24.5, radius: 0.44, maxY: 9.5 },
+
+  // 8. Outer Sanctuary 1: Sanctuary Islands Conch Spire at (47.8, -30.5)
+  { id: 'sanctuary_conch_spire', x: 47.8, z: -30.5, radius: 2.95, maxY: 12.0 },
+
+  // 9. Outer Sanctuary 3: Grandma's Hollow Treehouse Bark Shell at (-54, -32) with Open South-East Doorway
+  {
+    id: 'grandma_treehouse_shell',
+    x: -54.0,
+    z: -32.0,
+    radius: 5.2,
+    hollowShellThickness: 0.62,
+    doorwayAngle: 0.0,
+    doorwayHalfWidthRad: 0.58,
+    maxY: 15.5,
+  },
+
+  // 10. Outer Sanctuary 5: Wind Paths Chime Arch Legs at (112 ± 6.2, -96)
+  { id: 'wind_paths_arch_l', x: 105.8, z: -96.0, radius: 0.52, maxY: 28.5 },
+  { id: 'wind_paths_arch_r', x: 118.2, z: -96.0, radius: 0.52, maxY: 28.5 },
+
+  // 11. Outer Sanctuary 6: Hermit Valley Snow Igloo Dome & Gondola Pylon
+  { id: 'hermit_igloo_dome', x: 92.8, z: 61.8, radius: 3.15, maxY: 23.0 },
+  { id: 'hermit_gondola_pylon', x: 100.5, z: 65.8, radius: 0.54, maxY: 28.0 },
+
+  // 12. Outer Sanctuary 7: Abyss Sunken Stone Tower & Coral Arch Legs
+  { id: 'abyss_sunken_tower', x: -112.5, z: 64.5, radius: 2.95, maxY: 13.5 },
+  { id: 'abyss_coral_arch_l', x: -112.54, z: 71.11, radius: 0.62, maxY: 9.0 },
+  { id: 'abyss_coral_arch_r', x: -103.46, z: 64.89, radius: 0.62, maxY: 9.0 },
+
+  // 13. Outer Sanctuary 8: AURORA Colosseum 8 Golden Columns around (0, -148) at r = 12.2m
+  ...Array.from({ length: 8 }, (_, c) => {
+    const cAng = (c / 8) * Math.PI * 2;
+    return {
+      id: `aurora_col_${c}`,
+      x: Number((Math.cos(cAng) * 12.2).toFixed(2)),
+      z: Number((-148.0 + Math.sin(cAng) * 12.2).toFixed(2)),
+      radius: 0.62,
+      maxY: 22.0,
+    };
+  }),
+
+  // 14. Forgotten Ark Wooden Hull Capsule (-90.8..-85.2, -86.5) & Trial of Prophecy Gate Legs (78 ± 4.8, -118)
+  {
+    id: 'ark_wooden_hull',
+    x: -90.8,
+    z: -86.5,
+    x2: -85.2,
+    z2: -86.5,
+    radius: 1.62,
+    maxY: 8.5,
+  },
+  { id: 'trial_gate_l', x: 73.2, z: -118.0, radius: 0.62, maxY: 12.0 },
+  { id: 'trial_gate_r', x: 82.8, z: -118.0, radius: 0.62, maxY: 12.0 },
+
+  // 15. Hub 1: South Aviary Tea Pavilion Columns, Tea Table & Stone Cottage Shops (0, 28) + South Causeway Lanterns
+  { id: 'south_lantern_l_0', x: -2.8, z: 12.0, radius: 0.28, maxY: 3.6 },
+  { id: 'south_lantern_r_0', x: 2.8, z: 12.0, radius: 0.28, maxY: 3.6 },
+  { id: 'south_lantern_l_1', x: -2.8, z: 20.0, radius: 0.28, maxY: 3.6 },
+  { id: 'south_lantern_r_1', x: 2.8, z: 20.0, radius: 0.28, maxY: 3.6 },
+  { id: 'aviary_tea_table', x: 0.0, z: 28.0, radius: 0.85, maxY: 3.2 },
+  { id: 'aviary_pavilion_col_0', x: -2.4, z: 25.6, radius: 0.38, maxY: 6.8 },
+  { id: 'aviary_pavilion_col_1', x: 2.4, z: 25.6, radius: 0.38, maxY: 6.8 },
+  { id: 'aviary_pavilion_col_2', x: -2.4, z: 30.4, radius: 0.38, maxY: 6.8 },
+  { id: 'aviary_pavilion_col_3', x: 2.4, z: 30.4, radius: 0.38, maxY: 6.8 },
+  { id: 'aviary_shop_west', x: -8.2, z: 28.0, radius: 2.25, maxY: 6.8 },
+  { id: 'aviary_shop_east', x: 8.2, z: 28.0, radius: 2.25, maxY: 6.8 },
+  { id: 'aviary_alchemy_cauldron', x: -5.2, z: 30.2, radius: 0.72, maxY: 3.2 },
+
+  // 16. Hub 2: Ancient Sundial Amphitheater Central Obelisk, Finish Arch Legs & 8 Hengestone Columns around (0, 62)
+  { id: 'sundial_obelisk_center', x: 0.0, z: 62.0, radius: 1.15, maxY: 13.5 },
+  { id: 'sunset_finish_arch_l', x: -4.2, z: 54.5, radius: 0.35, maxY: 6.5 },
+  { id: 'sunset_finish_arch_r', x: 4.2, z: 54.5, radius: 0.35, maxY: 6.5 },
+  ...Array.from({ length: 8 }, (_, k) => {
+    const ang = (k / 8) * Math.PI * 2;
+    return {
+      id: `sundial_henge_col_${k}`,
+      x: Number((Math.cos(ang) * 7.6).toFixed(2)),
+      z: Number((62.0 + Math.sin(ang) * 7.6).toFixed(2)),
+      radius: 0.58,
+      maxY: 9.8,
+    };
+  }),
+
+  // 17. Hub 3: Southeast Starlight Windmill Tower (34, 26) & Arch Pillars
+  { id: 'windmill_tower_se', x: 34.0, z: 26.0, radius: 2.1, maxY: 14.5 },
+  { id: 'windmill_arch_l', x: 30.2, z: 22.5, radius: 0.45, maxY: 7.5 },
+  { id: 'windmill_arch_r', x: 37.8, z: 22.5, radius: 0.45, maxY: 7.5 },
+
+  // 18. Hub 4: Southwest Mushroom Glen Gazebo & Stone Bridge Piers (-24, 18)
+  { id: 'glen_gazebo_sw', x: -28.2, z: 18.0, radius: 1.65, maxY: 6.5 },
+  { id: 'glen_bridge_pier_n', x: -24.0, z: 15.2, radius: 0.48, maxY: 4.2 },
+  { id: 'glen_bridge_pier_s', x: -24.0, z: 20.8, radius: 0.48, maxY: 4.2 },
+
+  // 19. Hub 5: East Sunset Race Twin Glide Towers (58, 3.2) & (58, 12.8)
+  { id: 'east_race_tower_n', x: 58.0, z: 3.2, radius: 1.95, maxY: 16.0 },
+  { id: 'east_race_tower_s', x: 58.0, z: 12.8, radius: 1.95, maxY: 16.0 },
+
+  // 20. Hub 6: West Twilight Castle Bastion Towers & Ruined Aqueduct Pillars (-56, 8)
+  { id: 'west_castle_tower_n', x: -60.5, z: 3.8, radius: 2.05, maxY: 13.5 },
+  { id: 'west_castle_tower_s', x: -60.5, z: 12.2, radius: 2.05, maxY: 13.5 },
+  { id: 'west_castle_pillar_n', x: -51.5, z: 4.2, radius: 0.68, maxY: 7.5 },
+  { id: 'west_castle_pillar_s', x: -51.5, z: 11.8, radius: 0.68, maxY: 7.5 },
+
+  // 21. Hub 7: Northeast Cloud-Sea Lighthouse Tower (36, -44)
+  { id: 'ne_lighthouse_tower', x: 36.0, z: -44.0, radius: 1.85, maxY: 17.5 },
+
+  // 22. Hub 8: Southwest Starlight Oasis Caravanserai Pavilion & Twin Obelisks (-48, 56)
+  { id: 'sw_oasis_pavilion', x: -48.0, z: 56.0, radius: 1.75, maxY: 10.5 },
+  { id: 'sw_oasis_obelisk_w', x: -52.5, z: 53.0, radius: 0.85, maxY: 8.8 },
+  { id: 'sw_oasis_obelisk_e', x: -43.5, z: 53.0, radius: 0.85, maxY: 8.8 },
 ];
 
 /**
- * Pure collision resolver that pushes an actor (or camera) out of solid cylindrical world obstacles.
+ * Pure collision resolver that pushes an actor out of solid cylindrical, capsule, and hollow-shell
+ * world architecture using multi-contact relaxation passes and computes the true composite outward normal
+ * `(normalX, normalZ)` so characters never clip into or get wedged inside buildings.
  */
 export function resolveObstacleCollisions(
   x: number,
@@ -828,37 +1264,109 @@ export function resolveObstacleCollisions(
   z: number,
   actorRadius = 0.44,
   extraObstacles: WorldObstacleCollider[] = []
-): { x: number; z: number; hitObstacle: boolean } {
+): { x: number; z: number; hitObstacle: boolean; normalX: number; normalZ: number } {
   let outX = x;
   let outZ = z;
   let hitObstacle = false;
+  let normalX = 0;
+  let normalZ = 0;
 
   const allObstacles =
     extraObstacles.length > 0
       ? [...STATIC_WORLD_OBSTACLES, ...extraObstacles]
       : STATIC_WORLD_OBSTACLES;
 
-  for (let pass = 0; pass < 2; pass++) {
+  for (let pass = 0; pass < 4; pass++) {
     for (const obs of allObstacles) {
       if (y > obs.maxY) continue;
-      const dx = outX - obs.x;
-      const dz = outZ - obs.z;
+
+      // Case A: Analytical Hollow Cylindrical Shell with Open Doorway (e.g. Grandma's Hollow Treehouse)
+      if (obs.hollowShellThickness !== undefined) {
+        const dx = outX - obs.x;
+        const dz = outZ - obs.z;
+        const dist = Math.hypot(dx, dz);
+        const angle = Math.atan2(dx, dz);
+        const doorCenter = obs.doorwayAngle ?? 0;
+        const doorHalf = obs.doorwayHalfWidthRad ?? 0.58;
+        let angDiff = angle - doorCenter;
+        while (angDiff > Math.PI) angDiff -= Math.PI * 2;
+        while (angDiff < -Math.PI) angDiff += Math.PI * 2;
+        if (Math.abs(angDiff) <= doorHalf) {
+          continue;
+        }
+        const halfBand = obs.hollowShellThickness + actorRadius;
+        const radialDelta = dist - obs.radius;
+        if (Math.abs(radialDelta) < halfBand && dist > 0.0001) {
+          hitObstacle = true;
+          const rx = dx / dist;
+          const rz = dz / dist;
+          if (radialDelta >= 0) {
+            normalX = rx;
+            normalZ = rz;
+            const targetR = obs.radius + halfBand + 1e-4;
+            outX = obs.x + rx * targetR;
+            outZ = obs.z + rz * targetR;
+          } else {
+            normalX = -rx;
+            normalZ = -rz;
+            const targetR = Math.max(0.1, obs.radius - halfBand - 1e-4);
+            outX = obs.x + rx * targetR;
+            outZ = obs.z + rz * targetR;
+          }
+        }
+        continue;
+      }
+
+      // Case B: Solid Cylinder or Capsule Segment (e.g. Forgotten Ark Hull, Pillars, Towers, Igloo)
+      let cx = obs.x;
+      let cz = obs.z;
+      if (obs.x2 !== undefined && obs.z2 !== undefined) {
+        const segDx = obs.x2 - obs.x;
+        const segDz = obs.z2 - obs.z;
+        const segLenSq = segDx * segDx + segDz * segDz;
+        if (segLenSq > 0.0001) {
+          const t = Math.max(
+            0,
+            Math.min(1, ((outX - obs.x) * segDx + (outZ - obs.z) * segDz) / segLenSq)
+          );
+          cx = obs.x + t * segDx;
+          cz = obs.z + t * segDz;
+        }
+      }
+
+      const dx = outX - cx;
+      const dz = outZ - cz;
       const dist = Math.hypot(dx, dz);
       const minDist = obs.radius + actorRadius;
       if (dist < minDist) {
         hitObstacle = true;
+        const pushDist = minDist + 1e-4;
         if (dist > 0.0001) {
-          const push = minDist / dist;
-          outX = obs.x + dx * push;
-          outZ = obs.z + dz * push;
+          normalX = dx / dist;
+          normalZ = dz / dist;
+          outX = cx + normalX * pushDist;
+          outZ = cz + normalZ * pushDist;
         } else {
-          outX = obs.x + minDist;
+          normalX = 0;
+          normalZ = 1;
+          outX = cx;
+          outZ = cz + pushDist;
         }
       }
     }
   }
 
-  return { x: outX, z: outZ, hitObstacle };
+  if (hitObstacle) {
+    const netDx = outX - x;
+    const netDz = outZ - z;
+    const netDist = Math.hypot(netDx, netDz);
+    if (netDist > 0.0001) {
+      normalX = netDx / netDist;
+      normalZ = netDz / netDist;
+    }
+  }
+
+  return { x: outX, z: outZ, hitObstacle, normalX, normalZ };
 }
 
 /**
@@ -1282,6 +1790,227 @@ export function createWorldInteractables(realm: RealmId): WorldInteractable[] {
     });
   }
 
+  // Continental Architectural Hub Interactables (18 playable elements across the 8 ground architectural complexes)
+  list.push(
+    // 1. South Aviary Market & Tea Village (0, 28)
+    {
+      id: `${realm}_hub_aviary_tea_candles`,
+      type: 'candle_cluster',
+      name: '云巢八角茶亭 · 围炉茶点烛台',
+      subtitle: '点燃茶亭石桌烛火 (+65 滴烛火 & 瞬间回满翼能)',
+      x: 0.0,
+      y: groundHeightAt(0.0, 28.0),
+      z: 28.0,
+      radius: 4.0,
+      activated: false,
+      waxReward: 65,
+    },
+    {
+      id: `${realm}_hub_aviary_bloom`,
+      type: 'light_bloom',
+      name: '云巢乐器坊 · 庭院星瓣花',
+      subtitle: '共鸣绽放商店街发光花 (+50 滴烛火 & 金蝶环绕)',
+      x: 5.5,
+      y: groundHeightAt(5.5, 29.5),
+      z: 29.5,
+      radius: 3.8,
+      activated: false,
+      waxReward: 50,
+    },
+    // 2. South Sundial Colonnade Amphitheater (0, 62)
+    {
+      id: `${realm}_hub_sundial_candles`,
+      type: 'candle_cluster',
+      name: '远古日晷剧场 · 星阵圣火盆',
+      subtitle: '点燃八星柱日晷圣火 (+75 滴烛火 & 激活上升热气流)',
+      x: 0.0,
+      y: groundHeightAt(0.0, 58.0),
+      z: 58.0,
+      radius: 4.0,
+      activated: false,
+      waxReward: 75,
+    },
+    {
+      id: `${realm}_hub_sundial_elevator`,
+      type: 'starlight_elevator',
+      name: '远古日晷 · 升空星盘机关',
+      subtitle: '启动日晷星盘升力 · 托举旅人直上云端俯瞰整片南境大陆',
+      x: 0.0,
+      y: groundHeightAt(0.0, 65.5),
+      z: 65.5,
+      radius: 4.2,
+      activated: false,
+    },
+    {
+      id: `${realm}_hub_sundial_wl`,
+      type: 'winged_light',
+      name: '光之翼 · 远古日晷守望者',
+      subtitle: '吸收南境日晷星阵小金人 (+1 永久光之翼 & 提升翼阶上限)',
+      x: 0.0,
+      y: groundHeightAt(0.0, 68.5),
+      z: 68.5,
+      radius: 4.0,
+      activated: false,
+    },
+    // 3. Southeast Windmill Observatory (34, 26)
+    {
+      id: `${realm}_hub_windmill_candles`,
+      type: 'candle_cluster',
+      name: '星盘风车塔 · 观星圣火簇',
+      subtitle: '点燃风车塔底大烛堆 (+60 滴烛火 & 借风车气流升空)',
+      x: 31.2,
+      y: groundHeightAt(31.2, 24.5),
+      z: 24.5,
+      radius: 3.8,
+      activated: false,
+      waxReward: 60,
+    },
+    {
+      id: `${realm}_hub_windmill_bloom`,
+      type: 'light_bloom',
+      name: '风车观星台 · 云端光之花',
+      subtitle: '共鸣绽放观星花 (+55 滴烛火 & 充满斗篷能量)',
+      x: 37.5,
+      y: groundHeightAt(37.5, 28.0),
+      z: 28.0,
+      radius: 3.8,
+      activated: false,
+      waxReward: 55,
+    },
+    // 4. Southwest Glowing Mushroom Creek & Stone Arch Bridge (-24, 18)
+    {
+      id: `${realm}_hub_sw_bridge_shelter`,
+      type: 'rain_shelter',
+      name: '西南溪谷 · 飞檐古石亭',
+      subtitle: '在古桥飞檐亭避雨护火 · 瞬间修复全部受损翼格并补充能量',
+      x: -24.0,
+      y: groundHeightAt(-24.0, 18.0),
+      z: 18.0,
+      radius: 4.2,
+      activated: false,
+    },
+    {
+      id: `${realm}_hub_sw_bridge_bloom`,
+      type: 'light_bloom',
+      name: '古石拱桥 · 荧光伞菇簇',
+      subtitle: '共鸣点亮溪畔荧光巨菇 (+55 滴烛火 & 飞舞光蝶)',
+      x: -20.5,
+      y: groundHeightAt(-20.5, 20.5),
+      z: 20.5,
+      radius: 3.8,
+      activated: false,
+      waxReward: 55,
+    },
+    // 5. East Sunset Race Arcade & Twin Towers (58, 8)
+    {
+      id: `${realm}_hub_east_race_ring_1`,
+      type: 'race_ring',
+      name: '东境竞速拱廊 · 起点流光金环',
+      subtitle: '穿过拱廊起点金环 · 触发 13.8m/s 极速滑翔冲刺 (+50 滴烛火)',
+      x: 36.0,
+      y: groundHeightAt(36.0, 8.0) + 1.5,
+      z: 8.0,
+      radius: 4.5,
+      activated: false,
+      waxReward: 50,
+    },
+    {
+      id: `${realm}_hub_east_race_ring_2`,
+      type: 'race_ring',
+      name: '东境双子塔 · 凯旋流光金环',
+      subtitle: '穿过双子塔天桥金环 · 二段流光加速 (+65 滴烛火 & 充满翼能)',
+      x: 54.0,
+      y: groundHeightAt(54.0, 8.0) + 1.8,
+      z: 8.0,
+      radius: 4.5,
+      activated: false,
+      waxReward: 65,
+    },
+    {
+      id: `${realm}_hub_east_race_wl`,
+      type: 'winged_light',
+      name: '光之翼 · 霞光双子塔之巅',
+      subtitle: '抵达正东竞速双子塔祭坛 · 吸收凯旋小金人 (+1 永久光之翼)',
+      x: 61.5,
+      y: groundHeightAt(61.5, 8.0),
+      z: 8.0,
+      radius: 4.0,
+      activated: false,
+    },
+    // 6. West Twilight Castle Ruins & Courtyard (-56, 8)
+    {
+      id: `${realm}_hub_west_castle_candles`,
+      type: 'candle_cluster',
+      name: '暮光古堡庭院 · 圣火大烛堆',
+      subtitle: '点燃古堡中庭圣火 (+70 滴烛火 & 掩体护火回能)',
+      x: -56.0,
+      y: groundHeightAt(-56.0, 8.0),
+      z: 8.0,
+      radius: 4.2,
+      activated: false,
+      waxReward: 70,
+    },
+    {
+      id: `${realm}_hub_west_castle_wl`,
+      type: 'winged_light',
+      name: '光之翼 · 暮光古堡断垣星童',
+      subtitle: '探索西境古堡遗迹 · 吸收城墙守望小金人 (+1 永久光之翼)',
+      x: -60.5,
+      y: groundHeightAt(-60.5, 8.0),
+      z: 8.0,
+      radius: 4.0,
+      activated: false,
+    },
+    // 7. Northeast Cloud Lighthouse & Stepping Pillars (36, -44)
+    {
+      id: `${realm}_hub_ne_lighthouse_candles`,
+      type: 'candle_cluster',
+      name: '东北引航灯塔 · 领航圣火坛',
+      subtitle: '点燃灯塔基座圣火 (+65 滴烛火 & 开启灯塔上升气流)',
+      x: 33.2,
+      y: groundHeightAt(33.2, -42.5),
+      z: -42.5,
+      radius: 3.8,
+      activated: false,
+      waxReward: 65,
+    },
+    {
+      id: `${realm}_hub_ne_lighthouse_wl`,
+      type: 'winged_light',
+      name: '光之翼 · 云海灯塔引航员',
+      subtitle: '造访东北引航灯塔高台 · 吸收灯塔小金人 (+1 永久光之翼)',
+      x: 39.2,
+      y: groundHeightAt(39.2, -45.5),
+      z: -45.5,
+      radius: 4.0,
+      activated: false,
+    },
+    // 8. Southwest Starlight Oasis Caravanserai (-48, 56)
+    {
+      id: `${realm}_hub_sw_oasis_candles`,
+      type: 'candle_cluster',
+      name: '星漠驼铃驿站 · 穹顶绿洲烛台',
+      subtitle: '点燃星漠驿站穹顶烛簇 (+70 滴烛火 & 瞬间恢复翼能)',
+      x: -48.0,
+      y: groundHeightAt(-48.0, 53.0),
+      z: 53.0,
+      radius: 4.0,
+      activated: false,
+      waxReward: 70,
+    },
+    {
+      id: `${realm}_hub_sw_oasis_elevator`,
+      type: 'starlight_elevator',
+      name: '星漠方尖碑 · 星光升空浮台',
+      subtitle: '激活双子方尖碑共鸣 · 乘星光浮台跃升西南高空云海',
+      x: -48.0,
+      y: groundHeightAt(-48.0, 59.5),
+      z: 59.5,
+      radius: 4.2,
+      activated: false,
+    }
+  );
+
   return list;
 }
 
@@ -1380,8 +2109,11 @@ export function stepPlayerPhysics(
 
   const slopeInfo = getTerrainSlopeAt(next.x, next.z);
   next.slopeAngleDeg = slopeInfo.slopeAngleDeg;
+  const inSlideRampZone = isInDedicatedSlideRampAt(next.x, next.z);
   const onSteepSlope =
-    next.grounded && slopeInfo.slopeAngleDeg >= LOCOMOTION_CFG.slopeSlideMinAngleDeg;
+    next.grounded &&
+    inSlideRampZone &&
+    slopeInfo.slopeAngleDeg >= LOCOMOTION_CFG.slopeSlideMinAngleDeg;
   next.isSlidingSlope = onSteepSlope;
 
   // Chibi mask gives slightly brisker ground cadence; Valley ice gives extra speed
@@ -1397,12 +2129,19 @@ export function stepPlayerPhysics(
     ? LOCOMOTION_CFG.runSpeed
     : LOCOMOTION_CFG.walkSpeed;
 
+  const activeSpell = input.activeSpellId || null;
+  const hasWindSpeedSpell = activeSpell === 'spell_wind_speed';
+  const hasAntigravSpell = activeSpell === 'spell_antigravity_feather';
+  const hasGoldenAegisSpell = activeSpell === 'spell_golden_aegis';
+  const hasRainbowTrailSpell = activeSpell === 'spell_rainbow_trail';
+
   const groundSpeed =
     baseGroundSpeed *
     (isChibi ? 1.08 : 1.0) *
     (isIceRealm ? 1.35 : 1.0) *
+    (hasWindSpeedSpell ? 1.25 : hasRainbowTrailSpell ? 1.15 : 1.0) *
     (inShallowWater ? LOCOMOTION_CFG.shallowWaterSlowMultiplier : 1.0) *
-    (next.landingStiffTimer > 0 ? 0.22 : 1.0);
+    (next.landingStiffTimer > 0 ? 0.45 : 1.0);
 
   // Calculate world-space wish direction relative to cameraYaw
   let wishX = 0;
@@ -1420,12 +2159,17 @@ export function stepPlayerPhysics(
     let diff = targetYaw - next.yaw;
     while (diff > Math.PI) diff -= Math.PI * 2;
     while (diff < -Math.PI) diff += Math.PI * 2;
-    const turnRate = next.grounded ? 12.0 : next.flightMode === 'glide' ? 5.5 : 8.5;
+    const turnRate = next.grounded ? 14.0 : next.flightMode === 'glide' ? 5.5 : 8.5;
     next.yaw += diff * (1 - Math.exp(-turnRate * dt));
-    next.roll = Math.max(-0.55, Math.min(0.55, -diff * (next.grounded ? 0.12 : 0.42)));
+    next.roll = Math.max(-0.55, Math.min(0.55, -diff * (next.grounded ? 0.1 : 0.42)));
   } else {
-    next.roll *= Math.exp(-8 * dt);
+    next.roll *= Math.exp(-10 * dt);
   }
+
+  // If the player is actively walking uphill on the East Slide Ramp, let them walk normally instead of sliding back
+  const uphillAlignment = -(wishX * slopeInfo.downSlopeX + wishZ * slopeInfo.downSlopeZ);
+  const activeSlideSlope = onSteepSlope && uphillAlignment < 0.35;
+  next.isSlidingSlope = activeSlideSlope;
 
   next.flapCooldown = Math.max(0, next.flapCooldown - dt);
 
@@ -1442,12 +2186,17 @@ export function stepPlayerPhysics(
     next.coyoteTimer = Math.max(0, next.coyoteTimer - dt);
   }
 
-  const effectiveMaxEnergy = Math.max(1, next.maxWingWedges - next.tempLostWedges);
+  const aegisBonusWedges = hasGoldenAegisSpell ? 2.0 : 0.0;
+  const effectiveMaxEnergy = Math.max(
+    1,
+    next.maxWingWedges + aegisBonusWedges - next.tempLostWedges
+  );
+  const flapLiftScale = hasAntigravSpell ? 1.3 : 1.0;
 
   // Ground Jump or Aerial Wing Flap (Stage 2: consumes ENERGY_CFG.flapCostWedges = 1.0 wedge per flap)
   if (next.jumpBufferTimer > 0 && next.coyoteTimer > 0) {
     // Ground Takeoff Jump
-    next.vy = LOCOMOTION_CFG.jumpVerticalImpulse;
+    next.vy = LOCOMOTION_CFG.jumpVerticalImpulse * flapLiftScale;
     next.grounded = false;
     next.sitMode = 'none';
     next.isSlidingSlope = false;
@@ -1473,13 +2222,19 @@ export function stepPlayerPhysics(
     next.diveMomentum = 0;
 
     if (next.flightMode === 'glide') {
-      next.vy = Math.max(next.vy + 5.8 + pullUpBonus, 7.2 + pullUpBonus);
+      next.vy = Math.max(
+        next.vy + 5.8 * flapLiftScale + pullUpBonus,
+        7.2 * flapLiftScale + pullUpBonus
+      );
       const boostDirX = Math.sin(next.yaw);
       const boostDirZ = Math.cos(next.yaw);
       next.vx += boostDirX * ENERGY_CFG.glideForwardBoost;
       next.vz += boostDirZ * ENERGY_CFG.glideForwardBoost;
     } else {
-      next.vy = Math.max(next.vy + ENERGY_CFG.flapVerticalImpulse * 0.8, ENERGY_CFG.flapVerticalImpulse + pullUpBonus);
+      next.vy = Math.max(
+        next.vy + ENERGY_CFG.flapVerticalImpulse * 0.8 * flapLiftScale,
+        ENERGY_CFG.flapVerticalImpulse * flapLiftScale + pullUpBonus
+      );
       next.vx += wishX * 3.2;
       next.vz += wishZ * 3.2;
     }
@@ -1518,17 +2273,17 @@ export function stepPlayerPhysics(
     if (next.sitMode !== 'none') {
       next.vx = 0;
       next.vz = 0;
-    } else if (onSteepSlope) {
-      // Steep slope sliding: accelerate smoothly along downhill gradient + allow lateral steering
+    } else if (activeSlideSlope) {
+      // Steep slope sliding on the dedicated East Slide Ramp: accelerate along downhill gradient + allow steering
       const slideAccel = LOCOMOTION_CFG.slopeSlideAcceleration;
-      next.vx += (slopeInfo.downSlopeX * slideAccel + wishX * 4.2) * dt;
-      next.vz += (slopeInfo.downSlopeZ * slideAccel + wishZ * 4.2) * dt;
+      next.vx += (slopeInfo.downSlopeX * slideAccel + wishX * 5.2) * dt;
+      next.vz += (slopeInfo.downSlopeZ * slideAccel + wishZ * 5.2) * dt;
       const slideSpeed = Math.hypot(next.vx, next.vz);
       if (slideSpeed > 11.2) {
         next.vx = (next.vx / slideSpeed) * 11.2;
         next.vz = (next.vz / slideSpeed) * 11.2;
       }
-      if (slideSpeed > 0.4) {
+      if (slideSpeed > 0.4 && inputLen < 0.1) {
         const slideYaw = Math.atan2(next.vx, next.vz);
         let sDiff = slideYaw - next.yaw;
         while (sDiff > Math.PI) sDiff -= Math.PI * 2;
@@ -1539,16 +2294,21 @@ export function stepPlayerPhysics(
       const scaledMag = Math.min(1, inputLen);
       const targetVx = wishX * groundSpeed * (isRunningInput ? 1 : Math.max(0.55, scaledMag));
       const targetVz = wishZ * groundSpeed * (isRunningInput ? 1 : Math.max(0.55, scaledMag));
-      const accel = 1 - Math.exp(-(isIceRealm ? 4.2 : 14.0) * dt);
+      const accel = 1 - Math.exp(-(isIceRealm ? 4.2 : 16.5) * dt);
       next.vx += (targetVx - next.vx) * accel;
       next.vz += (targetVz - next.vz) * accel;
+      if (inputLen <= 0.05 && !isIceRealm && Math.hypot(next.vx, next.vz) < 0.08) {
+        next.vx = 0;
+        next.vz = 0;
+      }
     }
   } else {
-    const airSpeed = next.isDiving
-      ? ENERGY_CFG.diveMaxHorizontalSpeed
-      : next.flightMode === 'glide'
-        ? ENERGY_CFG.glideAirSpeed
-        : ENERGY_CFG.hoverAirSpeed;
+    const airSpeed =
+      (next.isDiving
+        ? ENERGY_CFG.diveMaxHorizontalSpeed
+        : next.flightMode === 'glide'
+          ? ENERGY_CFG.glideAirSpeed
+          : ENERGY_CFG.hoverAirSpeed) * (hasWindSpeedSpell ? 1.25 : 1.0);
     const forwardX = Math.sin(next.yaw);
     const forwardZ = Math.cos(next.yaw);
     const useForwardHeading = next.isDiving || (next.flightMode === 'glide' && inputLen > 0.05);
@@ -1559,8 +2319,8 @@ export function stepPlayerPhysics(
     next.vz += (targetVz - next.vz) * airControl;
   }
 
-  // Gravity (steeper downward acceleration during Dive, softer when Gliding or in Vault starlight low-gravity!)
-  const baseGravity = next.isDiving
+  // Gravity (steeper downward acceleration during Dive, softer when Gliding or in Vault starlight low-gravity or Antigravity Feather Spell!)
+  const rawGravity = next.isDiving
     ? ENERGY_CFG.diveGravity
     : weather === 'starlight_gravity'
       ? 6.5
@@ -1569,6 +2329,10 @@ export function stepPlayerPhysics(
         : next.flightMode === 'glide'
           ? 8.4
           : 13.5;
+  const baseGravity =
+    !next.grounded && !next.isDiving && hasAntigravSpell
+      ? rawGravity * 0.6
+      : rawGravity;
   const maxSinkSpeed = next.isDiving ? -19.5 : -14.0;
   next.vy = Math.max(maxSinkSpeed, next.vy - baseGravity * dt);
 
@@ -1587,7 +2351,15 @@ export function stepPlayerPhysics(
     next.y >= 8.0 &&
     (distFromWindPaths <= 28.0 ||
       (Math.hypot(next.x, next.z) >= 88.0 && Math.hypot(next.x, next.z) <= 156.0 && next.y >= 11.0));
-  const inWindCorridor = inInnerWindCorridor || inOuterWindPath;
+  const inHubThermalUpdraft =
+    !next.grounded &&
+    !next.isDiving &&
+    CONTINENTAL_ARCHITECTURAL_HUBS.some(
+      (h) => h.hasUpdraftThermal && Math.hypot(next.x - h.x, next.z - h.z) <= 5.8
+    );
+  const inEastRaceArcade =
+    next.x >= 28.0 && next.x <= 62.0 && Math.abs(next.z - 8.0) <= 4.2 && next.y <= 12.0;
+  const inWindCorridor = inInnerWindCorridor || inOuterWindPath || inHubThermalUpdraft || inEastRaceArcade;
   next.inWindTunnel = inWindCorridor;
   if (inInnerWindCorridor && !next.grounded && !next.isDiving) {
     next.vy = Math.min(11.5, next.vy + (wt.updraftAccel + 4.5) * dt);
@@ -1597,11 +2369,20 @@ export function stepPlayerPhysics(
       effectiveMaxEnergy,
       next.wingEnergy + wt.rechargeRatePerSec * dt
     );
-  } else if (inOuterWindPath && !next.isDiving) {
-    next.vy = Math.min(13.5, next.vy + (wt.updraftAccel + 5.5) * dt);
+  } else if ((inOuterWindPath || inHubThermalUpdraft) && !next.isDiving) {
+    next.vy = Math.min(13.5, next.vy + (wt.updraftAccel + 10.5) * dt);
     next.wingEnergy = Math.min(
       effectiveMaxEnergy,
       next.wingEnergy + (wt.rechargeRatePerSec + 0.8) * dt
+    );
+  } else if (inEastRaceArcade) {
+    // East Sunset Race Arcade gives a playful tailwind boost along +X and recharges wing energy
+    if (next.vx > 0.5) {
+      next.vx = Math.min(12.5, next.vx + 4.8 * dt);
+    }
+    next.wingEnergy = Math.min(
+      effectiveMaxEnergy,
+      next.wingEnergy + wt.rechargeRatePerSec * dt
     );
   }
 
@@ -1617,6 +2398,7 @@ export function stepPlayerPhysics(
   }
 
   // Integrate position
+  const wasGroundedBeforeMove = next.grounded;
   const prevX = next.x;
   const prevZ = next.z;
   const preLandVy = next.vy;
@@ -1624,15 +2406,20 @@ export function stepPlayerPhysics(
   next.y += next.vy * dt;
   next.z += next.vz * dt;
 
-  // Resolve solid obstacle collisions (pillars, temple hall, bell towers, candle bases, spirit statues)
+  // Resolve solid obstacle collisions (shrine pillars, temple hall, bell towers) with smooth tangential sliding
   const colRes = resolveObstacleCollisions(next.x, next.y, next.z, 0.44);
   if (colRes.hitObstacle) {
     next.x = colRes.x;
     next.z = colRes.z;
+    const inwardDot = next.vx * colRes.normalX + next.vz * colRes.normalZ;
+    if (inwardDot < 0) {
+      next.vx -= inwardDot * colRes.normalX;
+      next.vz -= inwardDot * colRes.normalZ;
+    }
   }
 
-  // Stage 12: Keep player inside expanded playable cloud sanctuary radius (135m, >4x area!) with soft cloud updraft bounce
-  const maxWorldRadius = Number(STAGE12_CFG?.worldRadius) || 135;
+  // Stage 13: Keep player inside expanded playable cloud sanctuary radius (225m, >11x area!) with soft cloud updraft bounce
+  const maxWorldRadius = Math.max(225, Number(STAGE12_CFG?.worldRadius) || 225);
   const radialDist = Math.hypot(next.x, next.z);
   if (radialDist > maxWorldRadius) {
     const scaleBack = maxWorldRadius / radialDist;
@@ -1647,13 +2434,15 @@ export function stepPlayerPhysics(
     next.distanceFlown += stepHorizDist;
   }
 
-  // Terrain collision & non-lethal high-landing stiffness
+  // Terrain collision, downhill ground-following snap tolerance & non-lethal high-landing stiffness
   const floorY =
     next.sitMode === 'sit_bench'
       ? groundHeightAt(next.x, next.z) + 0.18
       : groundHeightAt(next.x, next.z);
-  if (next.y <= floorY) {
-    if (!next.grounded && preLandVy < -2.0) {
+  const downhillSnapTolerance =
+    wasGroundedBeforeMove && !didFlap && next.vy <= 0.05 ? 0.65 : 0.0;
+  if (next.y <= floorY + downhillSnapTolerance) {
+    if (!wasGroundedBeforeMove && preLandVy < -2.0) {
       didLand = true;
       // High fall landing recovery stiffness (no fall damage/death!)
       if (preLandVy <= LOCOMOTION_CFG.highLandingVelocityThreshold) {
@@ -1679,7 +2468,10 @@ export function stepPlayerPhysics(
   const postSlope = getTerrainSlopeAt(next.x, next.z);
   next.slopeAngleDeg = postSlope.slopeAngleDeg;
   next.isSlidingSlope =
-    next.grounded && postSlope.slopeAngleDeg >= LOCOMOTION_CFG.slopeSlideMinAngleDeg;
+    next.grounded &&
+    isInDedicatedSlideRampAt(next.x, next.z) &&
+    postSlope.slopeAngleDeg >= LOCOMOTION_CFG.slopeSlideMinAngleDeg &&
+    uphillAlignment < 0.35;
 
   // Determine exact LocomotionMode for HUD, Debug Telemetry & Skeletal Animator
   const horizSpd = Math.hypot(next.vx, next.vz);
@@ -1715,7 +2507,7 @@ export function stepPlayerPhysics(
     next.pitch *= Math.exp(-10 * dt);
   }
 
-  // Shelter & Light Source checks (Central Shrine, Northern Temple, Candle Clusters, Glowing Plants, Realm Mushroom/Ruin Shelters, Companion, or Brazier/Umbrella)
+  // Shelter & Light Source checks (Central Shrine, Northern Temple, Candle Clusters, Glowing Plants, Realm Mushroom/Ruin Shelters, Continental Hubs, Companion, or Brazier/Umbrella)
   const nearCenterShrine = radialDist < 10.5;
   const nearNorthernTemple = Math.hypot(next.x, next.z + 48) < 11.5;
   const nearCandleOrBloom =
@@ -1726,9 +2518,15 @@ export function stepPlayerPhysics(
   const nearOuterSanctuary = ((STAGE12_CFG?.outerSanctuaries || []) as { x: number; z: number; radius: number }[]).some(
     (s) => Math.hypot(next.x - s.x, next.z - s.z) < (s.radius || 14.0) * 0.75
   );
-  const nearCandleCluster = nearCandleOrBloom || nearRealmShelter || nearOuterSanctuary;
+  const nearContinentalHub = CONTINENTAL_ARCHITECTURAL_HUBS.some(
+    (h) => Math.hypot(next.x - h.x, next.z - h.z) <= h.flatRadius * 0.85
+  );
+  const nearCandleCluster = nearCandleOrBloom || nearRealmShelter || nearOuterSanctuary || nearContinentalHub;
   const nearCloudRing = radialDist > 48;
-  const hasUmbrella = loadout?.prop === 'prop_light_umbrella';
+  const hasUmbrella = loadout?.prop === 'prop_light_umbrella' || hasGoldenAegisSpell;
+  if (hasGoldenAegisSpell) {
+    next.isInDarkWater = false;
+  }
   next.inShelter =
     nearCenterShrine ||
     nearNorthernTemple ||
@@ -1804,18 +2602,23 @@ export function stepPlayerPhysics(
       next.nearCompanion ||
       inWindCorridor ||
       nearCloudRing ||
+      hasRainbowTrailSpell ||
+      hasGoldenAegisSpell ||
       (next.grounded && weather !== 'rain' && weather !== 'eden_storm'));
   next.isRecharging = canRechargeNow;
 
   if (canRechargeNow) {
-    if (next.tempLostWedges > 0 && (next.inShelter || next.nearCompanion)) {
+    if (next.tempLostWedges > 0 && (next.inShelter || next.nearCompanion || hasGoldenAegisSpell)) {
       // Recover temporarily lost wedges when standing near a shrine/light source or companion!
       next.tempLostWedges = Math.max(
         0,
         next.tempLostWedges - ENERGY_CFG.tempLostWedgeRecoveryRatePerSec * dt
       );
     }
-    const currentCap = Math.max(1, next.maxWingWedges - next.tempLostWedges);
+    const currentCap = Math.max(
+      1,
+      next.maxWingWedges + aegisBonusWedges - next.tempLostWedges
+    );
     let rechargeRate = ENERGY_CFG.groundRechargeRatePerSec;
     if (nearCandleCluster) {
       rechargeRate = ENERGY_CFG.lightSourceRechargeRatePerSec;
@@ -1835,6 +2638,9 @@ export function stepPlayerPhysics(
     } else {
       rechargeRate = ENERGY_CFG.groundRechargeRatePerSec;
       energySource = 'ground';
+    }
+    if (hasRainbowTrailSpell || hasGoldenAegisSpell) {
+      rechargeRate *= 1.35;
     }
     netRate = rechargeRate;
     next.wingEnergy = Math.min(currentCap, next.wingEnergy + rechargeRate * dt);
@@ -1952,7 +2758,14 @@ export function applyInteraction(
     nextProgress.wax = totalWax % 100;
     nextPhysics.wingEnergy = nextPhysics.maxWingWedges;
     const boostSpeed = REALMS_STAGE8_CFG?.valley?.raceRingBoostSpeed || 13.8;
-    nextPhysics.vz = -boostSpeed;
+    if (target.id.includes('hub_east_race_ring')) {
+      nextPhysics.vx = boostSpeed;
+      nextPhysics.vz = 0;
+      nextPhysics.yaw = Math.PI * 0.5;
+    } else {
+      nextPhysics.vz = -boostSpeed;
+      nextPhysics.yaw = Math.PI;
+    }
     nextPhysics.vy = Math.max(nextPhysics.vy, 4.2);
     nextPhysics.grounded = false;
     nextPhysics.flightMode = 'glide';
@@ -1975,15 +2788,20 @@ export function applyInteraction(
     nextPhysics.wingEnergy = nextPhysics.maxWingWedges;
     bannerMessage = `🚪 已与同伴协力点亮「${target.name}」双人星芒机关 · 秘库大门开启 (+${waxGain} 滴烛火 & 解锁星河悬浮台)！`;
   } else if (target.type === 'starlight_elevator') {
-    const targetY =
+    const baseTargetY =
       REALMS_STAGE8_CFG?.vault?.starlightElevator?.targetAltitudeY || 13.5;
+    const localFloor = Math.max(
+      groundHeightAt(target.x, target.z),
+      groundHeightAt(nextPhysics.x, nextPhysics.z)
+    );
+    const targetY = Math.max(baseTargetY, Number((localFloor + 12.0).toFixed(1)));
     nextPhysics.y = targetY;
     nextPhysics.vy = 3.5;
     nextPhysics.grounded = false;
     nextPhysics.flightMode = 'hover';
     nextPhysics.locomotionMode = 'fly';
     nextPhysics.wingEnergy = nextPhysics.maxWingWedges;
-    bannerMessage = `🌌 「${target.name}」已吟唱升空 · 托举旅人直达禁阁高层星河浮台 (高度 ${targetY}m)！`;
+    bannerMessage = `🌌 「${target.name}」已吟唱升空 · 托举旅人直达高层星河浮台 (高度 ${targetY}m)！`;
   } else if (target.type === 'eden_statue') {
     const acGain = REALMS_STAGE8_CFG?.eden?.ascendedCandlesPerStatue || 1;
     nextProgress.wingedLights = Math.max(1, nextProgress.wingedLights - 1);
@@ -2083,6 +2901,315 @@ export const SKY_15_NOTES: SkyMusicNote[] = [
   { index: 13, label: 'B5', solfege: 'Ti⁺', keyShortcut: 'L', freq: 987.77, shape: 'circle' },
   { index: 14, label: 'C6', solfege: 'Do²⁺', keyShortcut: ';', freq: 1046.5, shape: 'root' },
 ];
+
+export type SkyInstrumentVoiceId =
+  | 'piano'
+  | 'harp'
+  | 'flute'
+  | 'xylophone'
+  | 'wind_chime'
+  | 'music_box'
+  | 'drum'
+  | 'kalimba';
+
+export interface SkyInstrumentVoiceMeta {
+  id: SkyInstrumentVoiceId;
+  label: string;
+  icon: string;
+  timbreTag: string;
+  companionVoice: SkyInstrumentVoiceId;
+}
+
+export const SKY_INSTRUMENT_VOICES: SkyInstrumentVoiceMeta[] = [
+  {
+    id: 'piano',
+    label: '🎹 水晶钢琴',
+    icon: '🎹',
+    timbreTag: '清澈泛音 · 经典高音钢琴',
+    companionVoice: 'harp',
+  },
+  {
+    id: 'harp',
+    label: '🪕 黄金竖琴',
+    icon: '🪕',
+    timbreTag: '温润拨弦 · 云野先祖圣琴',
+    companionVoice: 'flute',
+  },
+  {
+    id: 'flute',
+    label: '🪈 星语长笛',
+    icon: '🪈',
+    timbreTag: '悠扬气鸣 · 柔美颤音木管',
+    companionVoice: 'harp',
+  },
+  {
+    id: 'xylophone',
+    label: '🎼 森灵木琴',
+    icon: '🎼',
+    timbreTag: '清脆木槌 · 雨林空谷马林巴',
+    companionVoice: 'kalimba',
+  },
+  {
+    id: 'wind_chime',
+    label: '🎐 云端风铃',
+    icon: '🎐',
+    timbreTag: '空灵晶簇 · 风行赛道琉璃铃',
+    companionVoice: 'flute',
+  },
+  {
+    id: 'music_box',
+    label: '🎠 星河八音盒',
+    icon: '🎠',
+    timbreTag: '梦幻银簧 · 禁阁星光音乐盒',
+    companionVoice: 'harp',
+  },
+  {
+    id: 'drum',
+    label: '🥁 部落星鼓',
+    icon: '🥁',
+    timbreTag: '浑厚律动 · 预言山谷节拍鼓',
+    companionVoice: 'xylophone',
+  },
+  {
+    id: 'kalimba',
+    label: '🔔 拇指琴',
+    icon: '🔔',
+    timbreTag: '玲珑金属 · 温暖篝火伴奏琴',
+    companionVoice: 'piano',
+  },
+];
+
+export interface EnsemblePracticeStep {
+  leadKeyIndex: number; // 0..14 player target key
+  harmonyKeyIndex: number; // 0..14 automatic spirit companion accompaniment key
+  beatMs: number; // duration in ms before next note in auto-demo or rhythm guide
+  lyricHint?: string;
+}
+
+export interface EnsemblePracticeSong {
+  id: string;
+  title: string;
+  subtitle: string;
+  difficulty: '入门 ★☆☆' | '进阶 ★★☆' | '大师 ★★★';
+  bpm: number;
+  recommendedVoice: SkyInstrumentVoiceId;
+  companionVoice: SkyInstrumentVoiceId;
+  steps: EnsemblePracticeStep[];
+}
+
+export const SKY_ENSEMBLE_PRACTICE_SONGS: EnsemblePracticeSong[] = [
+  {
+    id: 'song_prairie_starlight',
+    title: '《云野星光曲 · 迎风序章》',
+    subtitle: '新手首选 · 先祖竖琴自动伴奏和弦，跟随高亮键位轻松合奏',
+    difficulty: '入门 ★☆☆',
+    bpm: 96,
+    recommendedVoice: 'flute',
+    companionVoice: 'harp',
+    steps: [
+      { leadKeyIndex: 4, harmonyKeyIndex: 0, beatMs: 380, lyricHint: '微风起' },
+      { leadKeyIndex: 7, harmonyKeyIndex: 2, beatMs: 380, lyricHint: '越云海' },
+      { leadKeyIndex: 9, harmonyKeyIndex: 4, beatMs: 380, lyricHint: '听钟鸣' },
+      { leadKeyIndex: 11, harmonyKeyIndex: 7, beatMs: 520, lyricHint: '展金翼' },
+      { leadKeyIndex: 9, harmonyKeyIndex: 4, beatMs: 380, lyricHint: '掠晴空' },
+      { leadKeyIndex: 7, harmonyKeyIndex: 2, beatMs: 480, lyricHint: '伴蝶舞' },
+      { leadKeyIndex: 8, harmonyKeyIndex: 4, beatMs: 380, lyricHint: '拾星火' },
+      { leadKeyIndex: 9, harmonyKeyIndex: 5, beatMs: 380, lyricHint: '唤同伴' },
+      { leadKeyIndex: 7, harmonyKeyIndex: 0, beatMs: 600, lyricHint: '共翱翔' },
+    ],
+  },
+  {
+    id: 'song_forest_xylophone_rain',
+    title: '《雨林空谷 · 木琴听雨》',
+    subtitle: '专为木琴与风铃定制的治愈五声旋律 · 荧光水母低音和鸣',
+    difficulty: '入门 ★☆☆',
+    bpm: 92,
+    recommendedVoice: 'xylophone',
+    companionVoice: 'wind_chime',
+    steps: [
+      { leadKeyIndex: 7, harmonyKeyIndex: 0, beatMs: 400, lyricHint: '雨滴落' },
+      { leadKeyIndex: 8, harmonyKeyIndex: 1, beatMs: 400, lyricHint: '竹林翠' },
+      { leadKeyIndex: 9, harmonyKeyIndex: 2, beatMs: 480, lyricHint: '伞菇明' },
+      { leadKeyIndex: 11, harmonyKeyIndex: 4, beatMs: 480, lyricHint: '溪流缓' },
+      { leadKeyIndex: 12, harmonyKeyIndex: 5, beatMs: 400, lyricHint: '白鸟飞' },
+      { leadKeyIndex: 11, harmonyKeyIndex: 4, beatMs: 400, lyricHint: '穿云雾' },
+      { leadKeyIndex: 9, harmonyKeyIndex: 2, beatMs: 440, lyricHint: '见虹桥' },
+      { leadKeyIndex: 7, harmonyKeyIndex: 0, beatMs: 600, lyricHint: '心火暖' },
+    ],
+  },
+  {
+    id: 'song_vault_chime_lullaby',
+    title: '《星河小夜曲 · 禁阁风铃》',
+    subtitle: '高音区风铃与八音盒双声部交织 · 舒缓节拍零压力跟弹',
+    difficulty: '进阶 ★★☆',
+    bpm: 86,
+    recommendedVoice: 'wind_chime',
+    companionVoice: 'music_box',
+    steps: [
+      { leadKeyIndex: 7, harmonyKeyIndex: 4, beatMs: 420, lyricHint: '星河转' },
+      { leadKeyIndex: 11, harmonyKeyIndex: 7, beatMs: 420, lyricHint: '浮石升' },
+      { leadKeyIndex: 10, harmonyKeyIndex: 5, beatMs: 420, lyricHint: '灯塔明' },
+      { leadKeyIndex: 9, harmonyKeyIndex: 4, beatMs: 520, lyricHint: '遥鲲吟' },
+      { leadKeyIndex: 8, harmonyKeyIndex: 3, beatMs: 420, lyricHint: '越星门' },
+      { leadKeyIndex: 7, harmonyKeyIndex: 2, beatMs: 420, lyricHint: '揽月华' },
+      { leadKeyIndex: 8, harmonyKeyIndex: 4, beatMs: 420, lyricHint: '化流光' },
+      { leadKeyIndex: 9, harmonyKeyIndex: 4, beatMs: 420, lyricHint: '归静谧' },
+      { leadKeyIndex: 11, harmonyKeyIndex: 7, beatMs: 420, lyricHint: '礼长老' },
+      { leadKeyIndex: 14, harmonyKeyIndex: 7, beatMs: 640, lyricHint: '耀苍穹' },
+    ],
+  },
+  {
+    id: 'song_valley_sunset_symphony',
+    title: '《飞翔之歌 · 霞谷凯旋交响》',
+    subtitle: '长笛主旋律配黄金竖琴琶音 · 体验千人竞技场高燃合奏',
+    difficulty: '大师 ★★★',
+    bpm: 116,
+    recommendedVoice: 'piano',
+    companionVoice: 'harp',
+    steps: [
+      { leadKeyIndex: 0, harmonyKeyIndex: 4, beatMs: 320, lyricHint: '滑道启' },
+      { leadKeyIndex: 2, harmonyKeyIndex: 7, beatMs: 320, lyricHint: '乘疾风' },
+      { leadKeyIndex: 4, harmonyKeyIndex: 9, beatMs: 320, lyricHint: '跃冰湖' },
+      { leadKeyIndex: 7, harmonyKeyIndex: 4, beatMs: 420, lyricHint: '穿金环' },
+      { leadKeyIndex: 9, harmonyKeyIndex: 5, beatMs: 320, lyricHint: '入云霄' },
+      { leadKeyIndex: 11, harmonyKeyIndex: 7, beatMs: 320, lyricHint: '沐晚霞' },
+      { leadKeyIndex: 12, harmonyKeyIndex: 9, beatMs: 420, lyricHint: '伴千鸟' },
+      { leadKeyIndex: 11, harmonyKeyIndex: 7, beatMs: 320, lyricHint: '越双塔' },
+      { leadKeyIndex: 9, harmonyKeyIndex: 4, beatMs: 320, lyricHint: '聚星盘' },
+      { leadKeyIndex: 14, harmonyKeyIndex: 7, beatMs: 620, lyricHint: '凯旋归' },
+    ],
+  },
+];
+
+export interface EnsemblePracticeState {
+  active: boolean;
+  songId: string;
+  stepIndex: number;
+  totalSteps: number;
+  combo: number;
+  maxCombo: number;
+  hits: number;
+  misses: number;
+  anyKeyAssist: boolean; // Beginner assist: pressing any key or clicking "跟弹下一音" plays the right target note
+  autoAccompanyPlay: boolean; // Automatic Spirit Ensemble pacing mode
+  completed: boolean;
+  rating: 'S' | 'A' | 'B' | null;
+}
+
+export function evaluateEnsembleAccuracyRatingPure(
+  hits: number,
+  misses: number
+): 'S' | 'A' | 'B' {
+  const total = Math.max(1, hits + misses);
+  const acc = hits / total;
+  if (acc >= 0.9) return 'S';
+  if (acc >= 0.72) return 'A';
+  return 'B';
+}
+
+export function createInitialEnsemblePracticeStatePure(
+  songId = SKY_ENSEMBLE_PRACTICE_SONGS[0].id,
+  anyKeyAssist = true
+): EnsemblePracticeState {
+  const song =
+    SKY_ENSEMBLE_PRACTICE_SONGS.find((s) => s.id === songId) ||
+    SKY_ENSEMBLE_PRACTICE_SONGS[0];
+  return {
+    active: false,
+    songId: song.id,
+    stepIndex: 0,
+    totalSteps: song.steps.length,
+    combo: 0,
+    maxCombo: 0,
+    hits: 0,
+    misses: 0,
+    anyKeyAssist,
+    autoAccompanyPlay: false,
+    completed: false,
+    rating: null,
+  };
+}
+
+export interface EnsemblePracticeStepResult {
+  nextState: EnsemblePracticeState;
+  isCorrect: boolean;
+  resolvedLeadKeyIndex: number;
+  harmonyKeyIndex: number;
+  companionVoice: SkyInstrumentVoiceId;
+  justCompleted: boolean;
+  accuracyPercent: number;
+}
+
+/**
+ * Pure state transition for the Auto-Ensemble Practice Mode (自动合奏练习模式).
+ * - When `state.anyKeyAssist` or `forceCorrectAssist` is true, beginners always hit the target lead note
+ *   while the Spirit Ensemble companion simultaneously plays `harmonyKeyIndex`!
+ * - When `state.anyKeyAssist` is false (strict practice), only pressing `targetStep.leadKeyIndex` advances the step.
+ */
+export function stepEnsemblePracticeNotePure(
+  state: EnsemblePracticeState,
+  playedKeyIndex: number,
+  forceCorrectAssist = false
+): EnsemblePracticeStepResult {
+  const song =
+    SKY_ENSEMBLE_PRACTICE_SONGS.find((s) => s.id === state.songId) ||
+    SKY_ENSEMBLE_PRACTICE_SONGS[0];
+  const safeIdx = Math.max(0, Math.min(song.steps.length - 1, state.stepIndex));
+  const currentStep = song.steps[safeIdx];
+
+  const useAssist = state.anyKeyAssist || forceCorrectAssist;
+  const isMatch = useAssist || playedKeyIndex === currentStep.leadKeyIndex;
+
+  if (!isMatch) {
+    const nextMisses = state.misses + 1;
+    const total = Math.max(1, state.hits + nextMisses);
+    return {
+      nextState: {
+        ...state,
+        combo: 0,
+        misses: nextMisses,
+      },
+      isCorrect: false,
+      resolvedLeadKeyIndex: Math.max(0, Math.min(14, playedKeyIndex)),
+      harmonyKeyIndex: currentStep.harmonyKeyIndex,
+      companionVoice: song.companionVoice,
+      justCompleted: false,
+      accuracyPercent: Math.round((state.hits / total) * 100),
+    };
+  }
+
+  const nextHits = state.hits + 1;
+  const nextCombo = state.combo + 1;
+  const nextMaxCombo = Math.max(state.maxCombo, nextCombo);
+  const nextStepIndex = safeIdx + 1;
+  const justCompleted = nextStepIndex >= song.steps.length;
+  const total = Math.max(1, nextHits + state.misses);
+  const accuracyPercent = Math.round((nextHits / total) * 100);
+  const rating = justCompleted
+    ? evaluateEnsembleAccuracyRatingPure(nextHits, state.misses)
+    : state.rating;
+
+  return {
+    nextState: {
+      ...state,
+      stepIndex: justCompleted ? 0 : nextStepIndex,
+      totalSteps: song.steps.length,
+      combo: nextCombo,
+      maxCombo: nextMaxCombo,
+      hits: nextHits,
+      completed: justCompleted,
+      autoAccompanyPlay: justCompleted ? false : state.autoAccompanyPlay,
+      rating,
+    },
+    isCorrect: true,
+    resolvedLeadKeyIndex: currentStep.leadKeyIndex,
+    harmonyKeyIndex: currentStep.harmonyKeyIndex,
+    companionVoice: song.companionVoice,
+    justCompleted,
+    accuracyPercent,
+  };
+}
+
 
 // ============================================================================
 // Stage 6: Multiplayer Base Pure Functions (8-Player Room Matchmaking,

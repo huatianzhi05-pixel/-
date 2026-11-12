@@ -31,6 +31,12 @@ import {
   groundHeightAt,
   resolveObstacleCollisions,
   flipDarkCrabsWithDeepCallPure,
+  SKY_ALCHEMY_SPELLS,
+  SkySpellId,
+  SUNSET_RACE_CHECKPOINTS,
+  SunsetRaceTrialState,
+  createInitialSunsetRaceStatePure,
+  stepSunsetRaceTrialPure,
 } from './game/rules';
 import {
   buildSkyChildRig,
@@ -99,6 +105,7 @@ import {
   updateAccessibilityAndPerfPure,
   advanceOnboardingTutorialPure,
   discoverEasterEggPure,
+  recordSunsetRaceCompletionPure,
   QualityTierOption,
 } from './core/StorageService';
 import { networkClient } from './core/NetworkClient';
@@ -134,6 +141,7 @@ interface PooledParticle {
 const _camTarget = new THREE.Vector3();
 const _camDesired = new THREE.Vector3();
 const _dummyMatrixObj = new THREE.Object3D();
+const _rainbowColor = new THREE.Color();
 
 export default function App() {
   const searchParams =
@@ -206,6 +214,12 @@ export default function App() {
   const [activeCallVoice, setActiveCallVoice] = useState<CallVoiceType>(
     () => storageService.load().activeCallVoice || 'default'
   );
+  const [activeSpellId, setActiveSpellId] = useState<SkySpellId | null>(null);
+  const [activeSpellRemainingSec, setActiveSpellRemainingSec] =
+    useState<number>(0);
+  const [sunsetRaceState, setSunsetRaceState] = useState<SunsetRaceTrialState>(
+    () => createInitialSunsetRaceStatePure()
+  );
 
   // Multiplayer & Debug telemetry states
   const [fps, setFps] = useState<number>(60);
@@ -243,6 +257,11 @@ export default function App() {
   const activeSpiritMemoryRef = useRef<SpiritMemoryQuestState | null>(null);
   const activeEmoteLevelRef = useRef<number>(activeEmoteLevel);
   const activeCallVoiceRef = useRef<CallVoiceType>(activeCallVoice);
+  const activeSpellIdRef = useRef<SkySpellId | null>(null);
+  const activeSpellRemainingRef = useRef<number>(0);
+  const sunsetRaceRef = useRef<SunsetRaceTrialState>(
+    createInitialSunsetRaceStatePure()
+  );
 
   // Three.js scene refs for instant imperative updates
   const playerRigRef = useRef<SkyChildRig | null>(null);
@@ -983,12 +1002,28 @@ export default function App() {
         }
       }
       if (closestAny) {
+        const gY = groundHeightAt(closestAny.x, closestAny.z);
+        const safePos = resolveObstacleCollisions(
+          closestAny.x,
+          gY,
+          closestAny.z + 1.2,
+          0.44
+        );
+        const finalGroundY = groundHeightAt(safePos.x, safePos.z);
         physicsRef.current = {
           ...physicsRef.current,
-          x: closestAny.x,
-          y: groundHeightAt(closestAny.x, closestAny.z),
-          z: closestAny.z + 1.2,
+          x: safePos.x,
+          y: finalGroundY,
+          z: safePos.z,
         };
+        if (playerRigRef.current) {
+          playerRigRef.current.root.position.set(
+            safePos.x,
+            finalGroundY,
+            safePos.z
+          );
+          wingTrailRef.current?.resetRibbonHistory(playerRigRef.current);
+        }
         target = closestAny;
       }
     }
@@ -1003,7 +1038,21 @@ export default function App() {
     );
 
     progressRef.current = result.nextProgress;
+    if (activeSpellIdRef.current === 'spell_golden_aegis') {
+      result.nextPhysics.wingEnergy = Math.max(
+        result.nextPhysics.wingEnergy,
+        result.nextPhysics.maxWingWedges + 2
+      );
+    }
     physicsRef.current = result.nextPhysics;
+    if (target.type === 'starlight_elevator' && playerRigRef.current) {
+      playerRigRef.current.root.position.set(
+        physicsRef.current.x,
+        physicsRef.current.y,
+        physicsRef.current.z
+      );
+      wingTrailRef.current?.resetRibbonHistory(playerRigRef.current);
+    }
 
     interactablesRef.current = interactablesRef.current.map((item) =>
       item.id === target!.id ? result.updatedTarget : item
@@ -1459,12 +1508,20 @@ export default function App() {
         showBanner(res.message);
         return;
       }
-      const yGround = groundHeightAt(res.targetX, res.targetZ);
+      const rawGround = groundHeightAt(res.targetX, res.targetZ);
+      const safeFriendPos = resolveObstacleCollisions(
+        res.targetX,
+        Math.max(rawGround, res.targetY),
+        res.targetZ,
+        0.44
+      );
+      const yGround = groundHeightAt(safeFriendPos.x, safeFriendPos.z);
+      const finalFriendY = Math.max(yGround, res.targetY);
       physicsRef.current = {
         ...physicsRef.current,
-        x: res.targetX,
-        y: Math.max(yGround, res.targetY),
-        z: res.targetZ,
+        x: safeFriendPos.x,
+        y: finalFriendY,
+        z: safeFriendPos.z,
         vx: 0,
         vy: 0,
         vz: 0,
@@ -1473,13 +1530,21 @@ export default function App() {
         locomotionMode: 'idle',
         sitMode: 'none',
       };
+      if (playerRigRef.current) {
+        playerRigRef.current.root.position.set(
+          safeFriendPos.x,
+          finalFriendY,
+          safeFriendPos.z
+        );
+        wingTrailRef.current?.resetRibbonHistory(playerRigRef.current);
+      }
       setPhysics({ ...physicsRef.current });
       setConstellationModalOpen(false);
       skyAudio.playWingedLightAbsorb();
       spawnBurstRef.current?.(
-        res.targetX,
-        Math.max(yGround, res.targetY) + 1.4,
-        res.targetZ,
+        safeFriendPos.x,
+        finalFriendY + 1.4,
+        safeFriendPos.z,
         34,
         7.2
       );
@@ -2065,6 +2130,114 @@ export default function App() {
     },
     [commitSaveData, handleDebugTeleport, showBanner]
   );
+
+  // Stage 14: Activate or cancel a Sky Alchemy Spell Buff from the Aviary Spell Workshop
+  const handleActivateSkySpell = useCallback(
+    (spellId: SkySpellId | null) => {
+      const capeItem = getCosmeticById(loadoutRef.current.cape);
+      if (!spellId) {
+        activeSpellIdRef.current = null;
+        activeSpellRemainingRef.current = 0;
+        setActiveSpellId(null);
+        setActiveSpellRemainingSec(0);
+        wingTrailRef.current?.setAccentColor(
+          capeItem.emissiveColor || capeItem.accentColor
+        );
+        showBanner('已散去当前星光魔法增益');
+        return;
+      }
+      const spellMeta = SKY_ALCHEMY_SPELLS.find((s) => s.id === spellId);
+      if (!spellMeta) return;
+      activeSpellIdRef.current = spellId;
+      activeSpellRemainingRef.current = spellMeta.durationSec;
+      setActiveSpellId(spellId);
+      setActiveSpellRemainingSec(spellMeta.durationSec);
+      if (spellId !== 'spell_rainbow_trail') {
+        wingTrailRef.current?.setAccentColor(
+          capeItem.emissiveColor || capeItem.accentColor
+        );
+      }
+
+      const bonusWedges = spellId === 'spell_golden_aegis' ? 2 : 0;
+      const newCap = physicsRef.current.maxWingWedges + bonusWedges;
+      physicsRef.current = {
+        ...physicsRef.current,
+        wingEnergy: newCap,
+        tempLostWedges: 0,
+      };
+      setPhysics({ ...physicsRef.current });
+      skyAudio.playWingedLightAbsorb();
+      spawnBurstRef.current?.(
+        physicsRef.current.x,
+        physicsRef.current.y + 1.5,
+        physicsRef.current.z,
+        36,
+        7.5
+      );
+      showBanner(
+        `${spellMeta.icon} 已激活云巢炼金魔法「${spellMeta.name}」(${spellMeta.durationSec}秒) · ${spellMeta.subtitle}`
+      );
+    },
+    [showBanner]
+  );
+
+  // Stage 14: Teleport to East Sunset Race Arcade start line and begin the 4-Checkpoint Time Trial
+  const handleStartSunsetRace = useCallback(() => {
+    const cp0 = SUNSET_RACE_CHECKPOINTS[0];
+    handleDebugTeleport(
+      cp0.x - 4.0,
+      groundHeightAt(cp0.x - 4.0, cp0.z),
+      cp0.z,
+      '东境霞光竞速拱廊起点'
+    );
+    const nextRace: SunsetRaceTrialState = {
+      active: true,
+      elapsedMs: 0,
+      currentCheckpointIndex: 0,
+      completed: false,
+    };
+    sunsetRaceRef.current = nextRace;
+    setSunsetRaceState(nextRace);
+    skyAudio.playCandleIgnite();
+    showBanner(
+      '🏁 霞光环大陆竞速赛已开启！依次穿过 4 座检查点直抵正南远古日晷终点 (0, 62)！'
+    );
+  }, [handleDebugTeleport, showBanner]);
+
+  // Stage 14: Quick-test completion of Sunset Speedrun Time Trial
+  const handleCompleteSunsetRaceQuickTest = useCallback(() => {
+    const finishCp = SUNSET_RACE_CHECKPOINTS[SUNSET_RACE_CHECKPOINTS.length - 1];
+    handleDebugTeleport(
+      finishCp.x,
+      groundHeightAt(finishCp.x, finishCp.z),
+      finishCp.z,
+      '正南远古日晷竞速终点'
+    );
+    const simulatedMs =
+      sunsetRaceRef.current.active && sunsetRaceRef.current.elapsedMs > 2500
+        ? sunsetRaceRef.current.elapsedMs
+        : 36850; // 36.85s Gold Medal run!
+    const doneRace: SunsetRaceTrialState = {
+      active: false,
+      elapsedMs: simulatedMs,
+      currentCheckpointIndex: SUNSET_RACE_CHECKPOINTS.length,
+      completed: true,
+    };
+    sunsetRaceRef.current = doneRace;
+    setSunsetRaceState(doneRace);
+
+    const res = recordSunsetRaceCompletionPure(saveDataRef.current, simulatedMs);
+    commitSaveData(res.nextSave);
+    skyAudio.playWingedLightAbsorb();
+    spawnBurstRef.current?.(
+      finishCp.x,
+      groundHeightAt(finishCp.x, finishCp.z) + 1.8,
+      finishCp.z,
+      48,
+      9.0
+    );
+    showBanner(res.message);
+  }, [commitSaveData, handleDebugTeleport, showBanner]);
 
   const handleSaveRecordedSong = useCallback(
     (song: RecordedSongSheet) => {
@@ -2786,6 +2959,7 @@ export default function App() {
             cameraYaw: cameraYawRef.current,
             realmId: progressRef.current.currentRealm,
             elapsed,
+            activeSpellId: activeSpellIdRef.current,
           },
           dt,
           loadoutRef.current
@@ -2850,13 +3024,18 @@ export default function App() {
           gaitDistanceRef.current += horizSpeed * dt * 2.9;
         }
 
-        // Camera gentle auto-recenter behind player movement direction when not dragging pointer
-        if (!isDraggingCamera && horizSpeed > 1.2 && !selfieModeRef.current) {
+        // Camera gentle auto-recenter behind player only when flying or walking forward (never fight A/D/S walking!)
+        if (
+          !isDraggingCamera &&
+          horizSpeed > 1.2 &&
+          !selfieModeRef.current &&
+          (!p.grounded || moveZ < -0.15)
+        ) {
           const desiredBehindYaw = p.yaw + Math.PI;
           let camDiff = desiredBehindYaw - cameraYawRef.current;
           while (camDiff > Math.PI) camDiff -= Math.PI * 2;
           while (camDiff < -Math.PI) camDiff += Math.PI * 2;
-          cameraYawRef.current += camDiff * (1 - Math.exp(-1.15 * dt));
+          cameraYawRef.current += camDiff * (1 - Math.exp(-(p.grounded ? 0.65 : 1.15) * dt));
         }
 
         if (progressRef.current.activeEmoteTimer > 0) {
@@ -2992,15 +3171,14 @@ export default function App() {
         let desiredCamZ = p.z + Math.cos(effectiveYaw) * camDist;
         let desiredCamY = camHeight;
 
-        // Push camera out of solid cylindrical obstacles (temple hall, pillars, bell towers)
-        const camResolved = resolveObstacleCollisions(
-          desiredCamX,
-          desiredCamY - 1.0,
-          desiredCamZ,
-          0.65
-        );
-        desiredCamX = camResolved.x;
-        desiredCamZ = camResolved.z;
+        // Push camera smoothly out of only the large solid Northern Temple Main Hall (never snap camera on thin shrine pillars!)
+        const camHallDx = desiredCamX - 0;
+        const camHallDz = desiredCamZ - -55.0;
+        const camHallDist = Math.hypot(camHallDx, camHallDz);
+        if (desiredCamY < 24.0 && camHallDist < 5.75 && camHallDist > 0.001) {
+          desiredCamX = (camHallDx / camHallDist) * 5.75;
+          desiredCamZ = -55.0 + (camHallDz / camHallDist) * 5.75;
+        }
 
         // Multi-sample terrain ray check from player head (p.x, p.y + 1.6, p.z) to camera endpoint
         for (let s = 1; s <= 4; s++) {
@@ -3015,10 +3193,63 @@ export default function App() {
         }
 
         _camDesired.set(desiredCamX, desiredCamY, desiredCamZ);
-        camera.position.lerp(_camDesired, 1 - Math.exp(-8.5 * dt));
+        camera.position.lerp(_camDesired, 1 - Math.exp(-11.5 * dt));
 
         _camTarget.set(p.x, p.y + 1.6, p.z);
         camera.lookAt(_camTarget);
+
+        // Tick down active Sky Alchemy Spell duration & cycle Rainbow Trail color
+        if (activeSpellIdRef.current && activeSpellRemainingRef.current > 0) {
+          if (activeSpellIdRef.current === 'spell_rainbow_trail') {
+            _rainbowColor.setHSL((elapsed * 0.38) % 1.0, 0.92, 0.62);
+            wingTrailSystem.setAccentColor('#' + _rainbowColor.getHexString());
+          }
+          activeSpellRemainingRef.current = Math.max(
+            0,
+            activeSpellRemainingRef.current - dt
+          );
+          if (activeSpellRemainingRef.current <= 0) {
+            activeSpellIdRef.current = null;
+            setActiveSpellId(null);
+            setActiveSpellRemainingSec(0);
+            const capeItem = getCosmeticById(loadoutRef.current.cape);
+            wingTrailSystem.setAccentColor(
+              capeItem.emissiveColor || capeItem.accentColor
+            );
+          }
+        }
+
+        // Step active Sunset Speedrun Time-Trial checkpoint progression
+        if (sunsetRaceRef.current.active && !sunsetRaceRef.current.completed) {
+          const raceStep = stepSunsetRaceTrialPure(
+            sunsetRaceRef.current,
+            p.x,
+            p.z,
+            dt * 1000
+          );
+          sunsetRaceRef.current = raceStep.nextState;
+          if (raceStep.reachedCheckpoint) {
+            skyAudio.playCandleIgnite();
+            spawnBurst(p.x, p.y + 1.4, p.z, 28, 6.5);
+            if (raceStep.justCompletedRace) {
+              const settleRes = recordSunsetRaceCompletionPure(
+                saveDataRef.current,
+                raceStep.nextState.elapsedMs
+              );
+              commitSaveData(settleRes.nextSave);
+              skyAudio.playWingedLightAbsorb();
+              showBanner(settleRes.message);
+            } else {
+              const nextCp =
+                SUNSET_RACE_CHECKPOINTS[
+                  raceStep.nextState.currentCheckpointIndex
+                ];
+              showBanner(
+                `✨ 已通过「${raceStep.reachedCheckpoint.name}」！下一站：${nextCp?.name || '终点'}`
+              );
+            }
+          }
+        }
 
         // Throttled HUD state sync (~10Hz)
         hudSyncAccumulator += dt;
@@ -3037,6 +3268,12 @@ export default function App() {
           setPhysics({ ...p });
           setProgress({ ...progressRef.current });
           setNetStatus(networkClient.getStatusSnapshot());
+          if (activeSpellIdRef.current) {
+            setActiveSpellRemainingSec(activeSpellRemainingRef.current);
+          }
+          if (sunsetRaceRef.current.active || sunsetRaceRef.current.completed) {
+            setSunsetRaceState({ ...sunsetRaceRef.current });
+          }
         }
 
         if (fpsTimer >= 0.5) {
@@ -3265,6 +3502,14 @@ export default function App() {
           onAdvanceOnboardingTutorial={handleAdvanceOnboardingTutorial}
           discoveredEasterEggIds={saveData.discoveredEasterEggIds || []}
           onDiscoverAndWarpEasterEgg={handleDiscoverAndWarpEasterEgg}
+          activeSpellId={activeSpellId}
+          activeSpellRemainingSec={activeSpellRemainingSec}
+          onActivateSkySpell={handleActivateSkySpell}
+          sunsetRaceState={sunsetRaceState}
+          bestRaceTimeMs={saveData.bestRaceTimeMs ?? null}
+          bestRaceMedal={saveData.bestRaceMedal ?? null}
+          onStartSunsetRace={handleStartSunsetRace}
+          onCompleteSunsetRaceQuickTest={handleCompleteSunsetRaceQuickTest}
           onOpenWardrobe={() => setWardrobeOpen(true)}
           onOpenConstellationHub={(tab) => {
             setConstellationTab(tab);

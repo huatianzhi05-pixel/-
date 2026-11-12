@@ -925,7 +925,7 @@ export function buildSkyWorldEnvironment(
     new THREE.CylinderGeometry(2.6, 3.1, 0.8, 12),
     stoneMat
   );
-  vPlinth.position.y = 0.4;
+  vPlinth.position.y = -0.36;
   const vPillarL = new THREE.Mesh(
     new THREE.CylinderGeometry(0.32, 0.38, 6.2, 10),
     stoneMat
@@ -1056,7 +1056,7 @@ export function buildSkyWorldEnvironment(
   const grandmaY = groundHeightAt(-54, -32);
   grandmaGroup.position.set(-54, grandmaY, -32);
   const hollowTrunk = new THREE.Mesh(
-    new THREE.CylinderGeometry(4.6, 5.8, 12.0, 16, 1, true),
+    new THREE.CylinderGeometry(4.6, 5.8, 12.0, 20, 1, true, 0.55, Math.PI * 2 - 1.1),
     new THREE.MeshStandardMaterial({
       color: 0x451a03,
       roughness: 0.85,
@@ -1207,12 +1207,12 @@ export function buildSkyWorldEnvironment(
   auroraColosseumGroup.add(colosseumPlinth, auroraCrownRing);
   outerSanctuariesGroup.add(auroraColosseumGroup);
 
-  // Forgotten Ark (-88, -82) & Trial of Prophecy Gate (78, -118) Landmarks
+  // Forgotten Ark (-88, -86.5 behind altar at -82) & Trial of Prophecy Gate (78, -118) Landmarks
   const arkLandmark = new THREE.Mesh(
     new THREE.BoxGeometry(8.5, 2.2, 3.2),
     new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.72 })
   );
-  arkLandmark.position.set(-88, groundHeightAt(-88, -82) + 1.1, -82);
+  arkLandmark.position.set(-88, groundHeightAt(-88, -86.5) + 1.1, -86.5);
   arkLandmark.rotation.z = 0.12;
   const trialGate = new THREE.Mesh(
     new THREE.TorusGeometry(4.8, 0.55, 10, 24, Math.PI),
@@ -1221,7 +1221,376 @@ export function buildSkyWorldEnvironment(
   trialGate.position.set(78, groundHeightAt(78, -118), -118);
   outerSanctuariesGroup.add(arkLandmark, trialGate);
 
+  // 5e. 8 Continental Ground Architectural Villages, Pavilions, Towers, Bridges & Ruins (大陆地面建筑群落与可玩性升级)
+  const warmWoodMat = new THREE.MeshStandardMaterial({
+    color: 0x78350f,
+    roughness: 0.72,
+    metalness: 0.1,
+  });
+  const warmWindowMat = new THREE.MeshStandardMaterial({
+    color: 0xfef08a,
+    emissive: 0xf59e0b,
+    emissiveIntensity: 1.35,
+    roughness: 0.2,
+  });
+
+  // Southern Stepped Stone Causeway & Lanterns connecting Central Shrine (0,0) -> Aviary Village (0,28) -> Sundial Theater (0,62)
+  for (let s = 0; s < 10; s++) {
+    const sz = 10.0 + s * 4.4;
+    if (Math.abs(sz - 28.0) < 4.5) continue;
+    const sy = groundHeightAt(0, sz);
+    const slab = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.3, 2.6), stoneMat);
+    slab.position.set(0, sy - 0.14, sz);
+    slab.receiveShadow = true;
+    outerSanctuariesGroup.add(slab);
+  }
+  [12.0, 20.0].forEach((sz) => {
+    [-2.8, 2.8].forEach((sideX) => {
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.26, 1.6, 8), stoneMat);
+      post.position.set(sideX, groundHeightAt(sideX, sz) + 0.8, sz);
+      const orb = new THREE.Mesh(new THREE.OctahedronGeometry(0.24, 0), goldMat);
+      orb.position.set(sideX, groundHeightAt(sideX, sz) + 1.85, sz);
+      outerSanctuariesGroup.add(post, orb);
+    });
+  });
+
+  // Hub 1: South Aviary Village Plaza, Octagonal Tea Pavilion & 2 Stone Cottage Workshops at (0, 1.8, 28)
+  const aviaryGroup = new THREE.Group();
+  const aviaryY = groundHeightAt(0, 28);
+  aviaryGroup.position.set(0, aviaryY, 28);
+  const aviaryPlinth = new THREE.Mesh(
+    new THREE.CylinderGeometry(5.2, 5.8, 0.72, 16),
+    stoneMat
+  );
+  aviaryPlinth.position.y = -0.35;
+  const teaTableMesh = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.82, 0.68, 0.76, 14),
+    warmWoodMat
+  );
+  teaTableMesh.position.y = 0.38;
+  const teaFireCore = new THREE.Mesh(
+    new THREE.OctahedronGeometry(0.36, 1),
+    warmWindowMat
+  );
+  teaFireCore.position.y = 1.05;
+  [
+    [-2.4, -2.4],
+    [2.4, -2.4],
+    [-2.4, 2.4],
+    [2.4, 2.4],
+  ].forEach(([cx, cz]) => {
+    const col = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.34, 4.2, 10), stoneMat);
+    col.position.set(cx, 2.1, cz);
+    aviaryGroup.add(col);
+  });
+  const teaRoof1 = new THREE.Mesh(new THREE.ConeGeometry(4.5, 1.6, 8), goldMat);
+  teaRoof1.position.y = 4.6;
+  const teaRoof2 = new THREE.Mesh(new THREE.ConeGeometry(3.1, 1.5, 8), goldMat);
+  teaRoof2.position.y = 5.8;
+  // Flanking Aviary Stone Cottage Workshops at (-8.2, 28) & (8.2, 28)
+  [-8.2, 8.2].forEach((shopX, idx) => {
+    const shopGroup = new THREE.Group();
+    shopGroup.position.set(shopX, 0, 0);
+    const walls = new THREE.Mesh(new THREE.CylinderGeometry(2.05, 2.25, 3.2, 8), stoneMat);
+    walls.position.y = 1.6;
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(2.65, 2.2, 8), goldMat);
+    roof.position.y = 4.2;
+    const winMesh = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.85, 0.18), warmWindowMat);
+    winMesh.position.set(idx === 0 ? 1.95 : -1.95, 1.55, 0);
+    winMesh.rotation.y = Math.PI / 2;
+    const signGem = new THREE.Mesh(new THREE.OctahedronGeometry(0.32, 0), warmWindowMat);
+    signGem.position.set(0, 5.5, 0);
+    shopGroup.add(walls, roof, winMesh, signGem);
+    aviaryGroup.add(shopGroup);
+  });
+  aviaryGroup.add(aviaryPlinth, teaTableMesh, teaFireCore, teaRoof1, teaRoof2);
+  outerSanctuariesGroup.add(aviaryGroup);
+
+  // Hub 2: South Ancient Sundial Amphitheater & 8-Pillar Hengestone Ring at (0, 3.2, 62)
+  const sundialGroup = new THREE.Group();
+  const sundialY = groundHeightAt(0, 62);
+  sundialGroup.position.set(0, sundialY, 62);
+  const sundialPlinth = new THREE.Mesh(
+    new THREE.CylinderGeometry(8.8, 9.8, 1.2, 24),
+    stoneMat
+  );
+  sundialPlinth.position.y = -0.58;
+  const sundialObelisk = new THREE.Mesh(
+    new THREE.ConeGeometry(1.12, 9.2, 8),
+    goldMat
+  );
+  sundialObelisk.position.y = 4.6;
+  const sundialHalo = new THREE.Mesh(
+    new THREE.TorusGeometry(2.8, 0.12, 10, 32),
+    goldMat
+  );
+  sundialHalo.position.y = 7.4;
+  sundialHalo.rotation.x = Math.PI / 3;
+  sundialHalo.name = 'sundial_halo_south';
+  for (let k = 0; k < 8; k++) {
+    const ang = (k / 8) * Math.PI * 2;
+    const hx = Math.cos(ang) * 7.6;
+    const hz = Math.sin(ang) * 7.6;
+    const hCol = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.56, 5.4, 10), stoneMat);
+    hCol.position.set(hx, 2.7, hz);
+    const hCap = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.45, 2.4), stoneMat);
+    hCap.position.set(hx, 5.5, hz);
+    hCap.rotation.y = -ang;
+    const hOrb = new THREE.Mesh(new THREE.OctahedronGeometry(0.32, 0), goldMat);
+    hOrb.position.set(hx, 6.1, hz);
+    sundialGroup.add(hCol, hCap, hOrb);
+  }
+  sundialGroup.add(sundialPlinth, sundialObelisk, sundialHalo);
+  outerSanctuariesGroup.add(sundialGroup);
+
+  // Hub 3: Southeast Starlight Windmill Observatory & Archway at (34, 3.0, 26)
+  const windmillGroup = new THREE.Group();
+  const wmY = groundHeightAt(34, 26);
+  windmillGroup.position.set(34, wmY, 26);
+  const wmTower = new THREE.Mesh(new THREE.CylinderGeometry(1.55, 2.1, 8.6, 12), stoneMat);
+  wmTower.position.y = 4.3;
+  const wmRoof = new THREE.Mesh(new THREE.ConeGeometry(2.1, 2.8, 12), goldMat);
+  wmRoof.position.y = 9.9;
+  const sailsGroup = new THREE.Group();
+  sailsGroup.position.set(0, 6.8, -1.75);
+  sailsGroup.name = 'windmill_sails_se';
+  for (let b = 0; b < 4; b++) {
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.55, 4.2, 0.12), goldMat);
+    const bAng = (b / 4) * Math.PI * 2;
+    blade.position.set(Math.cos(bAng) * 2.1, Math.sin(bAng) * 2.1, 0);
+    blade.rotation.z = bAng + Math.PI / 2;
+    sailsGroup.add(blade);
+  }
+  const wmArch = new THREE.Mesh(new THREE.TorusGeometry(3.8, 0.34, 10, 24, Math.PI), stoneMat);
+  wmArch.position.set(0, 0.2, -3.5);
+  windmillGroup.add(wmTower, wmRoof, sailsGroup, wmArch);
+  outerSanctuariesGroup.add(windmillGroup);
+
+  // Hub 4: Southwest Mushroom Glen & Ancient Stone Bridge at (-24, 1.6, 18)
+  const glenGroup = new THREE.Group();
+  const glenY = groundHeightAt(-24, 18);
+  glenGroup.position.set(-24, glenY, 18);
+  const bridgeArch = new THREE.Mesh(
+    new THREE.TorusGeometry(2.8, 0.42, 10, 24, Math.PI).rotateY(Math.PI / 2),
+    stoneMat
+  );
+  bridgeArch.position.y = -0.8;
+  const bridgeDeck = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.28, 6.2), stoneMat);
+  bridgeDeck.position.y = 0.05;
+  const gazeboGroup = new THREE.Group();
+  gazeboGroup.position.set(-4.2, 0, 0);
+  const gazBase = new THREE.Mesh(new THREE.CylinderGeometry(1.55, 1.72, 2.6, 8), stoneMat);
+  gazBase.position.y = 1.3;
+  const gazRoof = new THREE.Mesh(new THREE.ConeGeometry(2.2, 1.8, 8), goldMat);
+  gazRoof.position.y = 3.4;
+  gazeboGroup.add(gazBase, gazRoof);
+  glenGroup.add(bridgeArch, bridgeDeck, gazeboGroup);
+  outerSanctuariesGroup.add(glenGroup);
+
+  // Hub 5: East Sunset Race Arcade & Twin Glide Towers at (58, 3.5, 8)
+  const eastRaceGroup = new THREE.Group();
+  const erY = groundHeightAt(58, 8);
+  eastRaceGroup.position.set(58, erY, 8);
+  [-4.8, 4.8].forEach((tz) => {
+    const rTower = new THREE.Mesh(new THREE.CylinderGeometry(1.45, 1.92, 10.5, 12), stoneMat);
+    rTower.position.set(0, 5.25, tz);
+    const rRoof = new THREE.Mesh(new THREE.ConeGeometry(2.15, 3.2, 12), goldMat);
+    rRoof.position.set(0, 12.0, tz);
+    eastRaceGroup.add(rTower, rRoof);
+  });
+  const skyBridgeSpan = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.45, 9.6), goldMat);
+  skyBridgeSpan.position.set(0, 8.8, 0);
+  // 3 Glowing Race Arcade Rings along the Eastern Glide Corridor
+  [-24.0, -14.0, 0.0].forEach((offsetX) => {
+    const rRing = new THREE.Mesh(
+      new THREE.TorusGeometry(3.4, 0.14, 10, 28).rotateY(Math.PI / 2),
+      windRingMat
+    );
+    rRing.position.set(offsetX, 3.2, 0);
+    eastRaceGroup.add(rRing);
+  });
+  eastRaceGroup.add(skyBridgeSpan);
+  outerSanctuariesGroup.add(eastRaceGroup);
+
+  // Hub 6: West Twilight Castle Ruins & Bonfire Courtyard at (-56, 2.8, 8)
+  const westCastleGroup = new THREE.Group();
+  const wcY = groundHeightAt(-56, 8);
+  westCastleGroup.position.set(-56, wcY, 8);
+  [-4.2, 4.2].forEach((tz) => {
+    const bastion = new THREE.Mesh(new THREE.CylinderGeometry(1.65, 2.02, 8.4, 10), stoneMat);
+    bastion.position.set(-4.5, 4.2, tz);
+    const crown = new THREE.Mesh(new THREE.ConeGeometry(2.1, 2.4, 10), goldMat);
+    crown.position.set(-4.5, 9.5, tz);
+    westCastleGroup.add(bastion, crown);
+  });
+  [-3.8, 3.8].forEach((pz) => {
+    const rPillar = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.66, 4.6, 10), stoneMat);
+    rPillar.position.set(4.5, 2.3, pz);
+    const rOrb = new THREE.Mesh(new THREE.OctahedronGeometry(0.36, 0), goldMat);
+    rOrb.position.set(4.5, 5.0, pz);
+    westCastleGroup.add(rPillar, rOrb);
+  });
+  const castleArchWall = new THREE.Mesh(
+    new THREE.TorusGeometry(4.2, 0.52, 10, 24, Math.PI).rotateY(Math.PI / 2),
+    stoneMat
+  );
+  castleArchWall.position.set(-4.5, 3.2, 0);
+  westCastleGroup.add(castleArchWall);
+  outerSanctuariesGroup.add(westCastleGroup);
+
+  // Hub 7: Northeast Cloud-Sea Lighthouse & Parkour Stepping Pillars at (36, 3.6, -44)
+  const lighthouseGroup = new THREE.Group();
+  const lhY = groundHeightAt(36, -44);
+  lighthouseGroup.position.set(36, lhY, -44);
+  const lhTower = new THREE.Mesh(new THREE.CylinderGeometry(1.25, 1.82, 11.2, 12), stoneMat);
+  lhTower.position.y = 5.6;
+  const lhLantern = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.15, 1.6, 12), warmWindowMat);
+  lhLantern.position.y = 11.8;
+  const lhRoof = new THREE.Mesh(new THREE.ConeGeometry(1.65, 2.4, 12), goldMat);
+  lhRoof.position.y = 13.6;
+  const lhBeam = new THREE.Mesh(
+    new THREE.ConeGeometry(1.6, 9.5, 16, 1, true).rotateZ(Math.PI / 2),
+    new THREE.MeshBasicMaterial({
+      color: 0xfef08a,
+      transparent: true,
+      opacity: 0.34,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    })
+  );
+  lhBeam.position.set(0, 11.8, 0);
+  lhBeam.name = 'lighthouse_beam_ne';
+  lighthouseGroup.add(lhTower, lhLantern, lhRoof, lhBeam);
+  outerSanctuariesGroup.add(lighthouseGroup);
+
+  // Hub 8: Southwest Starlight Oasis Caravanserai & Twin Obelisks at (-48, 2.6, 56)
+  const oasisGroup = new THREE.Group();
+  const oaY = groundHeightAt(-48, 56);
+  oasisGroup.position.set(-48, oaY, 56);
+  const oaPavilion = new THREE.Mesh(new THREE.CylinderGeometry(1.45, 1.72, 5.2, 10), stoneMat);
+  oaPavilion.position.y = 2.6;
+  const oaDome = new THREE.Mesh(new THREE.SphereGeometry(1.65, 16, 12), goldMat);
+  oaDome.position.y = 5.6;
+  [-4.5, 4.5].forEach((ox) => {
+    const obelisk = new THREE.Mesh(new THREE.ConeGeometry(0.82, 5.6, 4), goldMat);
+    obelisk.position.set(ox, 2.8, -3.0);
+    oasisGroup.add(obelisk);
+  });
+  oasisGroup.add(oaPavilion, oaDome);
+  outerSanctuariesGroup.add(oasisGroup);
+
   root.add(outerSanctuariesGroup);
+
+  // 5f. InstancedMesh Ancient Wayfinder Ruin Columns & Golden Beacons across the Mid/Outer Continent
+  const wayfinderCount = 36;
+  const wayfinderGeo = new THREE.CylinderGeometry(0.32, 0.42, 3.4, 8);
+  wayfinderGeo.translate(0, 1.7, 0);
+  const wayfinderInstanced = new THREE.InstancedMesh(wayfinderGeo, stoneMat, wayfinderCount);
+  const wfOrbGeo = new THREE.OctahedronGeometry(0.28, 0);
+  wfOrbGeo.translate(0, 3.75, 0);
+  const wfOrbInstanced = new THREE.InstancedMesh(wfOrbGeo, goldMat, wayfinderCount);
+  const wfDummy = new THREE.Object3D();
+  for (let i = 0; i < wayfinderCount; i++) {
+    const ringIdx = i < 18 ? 0 : 1;
+    const ang = ((i % 18) / 18) * Math.PI * 2 + 0.17 + ringIdx * 0.18;
+    const rad = ringIdx === 0 ? 42.0 + (i % 3) * 4.5 : 78.0 + (i % 4) * 6.0;
+    const wx = Math.cos(ang) * rad;
+    const wz = Math.sin(ang) * rad;
+    const wy = groundHeightAt(wx, wz);
+    wfDummy.position.set(wx, wy - 0.1, wz);
+    const wScale = 0.85 + (i % 3) * 0.18;
+    wfDummy.scale.set(1, wScale, 1);
+    wfDummy.rotation.set(0, ang, 0);
+    wfDummy.updateMatrix();
+    wayfinderInstanced.setMatrixAt(i, wfDummy.matrix);
+    wfOrbInstanced.setMatrixAt(i, wfDummy.matrix);
+  }
+  wayfinderInstanced.instanceMatrix.needsUpdate = true;
+  wfOrbInstanced.instanceMatrix.needsUpdate = true;
+  wayfinderInstanced.computeBoundingSphere();
+  wfOrbInstanced.computeBoundingSphere();
+  root.add(wayfinderInstanced, wfOrbInstanced);
+
+  // 5q. Stage 14: 48 Instanced Starlight Guiding Stepping Stones & Rune Lanterns connecting the Continental Hubs + Aviary Alchemy Cauldron & Sunset Race Finish Arch
+  const guideWaypoints: [number, number, number, number][] = [
+    // Segment 1: East Slide Ledge (22, 4) -> Sunset Race Arcade (36, 8) -> Twin Towers (54, 8)
+    [14, 2, 34, 8],
+    // Segment 2: Twin Towers (58, 8) -> Southeast Windmill Observatory (34, 26)
+    [54, 11, 38, 23],
+    // Segment 3: Southeast Windmill (34, 26) -> South Sundial Amphitheater (0, 62)
+    [30, 30, 5, 57],
+    // Segment 4: South Aviary Tea Village (0, 28) -> Southwest Mushroom Creek Bridge (-24, 18) -> West Twilight Castle (-52, 8)
+    [-5, 26, -50, 9],
+  ];
+  const guideCount = 48;
+  const guideSlabGeo = new THREE.CylinderGeometry(0.85, 0.95, 0.22, 8);
+  const guideRuneGeo = new THREE.OctahedronGeometry(0.22, 0);
+  const lanternFlameMat = new THREE.MeshBasicMaterial({ color: 0xfef08a });
+  const guideSlabInstanced = new THREE.InstancedMesh(guideSlabGeo, stoneMat, guideCount);
+  const guideRuneInstanced = new THREE.InstancedMesh(guideRuneGeo, lanternFlameMat, guideCount);
+  for (let i = 0; i < guideCount; i++) {
+    const segIdx = Math.floor(i / 12);
+    const stepInSeg = (i % 12) / 11;
+    const [x0, z0, x1, z1] = guideWaypoints[segIdx];
+    const gx = x0 + (x1 - x0) * stepInSeg;
+    const gz = z0 + (z1 - z0) * stepInSeg;
+    const gy = groundHeightAt(gx, gz);
+    wfDummy.position.set(gx, gy + 0.08, gz);
+    wfDummy.scale.set(1, 1, 1);
+    wfDummy.rotation.set(0, i * 0.4, 0);
+    wfDummy.updateMatrix();
+    guideSlabInstanced.setMatrixAt(i, wfDummy.matrix);
+
+    wfDummy.position.set(gx, gy + 0.42 + (i % 2) * 0.15, gz);
+    wfDummy.updateMatrix();
+    guideRuneInstanced.setMatrixAt(i, wfDummy.matrix);
+  }
+  guideSlabInstanced.instanceMatrix.needsUpdate = true;
+  guideRuneInstanced.instanceMatrix.needsUpdate = true;
+  guideSlabInstanced.computeBoundingSphere();
+  guideRuneInstanced.computeBoundingSphere();
+  root.add(guideSlabInstanced, guideRuneInstanced);
+
+  // Aviary Magic Cottage Alchemy Spell Cauldron (-5.2, 1.8, 30.2) & Sunset Race Finish Arch (0, 3.2, 54.5)
+  const alchemyGroup = new THREE.Group();
+  const alcY = groundHeightAt(-5.2, 30.2);
+  alchemyGroup.position.set(-5.2, alcY, 30.2);
+  const cauldronPot = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.72, 0.55, 0.85, 12),
+    goldMat
+  );
+  cauldronPot.position.y = 0.42;
+  const cauldronBrew = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.62, 0.62, 0.12, 12),
+    new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+  );
+  cauldronBrew.position.y = 0.84;
+  const cauldronHalo = new THREE.Mesh(
+    new THREE.TorusGeometry(0.95, 0.05, 8, 24),
+    lanternFlameMat
+  );
+  cauldronHalo.position.y = 1.45;
+  cauldronHalo.rotation.x = Math.PI / 3;
+  cauldronHalo.name = 'aviary_spell_halo';
+  alchemyGroup.add(cauldronPot, cauldronBrew, cauldronHalo);
+  outerSanctuariesGroup.add(alchemyGroup);
+
+  const finishArchGroup = new THREE.Group();
+  const finY = groundHeightAt(0.0, 54.5);
+  finishArchGroup.position.set(0.0, finY, 54.5);
+  const finArch = new THREE.Mesh(
+    new THREE.TorusGeometry(4.2, 0.28, 12, 32, Math.PI),
+    goldMat
+  );
+  finArch.position.y = 0.2;
+  const finBannerRing = new THREE.Mesh(
+    new THREE.TorusGeometry(3.4, 0.09, 10, 28),
+    lanternFlameMat
+  );
+  finBannerRing.position.y = 3.2;
+  finBannerRing.name = 'sunset_race_finish_ring';
+  finishArchGroup.add(finArch, finBannerRing);
+  outerSanctuariesGroup.add(finishArchGroup);
 
   // 6. InstancedMesh Billowing Cloud Sea Perimeter (inner, mid, and 210m ultra-outer cloud banks)
   const cloudCount = 192;
@@ -1278,7 +1647,7 @@ export function buildSkyWorldEnvironment(
   root.add(cloudInstanced);
 
   // 7. InstancedMesh Stylized Meadow Cypress Trees & Floating Spire Stones across the 220m continent
-  const treeCount = 72;
+  const treeCount = 112;
   const treeGeo = new THREE.ConeGeometry(1.35, 5.2, 7);
   treeGeo.translate(0, 2.6, 0);
   const treeMat = new THREE.MeshStandardMaterial({
@@ -1289,15 +1658,15 @@ export function buildSkyWorldEnvironment(
   for (let i = 0; i < treeCount; i++) {
     const angle = (i / treeCount) * Math.PI * 2 + 0.25;
     const r =
-      i < 28
-        ? 22 + (i % 4) * 7.5
-        : i < 48
-          ? 58 + (i % 5) * 9.5
-          : 118 + (i % 6) * 11.5;
+      i < 36
+        ? 21 + (i % 4) * 6.5
+        : i < 76
+          ? 48 + (i % 5) * 8.5
+          : 96 + (i % 6) * 11.5;
     const tx = Math.cos(angle) * r;
-    const tz = Math.sin(angle) * r - 8;
-    if (Math.abs(tx) < 7 && tz < 5 && tz > -55) {
-      dummy.position.set(tx + (tx >= 0 ? 9 : -9), groundHeightAt(tx + (tx >= 0 ? 9 : -9), tz), tz);
+    const tz = Math.sin(angle) * r - 4;
+    if (Math.abs(tx) < 7 && tz < 68 && tz > -55) {
+      dummy.position.set(tx + (tx >= 0 ? 11 : -11), groundHeightAt(tx + (tx >= 0 ? 11 : -11), tz), tz);
     } else {
       dummy.position.set(tx, groundHeightAt(tx, tz), tz);
     }
@@ -1528,6 +1897,26 @@ export function buildSkyWorldEnvironment(
     const wpRingObj = outerSanctuariesGroup.getObjectByName('wind_paths_ring');
     if (wpRingObj) {
       wpRingObj.rotation.z = -elapsed * 0.85;
+    }
+    const windmillSails = outerSanctuariesGroup.getObjectByName('windmill_sails_se');
+    if (windmillSails) {
+      windmillSails.rotation.z = elapsed * 0.95;
+    }
+    const sundialHaloObj = outerSanctuariesGroup.getObjectByName('sundial_halo_south');
+    if (sundialHaloObj) {
+      sundialHaloObj.rotation.z = elapsed * 0.65;
+    }
+    const lighthouseBeamObj = outerSanctuariesGroup.getObjectByName('lighthouse_beam_ne');
+    if (lighthouseBeamObj) {
+      lighthouseBeamObj.rotation.y = elapsed * 0.75;
+    }
+    const aviaryHaloObj = outerSanctuariesGroup.getObjectByName('aviary_spell_halo');
+    if (aviaryHaloObj) {
+      aviaryHaloObj.rotation.z = elapsed * 1.1;
+    }
+    const finishRingObj = outerSanctuariesGroup.getObjectByName('sunset_race_finish_ring');
+    if (finishRingObj) {
+      finishRingObj.rotation.z = -elapsed * 0.85;
     }
 
     // Update Krill patrol in Wasteland & Eden
