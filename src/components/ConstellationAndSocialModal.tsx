@@ -15,6 +15,23 @@ interface ConstellationAndSocialModalProps {
   sitMode?: string;
   dualActionPartnerId: string | null;
   dualActionMode: 'none' | 'hand_hold' | 'carry' | 'bench_sit';
+  netStatus?: {
+    connected: boolean;
+    roomId: string;
+    latencyMs: number;
+    onlineCount: number;
+    realOnlineCount?: number;
+    localBotCount?: number;
+    localBotsEnabled?: boolean;
+    followLeaderId?: string | null;
+    maxRoomSize?: number;
+    reconnectCount?: number;
+    botAiMode?: string;
+    queuedReliableCount?: number;
+  };
+  onToggleLocalBotsEnabled?: () => void;
+  onFollowPartner?: (peerId: string | null) => void;
+  onSummonCoopCompanions?: () => void;
   onUnlockConstellationNode: (spiritId: string, nodeId: string) => void;
   onStartSpiritMemoryQuest?: (spiritId: string) => void;
   onForgeCandleWax?: (waxAmount: number) => void;
@@ -75,6 +92,10 @@ export const ConstellationAndSocialModal: React.FC<
   sitMode = 'stand',
   dualActionPartnerId,
   dualActionMode,
+  netStatus,
+  onToggleLocalBotsEnabled,
+  onFollowPartner,
+  onSummonCoopCompanions,
   onUnlockConstellationNode,
   onStartSpiritMemoryQuest,
   onForgeCandleWax,
@@ -193,9 +214,12 @@ export const ConstellationAndSocialModal: React.FC<
       role="dialog"
       aria-modal="true"
       aria-label="先祖星盘、社交好友树与每日任务中心"
-      className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-slate-950/85 pointer-events-auto"
+      className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-slate-950/75 pointer-events-auto sky-modal-backdrop"
     >
-      <div className="w-full max-w-5xl max-h-[88vh] flex flex-col rounded-3xl bg-slate-900 border border-amber-300/30 shadow-2xl overflow-hidden text-amber-50">
+      <div
+        className="w-full max-w-5xl max-h-[88vh] flex flex-col rounded-3xl border border-amber-300/30 shadow-2xl overflow-hidden text-amber-50 sky-panel-enter"
+        style={{ backgroundColor: 'var(--sky-glass-bg-elevated)' }}
+      >
         {/* Top Header & Stage 4 Currency Economy Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 bg-slate-950/90 border-b border-slate-800">
           <div>
@@ -504,7 +528,64 @@ export const ConstellationAndSocialModal: React.FC<
               '其他违规行为',
             ];
 
+            const isCurrentPeerBot = currentPeer.peerId.startsWith('bot_');
+            const isFollowingCurrentPeer =
+              netStatus?.followLeaderId === currentPeer.peerId;
+
             return (
+              <div className="space-y-4">
+                {/* Module 8 Honesty Banner: Strict Distinction Between Real Online Players vs. Local AI Companions */}
+                <div
+                  data-testid="social-network-honesty-banner"
+                  className="p-3.5 rounded-2xl bg-slate-950/90 border border-sky-400/35 flex flex-wrap items-center justify-between gap-3"
+                >
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
+                      <span className="px-2.5 py-0.5 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-200">
+                        🌐 真实联机玩家在线：{netStatus?.realOnlineCount ?? 1} 人 (含本机 · 房间 {netStatus?.roomId || 'home_inst_1'})
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-lg bg-indigo-500/20 border border-indigo-400/40 text-indigo-200">
+                        🤖 本地 AI 旅伴：{netStatus?.localBotCount ?? 3} 人 (单机伴飞与双人机关协力)
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      透明架构说明：支持 WebSocket 服务端房间同步与跨标签页 BroadcastChannel 实时联机；单机模式下提供 3 名明确标识的「🤖 本地AI旅伴」供随时练习牵手、合奏与双人机关，绝不伪装成真人玩家。
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {onToggleLocalBotsEnabled && (
+                      <button
+                        type="button"
+                        data-testid="toggle-local-bots-btn"
+                        onClick={onToggleLocalBotsEnabled}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                          netStatus?.localBotsEnabled !== false
+                            ? 'bg-indigo-500/25 border-indigo-400/50 text-indigo-100 hover:bg-indigo-500/35'
+                            : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+                        }`}
+                      >
+                        {netStatus?.localBotsEnabled !== false
+                          ? '🤖 本地AI旅伴：显示中 (点击仅看真人)'
+                          : '🌐 仅显示真实联机玩家 (点击召唤AI旅伴)'}
+                      </button>
+                    )}
+                    {onSummonCoopCompanions && (
+                      <button
+                        type="button"
+                        data-testid="social-summon-coop-btn"
+                        onClick={() => {
+                          onSummonCoopCompanions();
+                          onClose();
+                        }}
+                        className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-400/20 hover:bg-amber-400/35 border border-amber-300/50 text-amber-200 cursor-pointer"
+                      >
+                        🔔 呼唤旅伴协力开启双人石门
+                      </button>
+                    )}
+                  </div>
+                </div>
+
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                 {/* Left Column: Friend & Instance Traveler List */}
                 <div className="md:col-span-4 space-y-3">
@@ -531,6 +612,7 @@ export const ConstellationAndSocialModal: React.FC<
                   {friendsList.map((peer) => {
                     const selected = peer.peerId === currentPeer.peerId;
                     const peerBlocked = blockedIds.includes(peer.peerId);
+                    const isBot = peer.peerId.startsWith('bot_');
                     return (
                       <button
                         key={peer.peerId}
@@ -552,33 +634,44 @@ export const ConstellationAndSocialModal: React.FC<
                               ? peer.nickname
                               : '未点亮的陌生旅人 (剪影)'}
                           </span>
-                          <span
-                            data-testid={`peer-badge-${peer.peerId}`}
-                            className={`text-[10px] px-2 py-0.5 rounded shrink-0 ${
-                              peerBlocked
-                                ? 'bg-rose-950 text-rose-300 border border-rose-500/40'
+                          <div className="flex items-center gap-1 shrink-0">
+                            <span
+                              className={`text-[10px] px-1.5 py-0.5 rounded border ${
+                                isBot
+                                  ? 'bg-indigo-950/80 border-indigo-400/40 text-indigo-200'
+                                  : 'bg-emerald-950/80 border-emerald-400/40 text-emerald-200'
+                              }`}
+                            >
+                              {isBot ? '🤖 AI旅伴' : '🌐 真人玩家'}
+                            </span>
+                            <span
+                              data-testid={`peer-badge-${peer.peerId}`}
+                              className={`text-[10px] px-2 py-0.5 rounded shrink-0 ${
+                                peerBlocked
+                                  ? 'bg-rose-950 text-rose-300 border border-rose-500/40'
+                                  : peer.isFriend
+                                    ? 'bg-amber-400/20 text-amber-300'
+                                    : peer.ignited
+                                      ? 'bg-sky-400/20 text-sky-300'
+                                      : 'bg-slate-800 text-slate-400'
+                              }`}
+                            >
+                              {peerBlocked
+                                ? '🚫 已屏蔽'
                                 : peer.isFriend
-                                  ? 'bg-amber-400/20 text-amber-300'
+                                  ? '★ 星盘挚友'
                                   : peer.ignited
-                                    ? 'bg-sky-400/20 text-sky-300'
-                                    : 'bg-slate-800 text-slate-400'
-                            }`}
-                          >
-                            {peerBlocked
-                              ? '🚫 已屏蔽'
-                              : peer.isFriend
-                                ? '★ 星盘挚友'
-                                : peer.ignited
-                                  ? '🕯️ 已点亮旅人'
-                                  : '👤 陌生剪影'}
-                          </span>
+                                    ? '🕯️ 已点亮旅人'
+                                    : '👤 陌生剪影'}
+                            </span>
+                          </div>
                         </div>
                         <p className="text-xs text-slate-400 mt-1">
                           {peerBlocked
                             ? '已屏蔽该旅人：隐藏3D身影与气泡，断开双人互动'
                             : peer.ignited
                               ? `已解锁 ${peer.unlockedNodes.length}/6 阶好友树 · ${
-                                  peer.isFriend ? '支持星盘跃迁传送' : '可赠予1白烛结为好友'
+                                  peer.isFriend ? '支持星盘跃迁与牵手跟随' : '可赠予1白烛结为好友'
                                 }`
                               : '遵循光遇社交法则：陌生人呈深灰剪影，请先递出烛火点亮'}
                         </p>
@@ -593,7 +686,7 @@ export const ConstellationAndSocialModal: React.FC<
                   <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
-                        <div className="text-sm font-bold text-amber-200 flex items-center gap-2">
+                        <div className="text-sm font-bold text-amber-200 flex flex-wrap items-center gap-2">
                           <span>
                             当前选中：「
                             {currentPeer.ignited
@@ -601,12 +694,21 @@ export const ConstellationAndSocialModal: React.FC<
                               : '未点亮的陌生旅人 (剪影)'}
                             」
                           </span>
+                          <span
+                            className={`text-[11px] px-2 py-0.5 rounded border ${
+                              isCurrentPeerBot
+                                ? 'bg-indigo-950/80 border-indigo-400/40 text-indigo-200'
+                                : 'bg-emerald-950/80 border-emerald-400/40 text-emerald-200'
+                            }`}
+                          >
+                            {isCurrentPeerBot ? '🤖 本地AI旅伴 (单机伴飞)' : '🌐 真实联机玩家 (实时同步)'}
+                          </span>
                           <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-slate-300">
                             ID: {currentPeer.peerId}
                           </span>
                         </div>
                         <div className="text-xs text-slate-400 mt-0.5">
-                          阶段7 渐进式社交链路：点亮心火显露真容 → 1白烛缔结好友并备注昵称 → 星盘传送与四类双人互动
+                          渐进式温暖社交链路：点亮心火显露真容 → 1白烛缔结好友并备注昵称 → 结伴跟随、星盘跃迁与四类双人亲密互动
                         </div>
                       </div>
 
@@ -836,6 +938,34 @@ export const ConstellationAndSocialModal: React.FC<
                           ? '✓ 正在背抱翱翔 (点击放下)'
                           : '🎒 背抱翱翔 (Lv.5)'}
                       </button>
+
+                      {/* 5. Partner Auto-Follow Mode */}
+                      {onFollowPartner && (
+                        <button
+                          type="button"
+                          disabled={!currentPeer.ignited || isBlocked}
+                          data-testid="social-follow-partner-btn"
+                          onClick={() => {
+                            onFollowPartner(
+                              isFollowingCurrentPeer ? null : currentPeer.peerId
+                            );
+                            if (!isFollowingCurrentPeer) {
+                              onClose();
+                            }
+                          }}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                            !currentPeer.ignited || isBlocked
+                              ? 'bg-slate-900 text-slate-500 border border-slate-800 cursor-not-allowed'
+                              : isFollowingCurrentPeer
+                                ? 'bg-cyan-400 text-slate-950 cursor-pointer'
+                                : 'bg-cyan-500/20 hover:bg-cyan-500/35 text-cyan-200 border border-cyan-400/40 cursor-pointer'
+                          }`}
+                        >
+                          {isFollowingCurrentPeer
+                            ? '✓ 正在跟随伙伴 (点击停止跟随)'
+                            : '🧭 跟随伙伴探索 (自动伴随)'}
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -1010,6 +1140,7 @@ export const ConstellationAndSocialModal: React.FC<
                     </div>
                   </div>
                 </div>
+              </div>
               </div>
             );
           })()}

@@ -382,8 +382,8 @@ export const InstrumentOverlay: React.FC<InstrumentOverlayProps> = ({
       aria-label="光遇15键云端乐器演奏与自动合奏台"
     >
       <div
-        className="w-full max-w-3xl rounded-2xl border border-amber-300/40 p-3 sm:p-3.5 text-slate-100 shadow-2xl pointer-events-auto max-h-[82vh] overflow-y-auto"
-        style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)' }}
+        className="w-full max-w-3xl rounded-3xl border border-amber-300/35 p-3 sm:p-4 text-slate-100 shadow-2xl pointer-events-auto max-h-[82vh] overflow-y-auto sky-panel-enter"
+        style={{ backgroundColor: 'var(--sky-glass-bg-elevated)' }}
       >
         {/* Header & 8-Instrument Timbre Selector (Piano, Harp, Flute, Xylophone, Wind Chime, Music Box, Drum, Kalimba) */}
         <div className="flex flex-col gap-1.5 mb-2 pb-2 border-b border-slate-800">

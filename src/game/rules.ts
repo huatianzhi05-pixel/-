@@ -83,18 +83,18 @@ export const REALMS: Record<RealmId, RealmConfig> = {
     subtitle: 'Home & Aviary Camp · 个人小屋、公共篝火与八大星门枢纽',
     subZones: ['中央星盘神龛', '个人微光小屋', '云巢篝火营地', '回归先祖栈桥'],
     weather: 'clear',
-    skyTopColor: '#1E295B',
-    skyHorizonColor: '#F59E0B',
-    fogColor: '#F4A261',
-    fogDensity: 0.0065,
-    sunColor: '#FDE68A',
-    sunIntensity: 2.2,
-    hemiSkyColor: '#93C5FD',
-    hemiGroundColor: '#D97706',
-    groundPrimaryColor: '#3B4D54',
-    groundSecondaryColor: '#D97706',
-    waterColor: '#2A4365',
-    cloudColor: '#FDE68A',
+    skyTopColor: '#25356E',
+    skyHorizonColor: '#F3A683',
+    fogColor: '#EDA88A',
+    fogDensity: 0.0052,
+    sunColor: '#FDE8B2',
+    sunIntensity: 1.95,
+    hemiSkyColor: '#A5C8FA',
+    hemiGroundColor: '#D48B5C',
+    groundPrimaryColor: '#3D7A6E',
+    groundSecondaryColor: '#629E82',
+    waterColor: '#244B6B',
+    cloudColor: '#FCE6C9',
     ambientNoteBase: 261.63, // C4
   },
   isle: {
@@ -103,18 +103,18 @@ export const REALMS: Record<RealmId, RealmConfig> = {
     subtitle: 'Isle of Dawn · 破晓沙丘、飞翔试炼风洞与预言山谷四试炼',
     subZones: ['初生星火沙洲', '乘风起跳高台', '预言四元素洞窟', '晨曦云端神殿'],
     weather: 'wind_updraft',
-    skyTopColor: '#312E81',
-    skyHorizonColor: '#FDBA74',
-    fogColor: '#FED7AA',
-    fogDensity: 0.0058,
-    sunColor: '#FEF3C7',
-    sunIntensity: 2.1,
-    hemiSkyColor: '#FDE68A',
-    hemiGroundColor: '#D97706',
-    groundPrimaryColor: '#EAB308',
-    groundSecondaryColor: '#CA8A04',
-    waterColor: '#38BDF8',
-    cloudColor: '#FFFBEB',
+    skyTopColor: '#383A7A',
+    skyHorizonColor: '#F7C594',
+    fogColor: '#F9DAB8',
+    fogDensity: 0.0048,
+    sunColor: '#FFF2CC',
+    sunIntensity: 1.9,
+    hemiSkyColor: '#FCE3B4',
+    hemiGroundColor: '#C88A4B',
+    groundPrimaryColor: '#D6A55C',
+    groundSecondaryColor: '#B88442',
+    waterColor: '#52A8CC',
+    cloudColor: '#FFF7E8',
     ambientNoteBase: 277.18, // C#4
   },
   prairie: {
@@ -123,18 +123,18 @@ export const REALMS: Record<RealmId, RealmConfig> = {
     subtitle: 'Daylight Prairie · 蝴蝶平原、幽光洞窟与三塔钟楼村落',
     subZones: PRAIRIE_CFG.subZones.map((z) => z.name),
     weather: 'wind_updraft',
-    skyTopColor: '#0284C7',
-    skyHorizonColor: '#BAE6FD',
-    fogColor: '#E0F2FE',
-    fogDensity: 0.0055,
-    sunColor: '#FFFBEB',
-    sunIntensity: 2.4,
-    hemiSkyColor: '#7DD3FC',
-    hemiGroundColor: '#4ADE80',
-    groundPrimaryColor: '#34D399',
-    groundSecondaryColor: '#10B981',
-    waterColor: '#38BDF8',
-    cloudColor: '#FFFFFF',
+    skyTopColor: '#1E78B8',
+    skyHorizonColor: '#BCE2FA',
+    fogColor: '#DCF0FC',
+    fogDensity: 0.0046,
+    sunColor: '#FFF8E6',
+    sunIntensity: 2.05,
+    hemiSkyColor: '#8ED1FC',
+    hemiGroundColor: '#6CC49A',
+    groundPrimaryColor: '#5EB890',
+    groundSecondaryColor: '#429B76',
+    waterColor: '#4CB2DE',
+    cloudColor: '#FFFDF8',
     ambientNoteBase: 293.66, // D4
   },
   forest: {
@@ -143,18 +143,18 @@ export const REALMS: Record<RealmId, RealmConfig> = {
     subtitle: 'Hidden Forest · 细雨消融光能，靠近灯柱/蘑菇亭或与旅人牵手可护火',
     subZones: ['静谧林间庭院', '荧光溪流与秘密树屋', '巨兽骸骨空地', '雨林水母神庙'],
     weather: 'rain',
-    skyTopColor: '#0F172A',
-    skyHorizonColor: '#1E3A5F',
-    fogColor: '#164E63',
-    fogDensity: 0.0085,
-    sunColor: '#67E8F9',
-    sunIntensity: 1.6,
-    hemiSkyColor: '#22D3EE',
-    hemiGroundColor: '#064E3B',
-    groundPrimaryColor: '#0F766E',
-    groundSecondaryColor: '#115E59',
-    waterColor: '#0891B2',
-    cloudColor: '#A5F3FC',
+    skyTopColor: '#14263B',
+    skyHorizonColor: '#2A546E',
+    fogColor: '#234D5E',
+    fogDensity: 0.0072,
+    sunColor: '#8CE9F7',
+    sunIntensity: 1.55,
+    hemiSkyColor: '#4AD4E8',
+    hemiGroundColor: '#184E44',
+    groundPrimaryColor: '#2E6E65',
+    groundSecondaryColor: '#21544D',
+    waterColor: '#1D6E85',
+    cloudColor: '#BCEEF5',
     ambientNoteBase: 329.63, // E4
   },
   valley: {
@@ -163,18 +163,18 @@ export const REALMS: Record<RealmId, RealmConfig> = {
     subtitle: 'Valley of Triumph · 滑冰场极速漂移、飞行赛道、隐士雪峰与落日竞技场',
     subZones: ['寒霜溜冰场', '霞光飞行赛道', '云端隐士谷', '落日千鸟竞技场'],
     weather: 'ice',
-    skyTopColor: '#4C1D95',
-    skyHorizonColor: '#FB7185',
-    fogColor: '#FDA4AF',
-    fogDensity: 0.006,
-    sunColor: '#FDE047',
-    sunIntensity: 2.5,
-    hemiSkyColor: '#F472B6',
-    hemiGroundColor: '#E0F2FE',
-    groundPrimaryColor: '#E0F2FE',
-    groundSecondaryColor: '#F43F5E',
-    waterColor: '#7DD3FC',
-    cloudColor: '#FECDD3',
+    skyTopColor: '#3E2378',
+    skyHorizonColor: '#F28599',
+    fogColor: '#F7B2C0',
+    fogDensity: 0.005,
+    sunColor: '#FDE47E',
+    sunIntensity: 2.05,
+    hemiSkyColor: '#F08CAE',
+    hemiGroundColor: '#D8ECFA',
+    groundPrimaryColor: '#DCEEFB',
+    groundSecondaryColor: '#E36D86',
+    waterColor: '#76BEE6',
+    cloudColor: '#FCE0E6',
     ambientNoteBase: 349.23, // F4
   },
   wasteland: {
@@ -183,18 +183,18 @@ export const REALMS: Record<RealmId, RealmConfig> = {
     subtitle: 'Golden Wasteland · 冥龙探照巡逻、暗黑植物与遗忘方舟，掩体躲避红光',
     subZones: ['破碎边陲荒漠', '巨兽荒原墓地', '遗忘魔法方舟', '远古守卫战场'],
     weather: 'krill_patrol',
-    skyTopColor: '#062C22',
-    skyHorizonColor: '#10B981',
-    fogColor: '#047857',
-    fogDensity: 0.008,
-    sunColor: '#6EE7B7',
-    sunIntensity: 1.7,
-    hemiSkyColor: '#34D399',
-    hemiGroundColor: '#1F2937',
-    groundPrimaryColor: '#1E293B',
-    groundSecondaryColor: '#065F46',
-    waterColor: '#064E3B',
-    cloudColor: '#6EE7B7',
+    skyTopColor: '#0D2B24',
+    skyHorizonColor: '#32826B',
+    fogColor: '#216150',
+    fogDensity: 0.0068,
+    sunColor: '#86E5C0',
+    sunIntensity: 1.6,
+    hemiSkyColor: '#4CC69D',
+    hemiGroundColor: '#243336',
+    groundPrimaryColor: '#314446',
+    groundSecondaryColor: '#26594C',
+    waterColor: '#16453A',
+    cloudColor: '#98D9C3',
     ambientNoteBase: 392.0, // G4
   },
   vault: {
@@ -203,18 +203,18 @@ export const REALMS: Record<RealmId, RealmConfig> = {
     subtitle: 'Vault of Knowledge · 星光沙漠、四人合力机关门、漂浮书库与星辰塔顶',
     subZones: ['星光沙漠花园', '双人共鸣机关门', '四层悬浮星光书库', '浩瀚星河塔顶'],
     weather: 'starlight_gravity',
-    skyTopColor: '#090A1A',
-    skyHorizonColor: '#312E81',
-    fogColor: '#1E1B4B',
-    fogDensity: 0.0065,
-    sunColor: '#C4B5FD',
-    sunIntensity: 1.9,
-    hemiSkyColor: '#818CF8',
-    hemiGroundColor: '#1E1B4B',
-    groundPrimaryColor: '#312E81',
-    groundSecondaryColor: '#4338CA',
-    waterColor: '#1E1B4B',
-    cloudColor: '#C7D2FE',
+    skyTopColor: '#0C102B',
+    skyHorizonColor: '#383582',
+    fogColor: '#25235E',
+    fogDensity: 0.0056,
+    sunColor: '#CAC0FA',
+    sunIntensity: 1.75,
+    hemiSkyColor: '#8B94F2',
+    hemiGroundColor: '#232054',
+    groundPrimaryColor: '#38367D',
+    groundSecondaryColor: '#524FA8',
+    waterColor: '#1F1E4F',
+    cloudColor: '#D6DEFA',
     ambientNoteBase: 440.0, // A4
   },
   eden: {
@@ -223,18 +223,18 @@ export const REALMS: Record<RealmId, RealmConfig> = {
     subtitle: 'Eye of Eden · 逆风躲避红石坠落与雷霆，点亮先祖石像完成重生升华仪式',
     subZones: ['暴风眼石门', '红石飞星坡道', '雷霆掩体长廊', '星河重生祭坛'],
     weather: 'eden_storm',
-    skyTopColor: '#180409',
-    skyHorizonColor: '#881337',
-    fogColor: '#4C0519',
-    fogDensity: 0.0095,
-    sunColor: '#FB7185',
-    sunIntensity: 1.8,
-    hemiSkyColor: '#F43F5E',
-    hemiGroundColor: '#1F2937',
-    groundPrimaryColor: '#27272A',
-    groundSecondaryColor: '#9F1239',
-    waterColor: '#4C0519',
-    cloudColor: '#FDA4AF',
+    skyTopColor: '#1C0911',
+    skyHorizonColor: '#7D203B',
+    fogColor: '#4E1426',
+    fogDensity: 0.0078,
+    sunColor: '#F48498',
+    sunIntensity: 1.68,
+    hemiSkyColor: '#E65C7B',
+    hemiGroundColor: '#26242B',
+    groundPrimaryColor: '#302C32',
+    groundSecondaryColor: '#8C2845',
+    waterColor: '#451221',
+    cloudColor: '#EBA4B2',
     ambientNoteBase: 493.88, // B4
   },
 };
@@ -256,6 +256,16 @@ export function getSubZoneNameAt(realmId: RealmId, x: number, z: number): string
   for (const hub of CONTINENTAL_ARCHITECTURAL_HUBS) {
     if (Math.hypot(x - hub.x, z - hub.z) <= hub.outerRadius) {
       return hub.name;
+    }
+  }
+  for (const isl of FLOATING_SKY_ISLANDS) {
+    if (Math.hypot(x - isl.x, z - isl.z) <= isl.outerRadius) {
+      return isl.name;
+    }
+  }
+  for (const mural of ANCIENT_STORY_MURALS) {
+    if (Math.hypot(x - mural.x, z - mural.z) <= mural.radius) {
+      return mural.zoneName;
     }
   }
 
@@ -553,7 +563,11 @@ export interface PlayerPhysicsState {
   isSlidingSlope: boolean;
   slopeAngleDeg: number;
   landingStiffTimer: number;
+  landingCushionTimer: number;
   // Stage 2 Flight & Energy States
+  takeoffTimer: number;
+  inCloudBank: boolean;
+  flightPitchPhase: 'none' | 'climb' | 'level' | 'descent' | 'dive';
   isDiving: boolean;
   diveMomentum: number;
   isInDarkWater: boolean;
@@ -919,12 +933,35 @@ export function groundHeightAt(x: number, z: number): number {
     }
   }
 
-  // 5. Gentle rolling meadow hills & floating island ridges across the 220m expanded continent
+  // 4g. Module 5 Multi-Tiered Floating Sky Islands & Aerial Stepping Stones
+  for (const isl of FLOATING_SKY_ISLANDS) {
+    const dIsl = Math.hypot(x - isl.x, z - isl.z);
+    if (dIsl < isl.outerRadius) {
+      if (dIsl <= isl.flatRadius) {
+        return isl.y;
+      }
+      const blendT = 1 - (dIsl - isl.flatRadius) / (isl.outerRadius - isl.flatRadius);
+      const smooth = blendT * blendT * (3 - 2 * blendT);
+      return 0.85 + (isl.y - 0.85) * smooth;
+    }
+  }
+
+  // 5. Gentle rolling meadow hills, sculpted canyon valleys & outer horizon mountain ridges across the 220m expanded continent
   const wave1 = Math.sin(x * 0.08) * Math.cos(z * 0.08) * 1.6;
   const wave2 = Math.sin((x + z) * 0.045) * 1.1;
   const edgeLift = dist > 52 ? Math.min(12.5, (dist - 52) * 0.12) : 0;
 
-  return Math.max(-0.4, 0.35 + wave1 + wave2 + edgeLift);
+  // Sculpted outer mountain ridges & scenic horizon peaks beyond 128m (preserving all inner/mid landmarks)
+  const mountainRidgeLift =
+    dist > 128
+      ? Math.max(
+          0,
+          Math.sin(Math.atan2(z, x) * 7.0 + dist * 0.035) *
+            Math.min(9.5, (dist - 128) * 0.14)
+        )
+      : 0;
+
+  return Math.max(-0.4, 0.35 + wave1 + wave2 + edgeLift + mountainRidgeLift);
 }
 
 /**
@@ -1079,6 +1116,120 @@ export const CONTINENTAL_ARCHITECTURAL_HUBS: ContinentalArchitecturalHub[] = [
     outerRadius: 11.0,
   },
 ];
+
+export interface FloatingSkyIslandSpec {
+  id: string;
+  name: string;
+  subtitle: string;
+  x: number;
+  y: number;
+  z: number;
+  flatRadius: number;
+  outerRadius: number;
+  hasUpdraftThermal: boolean;
+  hasWaterfall: boolean;
+}
+
+export const FLOATING_SKY_ISLANDS: FloatingSkyIslandSpec[] = [
+  {
+    id: 'island_west_step_1',
+    name: '西境云阶浮岛 · 一阶微风台',
+    subtitle: '连接幽光洞窟与高空云海的第一级阶梯浮岛，底部垂落发光藤蔓与上升气流',
+    x: -32.0,
+    y: 9.5,
+    z: -28.0,
+    flatRadius: 4.2,
+    outerRadius: 6.5,
+    hasUpdraftThermal: true,
+    hasWaterfall: false,
+  },
+  {
+    id: 'island_nw_step_2',
+    name: '西北云海浮岛 · 二阶流云屿',
+    subtitle: '海拔 14.8m 的中层悬空绿洲，设有远古断桥拱门与飞瀑云雾',
+    x: -48.0,
+    y: 14.8,
+    z: -54.0,
+    flatRadius: 4.8,
+    outerRadius: 7.2,
+    hasUpdraftThermal: true,
+    hasWaterfall: true,
+  },
+  {
+    id: 'island_celestial_observatory',
+    name: '云端天星观景浮岛 · 秘境穹顶',
+    subtitle: '海拔 21.5m 的最高处隐秘观星圣殿，可俯瞰整片星光大陆与远方群峰',
+    x: -28.0,
+    y: 21.5,
+    z: -80.0,
+    flatRadius: 6.2,
+    outerRadius: 9.2,
+    hasUpdraftThermal: true,
+    hasWaterfall: true,
+  },
+  {
+    id: 'island_east_canyon_bridge',
+    name: '东境云谷断桥浮屿 · 飞跃跳板',
+    subtitle: '衔接东侧高台滑道与圣岛群峰的空中驿站，刻有远古引航星纹',
+    x: 42.0,
+    y: 11.2,
+    z: -6.0,
+    flatRadius: 4.5,
+    outerRadius: 6.8,
+    hasUpdraftThermal: true,
+    hasWaterfall: false,
+  },
+];
+
+export interface AncientStoryMuralSpec {
+  id: string;
+  zoneName: string;
+  visualStoryTheme: string;
+  x: number;
+  y: number;
+  z: number;
+  radius: number;
+}
+
+export const ANCIENT_STORY_MURALS: AncientStoryMuralSpec[] = [
+  {
+    id: 'mural_fallen_colossus_valley',
+    zoneName: '遗落巨人山谷 · 守望者残像',
+    visualStoryTheme: '倾颓的远古守望石像半掩于花草溪流间，掌心仍托举着不灭的微光星核',
+    x: -26.0,
+    y: 1.4,
+    z: -4.5,
+    radius: 5.5,
+  },
+  {
+    id: 'mural_sunken_astrolabe_grotto',
+    zoneName: '幽晶回音暗道 · 沉没星盘壁画',
+    visualStoryTheme: '洞窟岩壁上由发光晶石镶嵌出先祖乘光鳐渡越云海的无字壁画',
+    x: -24.5,
+    y: 1.5,
+    z: -22.0,
+    radius: 5.2,
+  },
+  {
+    id: 'mural_broken_sky_aqueduct',
+    zoneName: '云海断桥遗迹 · 引星渡槽',
+    visualStoryTheme: '断裂的空中石拱桥延伸向云海深处，悬浮引路石灯在风中静默指路',
+    x: 28.0,
+    y: 2.2,
+    z: -14.0,
+    radius: 5.5,
+  },
+  {
+    id: 'mural_celestial_stargazer_crown',
+    zoneName: '云端天星观景浮岛 · 秘境穹顶',
+    visualStoryTheme: '高空浮岛之巅的古老浑天仪与观星石座，无需文字即可感受失落星辰王国的辉煌',
+    x: -28.0,
+    y: 21.5,
+    z: -80.0,
+    radius: 6.5,
+  },
+];
+
 
 export interface WorldObstacleCollider {
   id: string;
@@ -1264,12 +1415,20 @@ export function resolveObstacleCollisions(
   z: number,
   actorRadius = 0.44,
   extraObstacles: WorldObstacleCollider[] = []
-): { x: number; z: number; hitObstacle: boolean; normalX: number; normalZ: number } {
+): {
+  x: number;
+  z: number;
+  hitObstacle: boolean;
+  normalX: number;
+  normalZ: number;
+  maxHitY: number;
+} {
   let outX = x;
   let outZ = z;
   let hitObstacle = false;
   let normalX = 0;
   let normalZ = 0;
+  let maxHitY = 0;
 
   const allObstacles =
     extraObstacles.length > 0
@@ -1277,14 +1436,23 @@ export function resolveObstacleCollisions(
       : STATIC_WORLD_OBSTACLES;
 
   for (let pass = 0; pass < 4; pass++) {
-    for (const obs of allObstacles) {
+    let hitInPass = false;
+    for (let i = 0; i < allObstacles.length; i++) {
+      const obs = allObstacles[i];
       if (y > obs.maxY) continue;
 
       // Case A: Analytical Hollow Cylindrical Shell with Open Doorway (e.g. Grandma's Hollow Treehouse)
       if (obs.hollowShellThickness !== undefined) {
+        const halfBand = obs.hollowShellThickness + actorRadius;
+        const outerBound = obs.radius + halfBand;
         const dx = outX - obs.x;
         const dz = outZ - obs.z;
+        if (Math.abs(dx) >= outerBound || Math.abs(dz) >= outerBound) continue;
+
         const dist = Math.hypot(dx, dz);
+        const radialDelta = dist - obs.radius;
+        if (Math.abs(radialDelta) >= halfBand || dist <= 0.0001) continue;
+
         const angle = Math.atan2(dx, dz);
         const doorCenter = obs.doorwayAngle ?? 0;
         const doorHalf = obs.doorwayHalfWidthRad ?? 0.58;
@@ -1294,30 +1462,29 @@ export function resolveObstacleCollisions(
         if (Math.abs(angDiff) <= doorHalf) {
           continue;
         }
-        const halfBand = obs.hollowShellThickness + actorRadius;
-        const radialDelta = dist - obs.radius;
-        if (Math.abs(radialDelta) < halfBand && dist > 0.0001) {
-          hitObstacle = true;
-          const rx = dx / dist;
-          const rz = dz / dist;
-          if (radialDelta >= 0) {
-            normalX = rx;
-            normalZ = rz;
-            const targetR = obs.radius + halfBand + 1e-4;
-            outX = obs.x + rx * targetR;
-            outZ = obs.z + rz * targetR;
-          } else {
-            normalX = -rx;
-            normalZ = -rz;
-            const targetR = Math.max(0.1, obs.radius - halfBand - 1e-4);
-            outX = obs.x + rx * targetR;
-            outZ = obs.z + rz * targetR;
-          }
+        hitObstacle = true;
+        hitInPass = true;
+        if (obs.maxY > maxHitY) maxHitY = obs.maxY;
+        const rx = dx / dist;
+        const rz = dz / dist;
+        if (radialDelta >= 0) {
+          normalX = rx;
+          normalZ = rz;
+          const targetR = obs.radius + halfBand + 1e-4;
+          outX = obs.x + rx * targetR;
+          outZ = obs.z + rz * targetR;
+        } else {
+          normalX = -rx;
+          normalZ = -rz;
+          const targetR = Math.max(0.1, obs.radius - halfBand - 1e-4);
+          outX = obs.x + rx * targetR;
+          outZ = obs.z + rz * targetR;
         }
         continue;
       }
 
       // Case B: Solid Cylinder or Capsule Segment (e.g. Forgotten Ark Hull, Pillars, Towers, Igloo)
+      const minDist = obs.radius + actorRadius;
       let cx = obs.x;
       let cz = obs.z;
       if (obs.x2 !== undefined && obs.z2 !== undefined) {
@@ -1332,14 +1499,20 @@ export function resolveObstacleCollisions(
           cx = obs.x + t * segDx;
           cz = obs.z + t * segDz;
         }
+      } else {
+        // Fast AABB reject for pure cylinders before Math.hypot
+        if (Math.abs(outX - cx) >= minDist || Math.abs(outZ - cz) >= minDist) {
+          continue;
+        }
       }
 
       const dx = outX - cx;
       const dz = outZ - cz;
       const dist = Math.hypot(dx, dz);
-      const minDist = obs.radius + actorRadius;
       if (dist < minDist) {
         hitObstacle = true;
+        hitInPass = true;
+        if (obs.maxY > maxHitY) maxHitY = obs.maxY;
         const pushDist = minDist + 1e-4;
         if (dist > 0.0001) {
           normalX = dx / dist;
@@ -1354,6 +1527,7 @@ export function resolveObstacleCollisions(
         }
       }
     }
+    if (!hitInPass) break;
   }
 
   if (hitObstacle) {
@@ -1366,7 +1540,7 @@ export function resolveObstacleCollisions(
     }
   }
 
-  return { x: outX, z: outZ, hitObstacle, normalX, normalZ };
+  return { x: outX, z: outZ, hitObstacle, normalX, normalZ, maxHitY };
 }
 
 /**
@@ -1389,6 +1563,145 @@ export function getKrillStateAtTime(elapsed: number): {
   const spotX = krillX + Math.sin(yaw) * 6.5;
   const spotZ = krillZ + Math.cos(yaw) * 6.5;
   return { krillX, krillY, krillZ, yaw, spotX, spotZ, spotRadius: 5.8 };
+}
+
+export interface SkywardExplorationRing {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  z: number;
+  radius: number;
+  boostDirX: number;
+  boostDirY: number;
+  boostDirZ: number;
+}
+
+/**
+ * 5 High-Altitude Skyward Exploration Current Rings (云海天际巡航风圈航线)
+ * forming an elevated aerial exploration highway from Central Shrine -> Bell Village -> Bird-Bridge Citadel -> Wind Paths -> AURORA Colosseum.
+ */
+export const SKYWARD_EXPLORATION_RINGS: SkywardExplorationRing[] = [
+  {
+    id: 'sky_ring_1_shrine_ascent',
+    name: '天际风圈 1 · 神龛升空流光环',
+    x: 0.0,
+    y: 14.5,
+    z: -22.0,
+    radius: 5.2,
+    boostDirX: 0.52,
+    boostDirY: 0.25,
+    boostDirZ: -0.82,
+  },
+  {
+    id: 'sky_ring_2_bell_overlook',
+    name: '天际风圈 2 · 三塔钟楼云端环',
+    x: 18.0,
+    y: 14.5,
+    z: -34.0,
+    radius: 5.8,
+    boostDirX: 0.65,
+    boostDirY: 0.22,
+    boostDirZ: -0.72,
+  },
+  {
+    id: 'sky_ring_3_citadel_arch',
+    name: '天际风圈 3 · 千鸟星桥巡航环',
+    x: 42.0,
+    y: 17.5,
+    z: -58.0,
+    radius: 6.2,
+    boostDirX: 0.78,
+    boostDirY: 0.18,
+    boostDirZ: -0.60,
+  },
+  {
+    id: 'sky_ring_4_wind_paths_gate',
+    name: '天际风圈 4 · 风行网道天门环',
+    x: 84.0,
+    y: 21.0,
+    z: -82.0,
+    radius: 6.5,
+    boostDirX: -0.68,
+    boostDirY: 0.12,
+    boostDirZ: -0.72,
+  },
+  {
+    id: 'sky_ring_5_aurora_approach',
+    name: '天际风圈 5 · 欧若拉极北星环',
+    x: 22.0,
+    y: 18.5,
+    z: -120.0,
+    radius: 6.5,
+    boostDirX: -0.58,
+    boostDirY: 0.10,
+    boostDirZ: -0.80,
+  },
+];
+
+/**
+ * Pure helper checking if an airborne position `(x, y, z)` is inside or grazing the volumetric Cloud Sea rings.
+ */
+export function isInCloudBankAt(x: number, y: number, z: number): boolean {
+  if (y < 2.2) return false;
+  const distCloudCenter = Math.hypot(x, z + 12.0);
+  // Ring 3 inner high cloud pillows (r = 32..56, y = 11..29)
+  if (distCloudCenter >= 32.0 && distCloudCenter <= 56.0 && y >= 11.0 && y <= 29.5) {
+    return true;
+  }
+  // Ring 2 mid cloud bank (r = 60..88, y = 5.5..19.5)
+  if (distCloudCenter >= 60.0 && distCloudCenter <= 88.0 && y >= 5.5 && y <= 19.5) {
+    return true;
+  }
+  // Ring 1 outer cloud bank (r = 118..152, y = 2.5..16.5)
+  if (distCloudCenter >= 118.0 && distCloudCenter <= 152.0 && y >= 2.5 && y <= 16.5) {
+    return true;
+  }
+  // Perimeter cloud sea & Wind Paths high cloud deck
+  if (Math.hypot(x, z) > 48.0 && y >= 4.5 && y <= 24.0) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Pure helper checking if an airborne player `(x, y, z)` is near one of the 3 overhead Soaring Light Mantas (圣岛遥鲲).
+ */
+export function isNearLightMantaAt(
+  x: number,
+  y: number,
+  z: number,
+  elapsed: number
+): boolean {
+  for (let m = 0; m < 3; m++) {
+    const phase = (m * Math.PI * 2) / 3;
+    const radius = 22 + m * 8;
+    const yBase = 14 + m * 3.5;
+    const angle = elapsed * 0.22 + phase;
+    const mx = Math.cos(angle) * radius;
+    const mz = Math.sin(angle) * radius - 18;
+    const my = yBase + Math.sin(elapsed * 1.4 + phase) * 1.8;
+    const dist3d = Math.hypot(x - mx, y - my, z - mz);
+    if (dist3d <= 7.8) return true;
+  }
+  return false;
+}
+
+/**
+ * Pure helper returning the active Skyward Exploration Current Ring if `(x, y, z)` is within its boost radius.
+ */
+export function findActiveSkywardRingAt(
+  x: number,
+  y: number,
+  z: number
+): SkywardExplorationRing | null {
+  for (const ring of SKYWARD_EXPLORATION_RINGS) {
+    const dist3d = Math.hypot(x - ring.x, y - ring.y, z - ring.z);
+    if (dist3d <= ring.radius) {
+      return ring;
+    }
+  }
+  return null;
 }
 
 export function createInitialPhysicsState(loadout?: EquippedLoadout): PlayerPhysicsState {
@@ -1422,6 +1735,10 @@ export function createInitialPhysicsState(loadout?: EquippedLoadout): PlayerPhys
     isSlidingSlope: false,
     slopeAngleDeg: 0,
     landingStiffTimer: 0,
+    landingCushionTimer: 0,
+    takeoffTimer: 0,
+    inCloudBank: false,
+    flightPitchPhase: 'none',
     isDiving: false,
     diveMomentum: 0,
     isInDarkWater: false,
@@ -2008,8 +2325,72 @@ export function createWorldInteractables(realm: RealmId): WorldInteractable[] {
       z: 59.5,
       radius: 4.2,
       activated: false,
+    },
+    // Module 5: Floating Sky Islands & Hidden Grotto Exploration Rewards
+    {
+      id: `${realm}_candle_west_step_island`,
+      type: 'candle_cluster',
+      name: '西境云阶浮岛 · 领航圣火簇',
+      subtitle: '点燃一阶浮岛圣火 (+65 滴烛火 & 激活飞往西北高空浮岛的上升气流)',
+      x: -32.0,
+      y: groundHeightAt(-32.0, -28.0),
+      z: -28.0,
+      radius: 4.0,
+      activated: false,
+      waxReward: 65,
+    },
+    {
+      id: `${realm}_bloom_nw_step_island`,
+      type: 'light_bloom',
+      name: '西北流云屿 · 悬空星瓣花',
+      subtitle: '共鸣绽放海拔 14.8m 浮空岛光之花 (+70 滴烛火 & 瞬间充满翼能)',
+      x: -48.0,
+      y: groundHeightAt(-48.0, -54.0),
+      z: -54.0,
+      radius: 4.0,
+      activated: false,
+      waxReward: 70,
+    },
+    {
+      id: `${realm}_wl_celestial_observatory`,
+      type: 'winged_light',
+      name: '光之翼 · 云端天星观景台',
+      subtitle: '登顶海拔 21.5m 隐秘天星观景浮岛 · 吸收苍穹守望小金人 (+1 永久光之翼)',
+      x: -28.0,
+      y: groundHeightAt(-28.0, -80.0),
+      z: -80.0,
+      radius: 4.2,
+      activated: false,
+    },
+    {
+      id: `${realm}_candle_east_canyon_island`,
+      type: 'candle_cluster',
+      name: '东境云谷浮屿 · 古桥碑铭烛台',
+      subtitle: '点亮云谷断桥浮岛圣火 (+65 滴烛火 & 续航飞往圣岛群峰)',
+      x: 42.0,
+      y: groundHeightAt(42.0, -6.0),
+      z: -6.0,
+      radius: 4.0,
+      activated: false,
+      waxReward: 65,
     }
   );
+
+  if (realm !== 'vault') {
+    list.push({
+      id: `${realm}_coop_sanctuary_door`,
+      type: 'coop_door',
+      name: `${realmTitle}双人协力星芒石门`,
+      subtitle:
+        '需 2 名旅人（真实联机玩家或呼唤本地 AI 旅伴）同时就位点亮双星基座 · 开启秘境上升通道 (+65 滴烛火)',
+      x: 8.5,
+      y: groundHeightAt(8.5, -7.5),
+      z: -7.5,
+      radius: 4.5,
+      activated: false,
+      waxReward: 65,
+    });
+  }
 
   return list;
 }
@@ -2098,9 +2479,19 @@ export function stepPlayerPhysics(
     next.sitMode = 'none';
   }
 
-  // Tick down non-lethal high-landing recovery stiffness timer
+  // Tick down non-lethal high-landing recovery stiffness timer & normal jump landing cushion timer
   if (next.landingStiffTimer > 0) {
     next.landingStiffTimer = Math.max(0, next.landingStiffTimer - dt);
+  }
+  if ((next.landingCushionTimer ?? 0) > 0) {
+    next.landingCushionTimer = Math.max(0, (next.landingCushionTimer ?? 0) - dt);
+  } else {
+    next.landingCushionTimer = 0;
+  }
+  if ((next.takeoffTimer ?? 0) > 0) {
+    next.takeoffTimer = Math.max(0, (next.takeoffTimer ?? 0) - dt);
+  } else {
+    next.takeoffTimer = 0;
   }
 
   // Check Shallow Water Wading & Terrain Slope Angle
@@ -2135,6 +2526,8 @@ export function stepPlayerPhysics(
   const hasGoldenAegisSpell = activeSpell === 'spell_golden_aegis';
   const hasRainbowTrailSpell = activeSpell === 'spell_rainbow_trail';
 
+  // Gentle uphill resistance & stability on natural slopes (without blocking climb)
+  const preHorizSpd = Math.hypot(next.vx, next.vz);
   const groundSpeed =
     baseGroundSpeed *
     (isChibi ? 1.08 : 1.0) *
@@ -2143,9 +2536,10 @@ export function stepPlayerPhysics(
     (inShallowWater ? LOCOMOTION_CFG.shallowWaterSlowMultiplier : 1.0) *
     (next.landingStiffTimer > 0 ? 0.45 : 1.0);
 
-  // Calculate world-space wish direction relative to cameraYaw
+  // Calculate world-space wish direction relative to cameraYaw with smooth, non-snapping anatomical turning
   let wishX = 0;
   let wishZ = 0;
+  let turnAlignmentFactor = 1.0;
   if (inputLen > 0.05 && next.sitMode === 'none') {
     const nx = input.moveX / inputLen;
     const nz = input.moveZ / inputLen;
@@ -2155,15 +2549,50 @@ export function stepPlayerPhysics(
     wishZ = nz * cosY - nx * sinY;
 
     const targetYaw = Math.atan2(wishX, wishZ);
-    // Smooth angular shortest-path interpolation
+    // Smooth angular shortest-path interpolation with anatomical max angular velocity clamp
     let diff = targetYaw - next.yaw;
     while (diff > Math.PI) diff -= Math.PI * 2;
     while (diff < -Math.PI) diff += Math.PI * 2;
-    const turnRate = next.grounded ? 14.0 : next.flightMode === 'glide' ? 5.5 : 8.5;
-    next.yaw += diff * (1 - Math.exp(-turnRate * dt));
-    next.roll = Math.max(-0.55, Math.min(0.55, -diff * (next.grounded ? 0.1 : 0.42)));
+
+    const turnRate = next.grounded
+      ? preHorizSpd > 4.6
+        ? 10.5
+        : 13.5
+      : next.flightMode === 'glide'
+        ? 5.5
+        : 8.5;
+    const maxTurnRadPerSec = next.grounded
+      ? preHorizSpd > 4.6
+        ? 7.8
+        : 10.8
+      : next.flightMode === 'glide'
+        ? 4.5
+        : 7.2;
+    const rawStep = diff * (1 - Math.exp(-turnRate * dt));
+    const maxStep = maxTurnRadPerSec * dt;
+    const clampedStep = Math.max(-maxStep, Math.min(maxStep, rawStep));
+    next.yaw += clampedStep;
+    // Normalize yaw within [-PI, PI]
+    while (next.yaw > Math.PI) next.yaw -= Math.PI * 2;
+    while (next.yaw < -Math.PI) next.yaw += Math.PI * 2;
+
+    // When already moving at speed and reversing direction sharply (> ~85 deg), modulate target speed smoothly so character pivots naturally
+    if (next.grounded && preHorizSpd > 1.2 && Math.abs(diff) > 1.48) {
+      turnAlignmentFactor = Math.max(0.42, 0.55 + 0.45 * Math.cos(diff));
+    }
+
+    const airSpeedRatio = next.grounded
+      ? 1.0
+      : Math.max(0.55, Math.min(1.25, preHorizSpd / 11.0));
+    const maxRoll = next.grounded ? 0.18 : next.flightMode === 'glide' ? 0.64 : 0.38;
+    const rollSensitivity = next.grounded
+      ? 0.09
+      : (next.flightMode === 'glide' ? 0.48 : 0.28) * airSpeedRatio;
+    const targetRoll = Math.max(-maxRoll, Math.min(maxRoll, -diff * rollSensitivity));
+    next.roll += (targetRoll - next.roll) * (1 - Math.exp(-(next.grounded ? 12 : 8.5) * dt));
   } else {
-    next.roll *= Math.exp(-10 * dt);
+    next.roll *= Math.exp(-(next.grounded ? 12 : 7.5) * dt);
+    if (Math.abs(next.roll) < 0.002) next.roll = 0;
   }
 
   // If the player is actively walking uphill on the East Slide Ramp, let them walk normally instead of sliding back
@@ -2195,14 +2624,22 @@ export function stepPlayerPhysics(
 
   // Ground Jump or Aerial Wing Flap (Stage 2: consumes ENERGY_CFG.flapCostWedges = 1.0 wedge per flap)
   if (next.jumpBufferTimer > 0 && next.coyoteTimer > 0) {
-    // Ground Takeoff Jump
+    // Ground Takeoff Jump: natural upward lift + forward leap momentum carry when moving
     next.vy = LOCOMOTION_CFG.jumpVerticalImpulse * flapLiftScale;
+    if (preHorizSpd > 0.6) {
+      const leapBoost = Math.min(1.35, preHorizSpd * 0.16);
+      const moveDirX = next.vx / preHorizSpd;
+      const moveDirZ = next.vz / preHorizSpd;
+      next.vx += moveDirX * leapBoost;
+      next.vz += moveDirZ * leapBoost;
+    }
     next.grounded = false;
     next.sitMode = 'none';
     next.isSlidingSlope = false;
     next.isDiving = false;
     next.coyoteTimer = 0;
     next.jumpBufferTimer = 0;
+    next.takeoffTimer = 0.28;
     didFlap = true;
   } else if (
     input.jumpJustPressed &&
@@ -2213,11 +2650,12 @@ export function stepPlayerPhysics(
     // Aerial Wing Flap (振翅高飞): deducts configured flapCostWedges (default 1.0 wedge)
     next.wingEnergy = Math.max(0, next.wingEnergy - ENERGY_CFG.flapCostWedges);
     next.flapCooldown = 0.22;
+    next.takeoffTimer = 0.26;
     next.jumpBufferTimer = 0;
     next.isDiving = false;
     didFlap = true;
 
-    // Pull-up swoop bonus if flapping out of a dive!
+    // Pull-up swoop bonus if flapping out of a dive or steep glide descent!
     const pullUpBonus = next.diveMomentum * ENERGY_CFG.divePullUpLiftFactor;
     next.diveMomentum = 0;
 
@@ -2235,12 +2673,12 @@ export function stepPlayerPhysics(
         next.vy + ENERGY_CFG.flapVerticalImpulse * 0.8 * flapLiftScale,
         ENERGY_CFG.flapVerticalImpulse * flapLiftScale + pullUpBonus
       );
-      next.vx += wishX * 3.2;
-      next.vz += wishZ * 3.2;
+      next.vx += wishX * 3.4;
+      next.vz += wishZ * 3.4;
     }
   }
 
-  // Stage 2: Aerial Dive (俯冲加速) vs Continuous Gentle Glide Lift
+  // Stage 2: Aerial Dive (俯冲加速) vs Aerodynamic Descent Momentum Conversion
   const wantsDive = Boolean(input.diveHeld) && !next.grounded;
   if (wantsDive) {
     next.isDiving = true;
@@ -2256,7 +2694,12 @@ export function stepPlayerPhysics(
       next.diveMomentum *= 0.25;
     }
     next.isDiving = false;
-    next.diveMomentum = Math.max(0, next.diveMomentum - 4.5 * dt);
+    // In normal glide descent (vy < -2.2), gently accumulate aerodynamic swoop momentum up to 4.2
+    if (!next.grounded && next.flightMode === 'glide' && next.vy < -2.2) {
+      next.diveMomentum = Math.min(4.2, next.diveMomentum + (-next.vy - 2.2) * 0.35 * dt);
+    } else {
+      next.diveMomentum = Math.max(0, next.diveMomentum - 4.0 * dt);
+    }
   }
 
   // Continuous gentle glide lift when holding Space in air with energy (and not diving)
@@ -2266,7 +2709,7 @@ export function stepPlayerPhysics(
     next.vy += (next.flightMode === 'glide' ? 7.2 : 8.5) * dt;
   }
 
-  // Horizontal velocity & drag (including Steep Slope Sliding, Valley Ice Rink & Stage 2 Aerial Dive!)
+  // Horizontal velocity & drag (including Steep Slope Sliding, Valley Ice Rink, Glide Forward Inertia & Dive)
   if (next.grounded) {
     next.isDiving = false;
     next.diveMomentum = 0;
@@ -2292,34 +2735,88 @@ export function stepPlayerPhysics(
       }
     } else {
       const scaledMag = Math.min(1, inputLen);
-      const targetVx = wishX * groundSpeed * (isRunningInput ? 1 : Math.max(0.55, scaledMag));
-      const targetVz = wishZ * groundSpeed * (isRunningInput ? 1 : Math.max(0.55, scaledMag));
-      const accel = 1 - Math.exp(-(isIceRealm ? 4.2 : 16.5) * dt);
+      // Gentle slope speed modulation on non-sliding hills (uphill slightly calmer, downhill slightly brisker)
+      const gentleSlopeMod =
+        slopeInfo.slopeAngleDeg > 2.0 && !inSlideRampZone
+          ? Math.max(0.86, Math.min(1.08, 1.0 - uphillAlignment * (slopeInfo.slopeAngleDeg / 140)))
+          : 1.0;
+      const effectiveGroundSpeed = groundSpeed * turnAlignmentFactor * gentleSlopeMod;
+      const targetVx =
+        wishX * effectiveGroundSpeed * (isRunningInput ? 1 : Math.max(0.55, scaledMag));
+      const targetVz =
+        wishZ * effectiveGroundSpeed * (isRunningInput ? 1 : Math.max(0.55, scaledMag));
+
+      // Separate natural acceleration on start vs smooth coasting deceleration on stop
+      const isAccelerating = inputLen > 0.05;
+      const accelRate = isIceRealm
+        ? 4.2
+        : isAccelerating
+          ? turnAlignmentFactor < 0.85
+            ? 12.5
+            : 10.2
+          : 11.5;
+      const accel = 1 - Math.exp(-accelRate * dt);
       next.vx += (targetVx - next.vx) * accel;
       next.vz += (targetVz - next.vz) * accel;
-      if (inputLen <= 0.05 && !isIceRealm && Math.hypot(next.vx, next.vz) < 0.08) {
+      if (inputLen <= 0.05 && !isIceRealm && Math.hypot(next.vx, next.vz) < 0.06) {
         next.vx = 0;
         next.vz = 0;
       }
     }
   } else {
+    // Airborne Aerodynamics:
+    // - Glide Mode maintains natural forward cruise inertia along heading even when WASD is released!
+    // - Descending converts potential energy into extra horizontal airspeed; climbing trades a small fraction of speed for altitude.
+    const descentSpeedBonus =
+      !next.isDiving && next.vy < -1.8
+        ? Math.min(3.8, (-next.vy - 1.8) * 0.34)
+        : 0;
+    const climbSpeedTrade =
+      !next.isDiving && next.vy > 2.2 ? 0.92 : 1.0;
+    const lowEnergySpeedMod = next.wingEnergy < 0.5 ? 0.88 : 1.0;
+    const spellAirSpeedMod = hasWindSpeedSpell ? 1.25 : hasRainbowTrailSpell ? 1.12 : 1.0;
+
+    const baseModeAirSpeed = next.isDiving
+      ? ENERGY_CFG.diveMaxHorizontalSpeed
+      : next.flightMode === 'glide'
+        ? (inputLen > 0.05 ? ENERGY_CFG.glideAirSpeed : ENERGY_CFG.glideAirSpeed * 0.86) +
+          descentSpeedBonus +
+          next.diveMomentum * 0.35
+        : ENERGY_CFG.hoverAirSpeed + descentSpeedBonus * 0.4;
+
     const airSpeed =
-      (next.isDiving
-        ? ENERGY_CFG.diveMaxHorizontalSpeed
-        : next.flightMode === 'glide'
-          ? ENERGY_CFG.glideAirSpeed
-          : ENERGY_CFG.hoverAirSpeed) * (hasWindSpeedSpell ? 1.25 : 1.0);
+      baseModeAirSpeed * climbSpeedTrade * lowEnergySpeedMod * spellAirSpeedMod;
+
     const forwardX = Math.sin(next.yaw);
     const forwardZ = Math.cos(next.yaw);
-    const useForwardHeading = next.isDiving || (next.flightMode === 'glide' && inputLen > 0.05);
+    // In Glide or Dive mode, always propel along the glider's forward heading for authentic soaring inertia!
+    const useForwardHeading = next.isDiving || next.flightMode === 'glide';
     const targetVx = useForwardHeading ? forwardX * airSpeed : wishX * airSpeed;
     const targetVz = useForwardHeading ? forwardZ * airSpeed : wishZ * airSpeed;
-    const airControl = 1 - Math.exp(-(next.isDiving ? 6.5 : next.flightMode === 'glide' ? 4.5 : 7.0) * dt);
+    const airControlRate = next.isDiving
+      ? 6.5
+      : next.flightMode === 'glide'
+        ? inputLen > 0.05
+          ? 4.8
+          : 2.6
+        : 7.0;
+    const airControl = 1 - Math.exp(-airControlRate * dt);
     next.vx += (targetVx - next.vx) * airControl;
     next.vz += (targetVz - next.vz) * airControl;
   }
 
-  // Gravity (steeper downward acceleration during Dive, softer when Gliding or in Vault starlight low-gravity or Antigravity Feather Spell!)
+  // Gravity (with Jump Apex Softening & Aerodynamic Glide Lift when cruising at speed!)
+  const isNearJumpApex =
+    !next.grounded && !next.isDiving && Math.abs(next.vy) < 1.85 && next.distanceFlown < 6.0;
+  const apexGravityScale = isNearJumpApex ? 0.74 : 1.0;
+  const glideAerodynamicLiftScale =
+    !next.grounded &&
+    !next.isDiving &&
+    next.flightMode === 'glide' &&
+    preHorizSpd > 9.0 &&
+    next.wingEnergy > 0.2
+      ? 0.84
+      : 1.0;
   const rawGravity = next.isDiving
     ? ENERGY_CFG.diveGravity
     : weather === 'starlight_gravity'
@@ -2327,16 +2824,16 @@ export function stepPlayerPhysics(
       : next.grounded
         ? 20.0
         : next.flightMode === 'glide'
-          ? 8.4
-          : 13.5;
+          ? 8.4 * glideAerodynamicLiftScale
+          : 13.5 * apexGravityScale;
   const baseGravity =
     !next.grounded && !next.isDiving && hasAntigravSpell
       ? rawGravity * 0.6
       : rawGravity;
-  const maxSinkSpeed = next.isDiving ? -19.5 : -14.0;
+  const maxSinkSpeed = next.isDiving ? -19.5 : next.wingEnergy < 0.5 ? -9.8 : -14.0;
   next.vy = Math.max(maxSinkSpeed, next.vy - baseGravity * dt);
 
-  // Stage 3 Wind Tunnel Updraft & Stage 13 Outer Wind-Path Cloud Rail Network
+  // Stage 3 Wind Tunnel Updraft, Stage 13 Outer Wind-Path Cloud Rail, Cloud-Sea Grazing, Light Manta Draft & 5 Skyward Exploration Rings
   const wt = PRAIRIE_CFG.windTunnel;
   const inInnerWindCorridor =
     (weather === 'wind_updraft' || realmId === 'home') &&
@@ -2354,20 +2851,46 @@ export function stepPlayerPhysics(
   const inHubThermalUpdraft =
     !next.grounded &&
     !next.isDiving &&
-    CONTINENTAL_ARCHITECTURAL_HUBS.some(
+    (CONTINENTAL_ARCHITECTURAL_HUBS.some(
       (h) => h.hasUpdraftThermal && Math.hypot(next.x - h.x, next.z - h.z) <= 5.8
-    );
+    ) ||
+      FLOATING_SKY_ISLANDS.some(
+        (isl) => isl.hasUpdraftThermal && Math.hypot(next.x - isl.x, next.z - isl.z) <= 6.5
+      ));
   const inEastRaceArcade =
     next.x >= 28.0 && next.x <= 62.0 && Math.abs(next.z - 8.0) <= 4.2 && next.y <= 12.0;
-  const inWindCorridor = inInnerWindCorridor || inOuterWindPath || inHubThermalUpdraft || inEastRaceArcade;
+  const activeSkywardRing = !next.grounded
+    ? findActiveSkywardRingAt(next.x, next.y, next.z)
+    : null;
+  const inCloudBank = !next.grounded && isInCloudBankAt(next.x, next.y, next.z);
+  next.inCloudBank = inCloudBank;
+  const nearLightManta =
+    !next.grounded && isNearLightMantaAt(next.x, next.y, next.z, elapsed);
+
+  const inWindCorridor =
+    inInnerWindCorridor ||
+    inOuterWindPath ||
+    inHubThermalUpdraft ||
+    inEastRaceArcade ||
+    Boolean(activeSkywardRing);
   next.inWindTunnel = inWindCorridor;
-  if (inInnerWindCorridor && !next.grounded && !next.isDiving) {
+
+  if (inInnerWindCorridor && !next.grounded && !next.isDiving && !activeSkywardRing) {
     next.vy = Math.min(11.5, next.vy + (wt.updraftAccel + 4.5) * dt);
     // Forward tailwind propulsion toward the northern Three-Tower Bell Village (-Z)
     next.vz = Math.min(next.vz - wt.forwardBoostAccel * dt, -3.5);
     next.wingEnergy = Math.min(
       effectiveMaxEnergy,
       next.wingEnergy + wt.rechargeRatePerSec * dt
+    );
+  } else if (activeSkywardRing && !next.isDiving) {
+    // Skyward Exploration Current Ring propels the player along the aerial route & recharges wing energy!
+    next.vx += activeSkywardRing.boostDirX * 14.5 * dt;
+    next.vy = Math.min(13.5, Math.max(next.vy, 3.8) + activeSkywardRing.boostDirY * 14.5 * dt);
+    next.vz += activeSkywardRing.boostDirZ * 14.5 * dt;
+    next.wingEnergy = Math.min(
+      effectiveMaxEnergy,
+      next.wingEnergy + (wt.rechargeRatePerSec + 1.1) * dt
     );
   } else if ((inOuterWindPath || inHubThermalUpdraft) && !next.isDiving) {
     next.vy = Math.min(13.5, next.vy + (wt.updraftAccel + 10.5) * dt);
@@ -2384,6 +2907,19 @@ export function stepPlayerPhysics(
       effectiveMaxEnergy,
       next.wingEnergy + wt.rechargeRatePerSec * dt
     );
+  }
+
+  // Cloud-Sea Grazing & Overhead Light Manta Updraft Support
+  if (inCloudBank && !next.isDiving) {
+    if (next.vy < -1.5) {
+      // Soft buoyant cloud cushion when skimming cloud tops
+      next.vy = Math.min(4.2, Math.max(-1.5, next.vy + 12.0 * dt));
+    } else if (next.vy < 3.2) {
+      next.vy += 3.5 * dt;
+    }
+  }
+  if (nearLightManta && !next.isDiving) {
+    next.vy = Math.min(10.5, next.vy + 5.5 * dt);
   }
 
   // Variable jump cut if releasing space early on initial hop
@@ -2406,7 +2942,7 @@ export function stepPlayerPhysics(
   next.y += next.vy * dt;
   next.z += next.vz * dt;
 
-  // Resolve solid obstacle collisions (shrine pillars, temple hall, bell towers) with smooth tangential sliding
+  // Resolve solid obstacle collisions (shrine pillars, temple hall, bell towers) with smooth tangential sliding & aerial anti-stuck deflection
   const colRes = resolveObstacleCollisions(next.x, next.y, next.z, 0.44);
   if (colRes.hitObstacle) {
     next.x = colRes.x;
@@ -2415,6 +2951,36 @@ export function stepPlayerPhysics(
     if (inwardDot < 0) {
       next.vx -= inwardDot * colRes.normalX;
       next.vz -= inwardDot * colRes.normalZ;
+    }
+    // Aerial anti-stuck protection: when flying/gliding into a tower or pillar, smoothly deflect yaw along the tangent
+    // and provide a gentle roof-lip lift when near the top of the obstacle so flight never gets wedged mid-air.
+    if (!next.grounded) {
+      if (colRes.maxHitY > 0 && next.y >= colRes.maxHitY - 1.5 && next.vy > -2.5) {
+        next.vy = Math.max(next.vy, 3.2);
+      }
+      const tangSpeed = Math.hypot(next.vx, next.vz);
+      if (tangSpeed > 0.35) {
+        const tangYaw = Math.atan2(next.vx, next.vz);
+        let yDiff = tangYaw - next.yaw;
+        while (yDiff > Math.PI) yDiff -= Math.PI * 2;
+        while (yDiff < -Math.PI) yDiff += Math.PI * 2;
+        next.yaw += yDiff * Math.min(1, 5.5 * dt);
+      } else {
+        // Head-on impact: nudge velocity along tangent (-normalZ, normalX) so glider slides around the obstacle
+        const sideSign =
+          Math.sin(next.yaw) * -colRes.normalZ + Math.cos(next.yaw) * colRes.normalX >= 0
+            ? 1
+            : -1;
+        const tangX = -colRes.normalZ * sideSign;
+        const tangZ = colRes.normalX * sideSign;
+        next.vx += tangX * 3.6;
+        next.vz += tangZ * 3.6;
+        const targetYaw = Math.atan2(tangX, tangZ);
+        let yDiff = targetYaw - next.yaw;
+        while (yDiff > Math.PI) yDiff -= Math.PI * 2;
+        while (yDiff < -Math.PI) yDiff += Math.PI * 2;
+        next.yaw += yDiff * Math.min(1, 6.0 * dt);
+      }
     }
   }
 
@@ -2434,21 +3000,40 @@ export function stepPlayerPhysics(
     next.distanceFlown += stepHorizDist;
   }
 
-  // Terrain collision, downhill ground-following snap tolerance & non-lethal high-landing stiffness
+  // Terrain collision, downhill/slope ground-following snap tolerance & momentum-preserving flight touchdown
   const floorY =
     next.sitMode === 'sit_bench'
       ? groundHeightAt(next.x, next.z) + 0.18
       : groundHeightAt(next.x, next.z);
   const downhillSnapTolerance =
-    wasGroundedBeforeMove && !didFlap && next.vy <= 0.05 ? 0.65 : 0.0;
+    wasGroundedBeforeMove && !didFlap && next.vy <= 0.05
+      ? Math.min(0.75, 0.52 + Math.hypot(next.vx, next.vz) * 0.025)
+      : 0.0;
   if (next.y <= floorY + downhillSnapTolerance) {
-    if (!wasGroundedBeforeMove && preLandVy < -2.0) {
+    if (!wasGroundedBeforeMove && preLandVy < -1.6) {
       didLand = true;
-      // High fall landing recovery stiffness (no fall damage/death!)
+      // High fall landing recovery stiffness vs normal jump / glide run-out elastic cushion
       if (preLandVy <= LOCOMOTION_CFG.highLandingVelocityThreshold) {
         next.landingStiffTimer = LOCOMOTION_CFG.landingStiffDurationSec;
+        next.landingCushionTimer = 0.28;
         next.vx *= 0.25;
         next.vz *= 0.25;
+      } else {
+        // Normal jump / glide touchdown: natural knee-bend cushion & smooth forward momentum run-out
+        next.landingCushionTimer = Math.min(
+          0.28,
+          Math.max(
+            next.flightMode === 'glide' ? 0.22 : 0.18,
+            Math.abs(preLandVy) * 0.04
+          )
+        );
+        const touchHorizSpd = Math.hypot(next.vx, next.vz);
+        const maxRunoutSpd = LOCOMOTION_CFG.runSpeed * 1.15;
+        if (touchHorizSpd > maxRunoutSpd) {
+          const clampRatio = maxRunoutSpd / touchHorizSpd;
+          next.vx *= clampRatio;
+          next.vz *= clampRatio;
+        }
       }
     }
     next.y = floorY;
@@ -2456,6 +3041,9 @@ export function stepPlayerPhysics(
     next.grounded = true;
     next.isDiving = false;
     next.diveMomentum = 0;
+    next.distanceFlown = 0;
+    next.inCloudBank = false;
+    next.flightPitchPhase = 'none';
   } else {
     next.grounded = false;
   }
@@ -2473,13 +3061,16 @@ export function stepPlayerPhysics(
     postSlope.slopeAngleDeg >= LOCOMOTION_CFG.slopeSlideMinAngleDeg &&
     uphillAlignment < 0.35;
 
-  // Determine exact LocomotionMode for HUD, Debug Telemetry & Skeletal Animator
+  // Determine exact LocomotionMode & FlightPitchPhase for HUD, Debug Telemetry & Skeletal Animator
   const horizSpd = Math.hypot(next.vx, next.vz);
   if (!next.grounded) {
     if (next.isDiving) {
       next.locomotionMode = 'dive';
+      next.flightPitchPhase = 'dive';
     } else {
-      next.locomotionMode = next.vy > 1.5 && next.distanceFlown < 3.0 ? 'jump' : 'fly';
+      next.locomotionMode = next.vy > 1.2 && next.distanceFlown < 3.6 ? 'jump' : 'fly';
+      next.flightPitchPhase =
+        next.vy > 1.8 ? 'climb' : next.vy < -1.8 ? 'descent' : 'level';
     }
   } else if (next.landingStiffTimer > 0) {
     next.locomotionMode = 'land_stiff';
@@ -2489,22 +3080,34 @@ export function stepPlayerPhysics(
     next.locomotionMode = 'slide';
   } else if (next.isInShallowWater && horizSpd > 0.15) {
     next.locomotionMode = 'wade';
-  } else if (horizSpd > 5.8) {
+  } else if (horizSpd > 5.4) {
     next.locomotionMode = 'run';
-  } else if (horizSpd > 0.18) {
+  } else if (horizSpd > 0.16) {
     next.locomotionMode = 'walk';
   } else {
     next.locomotionMode = 'idle';
   }
 
-  // Pitch tilt when flying or diving
+  // Pitch tilt when flying (distinct Climb, Level, Descent, Dive angles), or walking across sloped terrain
   if (!next.grounded) {
     const targetPitch = next.isDiving
       ? -0.78
-      : Math.max(-0.45, Math.min(0.45, -next.vy * 0.04));
+      : next.flightMode === 'glide'
+        ? Math.max(-0.52, Math.min(0.42, -next.vy * 0.048 - 0.04))
+        : Math.max(-0.38, Math.min(0.38, -next.vy * 0.036));
     next.pitch += (targetPitch - next.pitch) * (1 - Math.exp(-9 * dt));
   } else {
-    next.pitch *= Math.exp(-10 * dt);
+    const forwardX = Math.sin(next.yaw);
+    const forwardZ = Math.cos(next.yaw);
+    const slopeAlongHeading =
+      -(forwardX * postSlope.downSlopeX + forwardZ * postSlope.downSlopeZ) *
+      Math.tan((postSlope.slopeAngleDeg * Math.PI) / 180);
+    const targetGroundPitch =
+      horizSpd > 0.2
+        ? Math.max(-0.14, Math.min(0.14, slopeAlongHeading * 0.22))
+        : 0;
+    next.pitch += (targetGroundPitch - next.pitch) * (1 - Math.exp(-10 * dt));
+    if (Math.abs(next.pitch) < 0.002) next.pitch = 0;
   }
 
   // Shelter & Light Source checks (Central Shrine, Northern Temple, Candle Clusters, Glowing Plants, Realm Mushroom/Ruin Shelters, Continental Hubs, Companion, or Brazier/Umbrella)
@@ -2595,12 +3198,14 @@ export function stepPlayerPhysics(
     next.krillAlertLevel = Math.max(0, next.krillAlertLevel - dt);
   }
 
-  // Passive Wing Energy & Temporary Lost Wedge Recharge (when not actively draining in dark water or rain)
+  // Passive Wing Energy & Temporary Lost Wedge Recharge (or gentle balanced stamina consumption during sustained open-air flight)
   const canRechargeNow =
     !next.isInDarkWater &&
     (next.inShelter ||
       next.nearCompanion ||
       inWindCorridor ||
+      inCloudBank ||
+      nearLightManta ||
       nearCloudRing ||
       hasRainbowTrailSpell ||
       hasGoldenAegisSpell ||
@@ -2626,14 +3231,16 @@ export function stepPlayerPhysics(
     } else if (nearCenterShrine || nearNorthernTemple) {
       rechargeRate = ENERGY_CFG.lightSourceRechargeRatePerSec;
       energySource = 'shrine_light';
-    } else if (next.nearCompanion) {
-      rechargeRate = ENERGY_CFG.companionProximityRechargeRatePerSec;
+    } else if (next.nearCompanion || nearLightManta) {
+      rechargeRate = nearLightManta ? 2.0 : ENERGY_CFG.companionProximityRechargeRatePerSec;
       energySource = 'companion';
     } else if (hasFireBrazier) {
       rechargeRate = 1.6;
       energySource = 'brazier_prop';
-    } else if (inWindCorridor || nearCloudRing) {
-      rechargeRate = ENERGY_CFG.windTunnelRechargeRatePerSec;
+    } else if (inWindCorridor || inCloudBank || nearCloudRing) {
+      rechargeRate = inCloudBank
+        ? Math.max(1.65, ENERGY_CFG.windTunnelRechargeRatePerSec)
+        : ENERGY_CFG.windTunnelRechargeRatePerSec;
       energySource = 'wind_cloud';
     } else {
       rechargeRate = ENERGY_CFG.groundRechargeRatePerSec;
@@ -2644,6 +3251,18 @@ export function stepPlayerPhysics(
     }
     netRate = rechargeRate;
     next.wingEnergy = Math.min(currentCap, next.wingEnergy + rechargeRate * dt);
+  } else if (
+    !next.grounded &&
+    !next.isDiving &&
+    !input.jumpHeld &&
+    weather !== 'rain' &&
+    weather !== 'eden_storm' &&
+    next.vy > -4.5
+  ) {
+    // Gentle, balanced passive stamina consumption during prolonged open-air flight outside clouds/thermals/light
+    const passiveFlightDrain = next.flightMode === 'glide' ? 0.055 : 0.075;
+    next.wingEnergy = Math.max(0, next.wingEnergy - passiveFlightDrain * dt);
+    netRate = -passiveFlightDrain;
   }
 
   next.energyChangeSource = energySource;
@@ -2684,7 +3303,11 @@ export function applyInteraction(
   target: WorldInteractable,
   progress: GameProgressState,
   physics: PlayerPhysicsState,
-  loadout?: EquippedLoadout
+  loadout?: EquippedLoadout,
+  options?: {
+    coopParticipantCount?: number;
+    requiredCoopParticipants?: number;
+  }
 ): {
   nextProgress: GameProgressState;
   nextPhysics: PlayerPhysicsState;
@@ -2781,12 +3404,22 @@ export function applyInteraction(
       ? `🦀 已安抚并净化四脚朝天的「${target.name}」· 获得 +${waxGain} 滴烛火，翼能回满！`
       : `🦀 心火共鸣掀翻并净化「${target.name}」（长按 [Q] 深呼唤可大范围震翻暗蟹）· +${waxGain} 滴烛火！`;
   } else if (target.type === 'coop_door') {
-    const waxGain = target.waxReward ?? 65;
-    const totalWax = nextProgress.wax + waxGain;
-    nextProgress.candles += Math.floor(totalWax / 100);
-    nextProgress.wax = totalWax % 100;
-    nextPhysics.wingEnergy = nextPhysics.maxWingWedges;
-    bannerMessage = `🚪 已与同伴协力点亮「${target.name}」双人星芒机关 · 秘库大门开启 (+${waxGain} 滴烛火 & 解锁星河悬浮台)！`;
+    const reqCount = options?.requiredCoopParticipants ?? 2;
+    const curCount = options?.coopParticipantCount ?? reqCount;
+    if (curCount < reqCount) {
+      updatedTarget.activated = false;
+      bannerMessage = `🔒 「${target.name}」需 ${reqCount} 名旅人同时就位共鸣（当前 ${curCount}/${reqCount} 人）· 请点击「🔔 呼唤旅伴协力」或邀请联机好友靠近！`;
+    } else {
+      const waxGain = target.waxReward ?? 65;
+      const totalWax = nextProgress.wax + waxGain;
+      nextProgress.candles += Math.floor(totalWax / 100);
+      nextProgress.wax = totalWax % 100;
+      nextPhysics.wingEnergy = nextPhysics.maxWingWedges;
+      nextPhysics.vy = Math.max(nextPhysics.vy, 5.2);
+      nextPhysics.grounded = false;
+      nextPhysics.flightMode = 'hover';
+      bannerMessage = `🚪 已与同伴 (${curCount}/${reqCount} 人) 协力点亮「${target.name}」双人星芒机关 · 秘库通道开启 (+${waxGain} 滴烛火 & 唤起星光上升气流)！`;
+    }
   } else if (target.type === 'starlight_elevator') {
     const baseTargetY =
       REALMS_STAGE8_CFG?.vault?.starlightElevator?.targetAltitudeY || 13.5;
@@ -3408,12 +4041,23 @@ export function stepBotTravelerAiPure(
   localPlayer: { x: number; y: number; z: number; yaw: number },
   mode: BotAiMode,
   elapsed: number,
-  dt: number
+  dt: number,
+  coopTarget?: { x: number; z: number } | null
 ): { x: number; y: number; z: number; yaw: number } {
   let desiredX = bot.x;
   let desiredZ = bot.z;
 
-  if (mode === 'follow') {
+  if (coopTarget) {
+    // Summoned to assist at a 2-player Co-op Mechanism plinth!
+    const offsetSide =
+      bot.playerId === 'bot_traveller_1'
+        ? -1.25
+        : bot.playerId === 'bot_traveller_2'
+          ? 1.25
+          : 0.0;
+    desiredX = coopTarget.x + offsetSide;
+    desiredZ = coopTarget.z + (bot.playerId === 'bot_traveller_3' ? 1.35 : 0.45);
+  } else if (mode === 'follow') {
     // Follow in a friendly semi-circle behind/beside localPlayer
     const slotAngle =
       localPlayer.yaw +
@@ -3525,4 +4169,3263 @@ export function flipDarkCrabsWithDeepCallPure(
 
   return { nextInteractables, flippedCount };
 }
+
+// ============================================================================
+// Module 3: Cinematic Third-Person Camera System (电影感第三人称摄像机系统)
+// ============================================================================
+
+export interface ScenicVistaZone {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  z: number;
+  outerRadius: number;
+  innerRadius: number;
+  focalX: number;
+  focalY: number;
+  focalZ: number;
+  distBonus: number;
+  fovBonus: number;
+  pitchBias: number;
+  lookAtBlendMax: number;
+}
+
+/**
+ * 8 Curated Scenic Vista Zones (高处、山谷、云层与重要奇观地标电影镜头展示区)
+ * Gently widens framing and tilts gaze toward monumental architecture without locking player control.
+ */
+export const SCENIC_VISTA_ZONES: ScenicVistaZone[] = [
+  {
+    id: 'vista_elder_temple',
+    name: '北境长老神庙 · 星盘圣殿仰望全景',
+    x: 0.0,
+    y: 4.6,
+    z: -44.0,
+    outerRadius: 22.0,
+    innerRadius: 9.0,
+    focalX: 0.0,
+    focalY: 13.5,
+    focalZ: -55.0,
+    distBonus: 2.2,
+    fovBonus: 3.5,
+    pitchBias: -0.08,
+    lookAtBlendMax: 0.18,
+  },
+  {
+    id: 'vista_bell_village',
+    name: '三塔钟楼村落 · 云端金钟远眺',
+    x: 16.5,
+    y: 2.0,
+    z: -24.5,
+    outerRadius: 15.0,
+    innerRadius: 6.0,
+    focalX: 16.5,
+    focalY: 7.2,
+    focalZ: -24.5,
+    distBonus: 1.6,
+    fovBonus: 2.5,
+    pitchBias: -0.05,
+    lookAtBlendMax: 0.14,
+  },
+  {
+    id: 'vista_sky_citadel',
+    name: '千鸟天际浮岛 · 星桥高空纵深',
+    x: 46.0,
+    y: 14.5,
+    z: -68.0,
+    outerRadius: 24.0,
+    innerRadius: 10.0,
+    focalX: 46.0,
+    focalY: 20.0,
+    focalZ: -68.0,
+    distBonus: 2.5,
+    fovBonus: 4.0,
+    pitchBias: -0.06,
+    lookAtBlendMax: 0.16,
+  },
+  {
+    id: 'vista_aurora_colosseum',
+    name: '欧若拉星光竞技场 · 千人穹顶剧场',
+    x: 0.0,
+    y: 12.8,
+    z: -148.0,
+    outerRadius: 28.0,
+    innerRadius: 12.0,
+    focalX: 0.0,
+    focalY: 20.5,
+    focalZ: -148.0,
+    distBonus: 2.8,
+    fovBonus: 5.0,
+    pitchBias: -0.08,
+    lookAtBlendMax: 0.20,
+  },
+  {
+    id: 'vista_sundial_amphitheater',
+    name: '正南远古日晷剧场 · 八星柱巨石阵',
+    x: 0.0,
+    y: 3.2,
+    z: 62.0,
+    outerRadius: 20.0,
+    innerRadius: 8.5,
+    focalX: 0.0,
+    focalY: 9.2,
+    focalZ: 62.0,
+    distBonus: 2.0,
+    fovBonus: 3.0,
+    pitchBias: -0.06,
+    lookAtBlendMax: 0.16,
+  },
+  {
+    id: 'vista_sanctuary_whale_geyser',
+    name: '圣岛海螺喷泉 · 白鲸跃海奇观',
+    x: 52.0,
+    y: 4.2,
+    z: -28.0,
+    outerRadius: 22.0,
+    innerRadius: 9.0,
+    focalX: 58.0,
+    focalY: 11.0,
+    focalZ: -32.0,
+    distBonus: 2.2,
+    fovBonus: 3.5,
+    pitchBias: -0.06,
+    lookAtBlendMax: 0.16,
+  },
+  {
+    id: 'vista_wind_paths_archipelago',
+    name: '风行网道群岛 · 云海天门长廊',
+    x: 112.0,
+    y: 22.0,
+    z: -96.0,
+    outerRadius: 26.0,
+    innerRadius: 11.0,
+    focalX: 112.0,
+    focalY: 26.5,
+    focalZ: -96.0,
+    distBonus: 2.6,
+    fovBonus: 4.5,
+    pitchBias: -0.05,
+    lookAtBlendMax: 0.15,
+  },
+  {
+    id: 'vista_echo_cavern_grotto',
+    name: '幽光洞窟 · 荧光晶石秘境山谷',
+    x: -18.5,
+    y: 1.4,
+    z: -16.0,
+    outerRadius: 14.0,
+    innerRadius: 5.5,
+    focalX: -18.5,
+    focalY: 4.2,
+    focalZ: -16.0,
+    distBonus: 1.2,
+    fovBonus: 2.0,
+    pitchBias: -0.04,
+    lookAtBlendMax: 0.12,
+  },
+  {
+    id: 'vista_celestial_observatory',
+    name: '云端天星观景台 · 苍穹浮岛全景',
+    x: -28.0,
+    y: 21.5,
+    z: -80.0,
+    outerRadius: 20.0,
+    innerRadius: 7.5,
+    focalX: 0.0,
+    focalY: 16.0,
+    focalZ: -50.0,
+    distBonus: 2.8,
+    fovBonus: 5.0,
+    pitchBias: -0.07,
+    lookAtBlendMax: 0.16,
+  },
+  {
+    id: 'vista_east_canyon_arch',
+    name: '东境云谷断桥 · 圣岛远眺台',
+    x: 42.0,
+    y: 11.2,
+    z: -6.0,
+    outerRadius: 16.0,
+    innerRadius: 6.0,
+    focalX: 52.0,
+    focalY: 10.5,
+    focalZ: -28.0,
+    distBonus: 2.0,
+    fovBonus: 3.5,
+    pitchBias: -0.05,
+    lookAtBlendMax: 0.14,
+  },
+];
+
+export interface CinematicCameraState {
+  camX: number;
+  camY: number;
+  camZ: number;
+  focusX: number;
+  focusY: number;
+  focusZ: number;
+  yaw: number;
+  pitch: number;
+  roll: number;
+  distance: number;
+  fov: number;
+  smoothedCollisionRatio: number;
+  manualLookGraceTimer: number;
+  userZoomOffset: number;
+  activeVistaId: string | null;
+  vistaBlend: number;
+}
+
+export function createInitialCameraStatePure(
+  playerX = 0,
+  playerY = 1.2,
+  playerZ = 6.0
+): CinematicCameraState {
+  return {
+    camX: playerX,
+    camY: playerY + 3.0,
+    camZ: playerZ + 7.8,
+    focusX: playerX,
+    focusY: playerY + 1.6,
+    focusZ: playerZ,
+    yaw: 0,
+    pitch: 0.26,
+    roll: 0,
+    distance: 7.8,
+    fov: 60,
+    smoothedCollisionRatio: 1.0,
+    manualLookGraceTimer: 0,
+    userZoomOffset: 0,
+    activeVistaId: null,
+    vistaBlend: 0,
+  };
+}
+
+/**
+ * Pure helper evaluating whether the player is near a Scenic Vista Zone or soaring in high-altitude / cloud-sea panoramas.
+ */
+export function evaluateScenicVistaAtPure(
+  x: number,
+  y: number,
+  z: number,
+  inCloudBank: boolean
+): {
+  vista: ScenicVistaZone | null;
+  blend: number;
+  distBonus: number;
+  fovBonus: number;
+} {
+  let bestVista: ScenicVistaZone | null = null;
+  let bestBlend = 0;
+
+  for (const v of SCENIC_VISTA_ZONES) {
+    const dist = Math.hypot(x - v.x, z - v.z);
+    if (dist < v.outerRadius) {
+      const rawT =
+        dist <= v.innerRadius
+          ? 1.0
+          : 1.0 - (dist - v.innerRadius) / Math.max(0.1, v.outerRadius - v.innerRadius);
+      const smoothT = rawT * rawT * (3 - 2 * rawT);
+      if (smoothT > bestBlend) {
+        bestBlend = smoothT;
+        bestVista = v;
+      }
+    }
+  }
+
+  // High-altitude ridge / cloud-sea panoramic expansion even outside named landmarks
+  const altitudeFactor = Math.max(0, Math.min(1, (y - 9.5) / 14.0));
+  const cloudBonus = inCloudBank ? 0.55 : 0;
+  const envPanoramaT = Math.min(1, altitudeFactor + cloudBonus);
+
+  const distBonus =
+    (bestVista ? bestVista.distBonus * bestBlend : 0) + envPanoramaT * 1.65;
+  const fovBonus =
+    (bestVista ? bestVista.fovBonus * bestBlend : 0) + envPanoramaT * 2.8;
+
+  return {
+    vista: bestVista,
+    blend: bestBlend,
+    distBonus,
+    fovBonus,
+  };
+}
+
+/**
+ * Pure 2D segment-to-circle clearance solver for camera obstacle avoidance (`STATIC_WORLD_OBSTACLES`).
+ * Ensures the camera ray from `(focusX, focusZ)` to `(desiredX, desiredZ)` never clips inside solid walls, towers, or trees,
+ * returning both a safe pullback ratio `[0.28..1.0]` and a smooth tangential slide offset to prevent sudden jumping.
+ */
+export function computeCameraObstacleClearancePure(
+  focusX: number,
+  focusY: number,
+  focusZ: number,
+  desiredX: number,
+  desiredY: number,
+  desiredZ: number
+): {
+  safeRatio: number;
+  deflectX: number;
+  deflectZ: number;
+  occludedById: string | null;
+} {
+  const rayDx = desiredX - focusX;
+  const rayDz = desiredZ - focusZ;
+  const rayLenXZ = Math.hypot(rayDx, rayDz);
+  if (rayLenXZ < 0.05) {
+    return { safeRatio: 1.0, deflectX: 0, deflectZ: 0, occludedById: null };
+  }
+
+  const dirX = rayDx / rayLenXZ;
+  const dirZ = rayDz / rayLenXZ;
+  const camSafetyMargin = 0.58;
+
+  let minSafeRatio = 1.0;
+  let deflectX = 0;
+  let deflectZ = 0;
+  let occludedById: string | null = null;
+
+  for (const obs of STATIC_WORLD_OBSTACLES) {
+    // Ignore low props below camera ray or thin decorative posts (< 0.68m radius) that shouldn't yank the camera
+    if (obs.maxY < Math.min(focusY, desiredY) - 0.2) continue;
+    if (obs.radius < 0.68) continue;
+    // Skip hollow shell obstacles (e.g. Grandma's Treehouse interior) when player is inside
+    if (obs.hollowShellThickness && Math.hypot(focusX - obs.x, focusZ - obs.z) < obs.radius) {
+      continue;
+    }
+
+    const ox = obs.x - focusX;
+    const oz = obs.z - focusZ;
+    // Project obstacle center onto camera ray [0 .. rayLenXZ]
+    const proj = ox * dirX + oz * dirZ;
+    if (proj <= 0.1 || proj >= rayLenXZ + obs.radius + camSafetyMargin) {
+      continue;
+    }
+
+    const clampedProj = Math.max(0, Math.min(rayLenXZ, proj));
+    const closestX = dirX * clampedProj;
+    const closestZ = dirZ * clampedProj;
+    const perpDx = closestX - ox;
+    const perpDz = closestZ - oz;
+    const perpDist = Math.hypot(perpDx, perpDz);
+    const effectiveRadius = obs.radius + camSafetyMargin;
+
+    if (perpDist < effectiveRadius) {
+      // If the obstacle blocks the ray deeply near its center, pull camera forward in front of the wall;
+      // If it only grazes the outer edge of the cylinder/tree, slide tangentially around it so distance doesn't pop!
+      const penetration = effectiveRadius - perpDist;
+      const grazeRatio = perpDist / effectiveRadius;
+
+      if (grazeRatio < 0.58) {
+        const halfChord = Math.sqrt(
+          Math.max(0, effectiveRadius * effectiveRadius - perpDist * perpDist)
+        );
+        const hitDist = Math.max(1.8, proj - halfChord);
+        const ratio = Math.max(0.28, Math.min(1.0, hitDist / rayLenXZ));
+        if (ratio < minSafeRatio) {
+          minSafeRatio = ratio;
+          occludedById = obs.id;
+        }
+      } else {
+        // Smooth tangential deflection around building/tree edge
+        const normX = perpDist > 0.001 ? perpDx / perpDist : -dirZ;
+        const normZ = perpDist > 0.001 ? perpDz / perpDist : dirX;
+        deflectX += normX * penetration * 0.85;
+        deflectZ += normZ * penetration * 0.85;
+        occludedById = obs.id;
+      }
+    }
+  }
+
+  return {
+    safeRatio: minSafeRatio,
+    deflectX,
+    deflectZ,
+    occludedById,
+  };
+}
+
+/**
+ * Pure step function for the Module 3 Cinematic Third-Person Camera System.
+ * Handles:
+ * 1. Smooth damped follow & velocity look-ahead (with takeoff vertical lag & landing cushion settle);
+ * 2. Differentiated framing parameters (Sit / Idle / Walk / Run / Hover / Glide / Dive) & dynamic Rule-of-Thirds composition;
+ * 3. Smooth non-snapping turn alignment with manual-look grace timer;
+ * 4. Spring-damped multi-obstacle & 6-sample terrain avoidance;
+ * 5. Scenic Vista & High-Altitude / Cloud-Sea panoramic framing.
+ */
+export function computeCinematicCameraStepPure(
+  prevCam: CinematicCameraState,
+  player: PlayerPhysicsState,
+  input: {
+    dt: number;
+    isDraggingCamera: boolean;
+    moveX: number;
+    moveZ: number;
+    turnRate: number;
+    selfieMode: boolean;
+    photoModeOpen: boolean;
+    photoFov: number;
+  }
+): CinematicCameraState {
+  const dt = Math.min(0.1, Math.max(0.001, input.dt));
+  const next: CinematicCameraState = { ...prevCam };
+
+  const horizSpeed = Math.hypot(player.vx, player.vz);
+  const totalSpeed = Math.hypot(horizSpeed, player.vy);
+  const airSpeedRatio = Math.min(1, totalSpeed / 14.5);
+
+  // 1. Manual Look Grace Timer & Smooth Non-Snapping Orbit Alignment
+  if (input.isDraggingCamera) {
+    next.manualLookGraceTimer = 1.65;
+  } else if (next.manualLookGraceTimer > 0) {
+    next.manualLookGraceTimer = Math.max(0, next.manualLookGraceTimer - dt);
+  }
+
+  const vistaEval = evaluateScenicVistaAtPure(
+    player.x,
+    player.y,
+    player.z,
+    player.inCloudBank
+  );
+  next.activeVistaId = vistaEval.vista ? vistaEval.vista.id : null;
+  next.vistaBlend += (vistaEval.blend - next.vistaBlend) * (1 - Math.exp(-3.5 * dt));
+
+  if (
+    !input.isDraggingCamera &&
+    next.manualLookGraceTimer <= 0 &&
+    horizSpeed > 1.15 &&
+    !input.selfieMode &&
+    (!player.grounded || input.moveZ < -0.12)
+  ) {
+    const desiredBehindYaw = player.yaw + Math.PI;
+    let camDiff = desiredBehindYaw - next.yaw;
+    while (camDiff > Math.PI) camDiff -= Math.PI * 2;
+    while (camDiff < -Math.PI) camDiff += Math.PI * 2;
+
+    // Gentle speed-modulated alignment rate with angular velocity cap so turning never snaps the camera
+    const alignRate = player.grounded ? 0.68 : player.flightMode === 'glide' ? 1.15 : 0.92;
+    const maxCamTurnRadPerSec = player.grounded ? 0.85 : 1.35;
+    const rawStep = camDiff * (1 - Math.exp(-alignRate * dt));
+    const maxStep = maxCamTurnRadPerSec * dt;
+    next.yaw += Math.max(-maxStep, Math.min(maxStep, rawStep));
+    while (next.yaw > Math.PI) next.yaw -= Math.PI * 2;
+    while (next.yaw < -Math.PI) next.yaw += Math.PI * 2;
+  }
+
+  // 2. State-Differentiated Camera Distance & FOV (Sit / Idle / Walk / Run / Hover / Glide / Dive + Vista)
+  let baseDist = 8.0;
+  let baseFov = 60.0;
+  let baseTargetOffsetY = 1.62;
+
+  if (input.selfieMode) {
+    baseDist = 4.2;
+    baseFov = 55.0;
+    baseTargetOffsetY = 1.42;
+  } else if (player.grounded) {
+    if (player.sitMode !== 'none') {
+      baseDist = 6.2;
+      baseFov = 56.0;
+      baseTargetOffsetY = 1.32;
+    } else if (horizSpeed < 0.25) {
+      baseDist = 7.4;
+      baseFov = 58.5;
+      baseTargetOffsetY = 1.56;
+    } else if (player.locomotionMode === 'run' || player.locomotionMode === 'slide') {
+      baseDist = 8.7 + Math.min(0.6, (horizSpeed - 4.5) * 0.15);
+      baseFov = 63.0;
+      baseTargetOffsetY = 1.68;
+    } else {
+      baseDist = 8.0;
+      baseFov = 60.0;
+      baseTargetOffsetY = 1.62;
+    }
+  } else {
+    // Airborne states: Takeoff -> Hover -> Glide -> High-Speed Dive / Wind Tunnel
+    if (player.isDiving) {
+      baseDist = 12.8 + airSpeedRatio * 1.4;
+      baseFov = 72.0 + airSpeedRatio * 3.0;
+      baseTargetOffsetY = 1.65;
+    } else if (player.flightMode === 'glide') {
+      baseDist =
+        10.8 +
+        airSpeedRatio * 1.8 +
+        (player.inWindTunnel ? 0.9 : 0);
+      baseFov =
+        66.5 +
+        airSpeedRatio * 4.5 +
+        (player.inWindTunnel ? 2.5 : 0);
+      baseTargetOffsetY = 1.86;
+    } else {
+      // Hover / Jump
+      baseDist = 9.3 + airSpeedRatio * 0.8;
+      baseFov = 62.5 + airSpeedRatio * 2.0;
+      baseTargetOffsetY = 1.74;
+    }
+  }
+
+  const targetDist = Math.max(
+    3.6,
+    Math.min(
+      16.5,
+      baseDist +
+        (input.selfieMode ? 0 : vistaEval.distBonus + next.userZoomOffset)
+    )
+  );
+  next.distance += (targetDist - next.distance) * (1 - Math.exp(-4.8 * dt));
+
+  const targetFov = input.photoModeOpen
+    ? input.photoFov
+    : Math.max(
+        50,
+        Math.min(78, baseFov + (input.selfieMode ? 0 : vistaEval.fovBonus))
+      );
+  next.fov += (targetFov - next.fov) * (1 - Math.exp(-5.5 * dt));
+
+  // 3. Dynamic Screen Composition (Rule-of-Thirds + Velocity Look-Ahead) & Pivot Follow Delay
+  const effectiveYaw = input.selfieMode ? player.yaw + Math.PI : next.yaw;
+  const camRightX = Math.cos(effectiveYaw);
+  const camRightZ = -Math.sin(effectiveYaw);
+
+  // Subtle lateral composition shift when turning or moving across the frame so character isn't locked to dead center
+  const lateralOffset = input.selfieMode
+    ? 0
+    : Math.max(-0.75, Math.min(0.75, -input.turnRate * 0.38));
+
+  // Forward velocity look-ahead leads the player's motion
+  const lookAheadScale = input.selfieMode
+    ? 0
+    : player.grounded
+      ? 0.20
+      : player.flightMode === 'glide'
+        ? 0.26
+        : 0.18;
+  const lookAheadX = Math.max(-2.1, Math.min(2.1, player.vx * lookAheadScale));
+  const lookAheadZ = Math.max(-2.1, Math.min(2.1, player.vz * lookAheadScale));
+  const lookAheadY = input.selfieMode
+    ? 0
+    : Math.max(-0.75, Math.min(1.05, player.vy * 0.11));
+
+  // Landing cushion dip & Scenic Vista elevation lift
+  const landingDipY =
+    player.grounded && (player.landingCushionTimer > 0 || player.landingStiffTimer > 0)
+      ? -0.14
+      : 0;
+  const vistaLiftY = !input.selfieMode ? next.vistaBlend * 0.42 : 0;
+
+  let desiredFocusX =
+    player.x + lookAheadX + camRightX * lateralOffset;
+  let desiredFocusY =
+    player.y + baseTargetOffsetY + lookAheadY + landingDipY + vistaLiftY;
+  let desiredFocusZ =
+    player.z + lookAheadZ + camRightZ * lateralOffset;
+
+  // Gently blend look-at focus toward active Scenic Vista landmark focal point (max 18%) without stealing control
+  if (vistaEval.vista && !input.selfieMode && vistaEval.blend > 0.01) {
+    const v = vistaEval.vista;
+    const lookBlend = v.lookAtBlendMax * vistaEval.blend;
+    desiredFocusX += Math.max(-3.2, Math.min(3.2, (v.focalX - desiredFocusX) * lookBlend));
+    desiredFocusY += Math.max(-1.5, Math.min(2.4, (v.focalY - desiredFocusY) * lookBlend));
+    desiredFocusZ += Math.max(-3.2, Math.min(3.2, (v.focalZ - desiredFocusZ) * lookBlend));
+  }
+
+  const isLargeTeleport =
+    Math.hypot(player.x - prevCam.focusX, player.z - prevCam.focusZ) > 18.0 ||
+    Math.abs(player.y - prevCam.focusY) > 18.0;
+
+  // Separate horizontal vs vertical pivot spring rates (so takeoff & small jumps have a silky vertical follow lag)
+  const focusHorizRate = player.grounded ? 9.2 : 8.4;
+  const focusVertRate =
+    player.takeoffTimer > 0
+      ? 5.2
+      : !player.grounded
+        ? 6.8
+        : 10.5;
+  const alphaFH = isLargeTeleport ? 1.0 : 1 - Math.exp(-focusHorizRate * dt);
+  const alphaFV = isLargeTeleport ? 1.0 : 1 - Math.exp(-focusVertRate * dt);
+
+  next.focusX += (desiredFocusX - next.focusX) * alphaFH;
+  next.focusY += (desiredFocusY - next.focusY) * alphaFV;
+  next.focusZ += (desiredFocusZ - next.focusZ) * alphaFH;
+
+  // 4. Desired Orbit Camera Position & Obstacle / Terrain Anti-Clipping
+  const vistaPitchBias =
+    vistaEval.vista && !input.selfieMode
+      ? vistaEval.vista.pitchBias * vistaEval.blend
+      : 0;
+  const effectivePitch = Math.max(
+    -0.25,
+    Math.min(0.88, next.pitch + vistaPitchBias)
+  );
+
+  const idealCamX = next.focusX + Math.sin(effectiveYaw) * next.distance;
+  const idealCamZ = next.focusZ + Math.cos(effectiveYaw) * next.distance;
+  const idealCamY =
+    player.y +
+    (player.grounded ? 2.55 : player.flightMode === 'glide' ? 3.35 : 3.05) +
+    effectivePitch * 4.6;
+
+  const obsCheck = computeCameraObstacleClearancePure(
+    next.focusX,
+    next.focusY,
+    next.focusZ,
+    idealCamX,
+    idealCamY,
+    idealCamZ
+  );
+
+  // Asymmetric collision spring: pull in quickly when approaching an obstacle, ease out smoothly when clear
+  const colRate =
+    obsCheck.safeRatio < next.smoothedCollisionRatio ? 14.5 : 4.6;
+  next.smoothedCollisionRatio = isLargeTeleport
+    ? obsCheck.safeRatio
+    : next.smoothedCollisionRatio +
+      (obsCheck.safeRatio - next.smoothedCollisionRatio) *
+        (1 - Math.exp(-colRate * dt));
+
+  const effectiveDist = next.distance * next.smoothedCollisionRatio;
+  let desiredCamX =
+    next.focusX + Math.sin(effectiveYaw) * effectiveDist + obsCheck.deflectX;
+  let desiredCamZ =
+    next.focusZ + Math.cos(effectiveYaw) * effectiveDist + obsCheck.deflectZ;
+  let desiredCamY = idealCamY;
+
+  // 6-Sample Terrain & Cliff Anti-Clipping Sweep from focus pivot to camera endpoint
+  for (let s = 1; s <= 6; s++) {
+    const frac = s / 6;
+    const sx = next.focusX + (desiredCamX - next.focusX) * frac;
+    const sz = next.focusZ + (desiredCamZ - next.focusZ) * frac;
+    const sy = next.focusY + (desiredCamY - next.focusY) * frac;
+    const terrainClearY = groundHeightAt(sx, sz) + 1.18;
+    if (sy < terrainClearY) {
+      desiredCamY += (terrainClearY - sy) / frac;
+    }
+  }
+
+  // Smooth camera position follow with decoupled horizontal/vertical damping
+  const posHorizRate = player.grounded ? 8.8 : 9.6;
+  const posVertRate = player.takeoffTimer > 0 ? 5.6 : player.grounded ? 9.5 : 7.5;
+  const alphaPH = isLargeTeleport ? 1.0 : 1 - Math.exp(-posHorizRate * dt);
+  const alphaPV = isLargeTeleport ? 1.0 : 1 - Math.exp(-posVertRate * dt);
+
+  next.camX += (desiredCamX - next.camX) * alphaPH;
+  next.camY += (desiredCamY - next.camY) * alphaPV;
+  next.camZ += (desiredCamZ - next.camZ) * alphaPH;
+
+  // 5. Aerial Horizon Roll Sympathy (smoothly banks camera horizon during glide/dive turns, levels out on landing)
+  const targetRoll =
+    !player.grounded && !input.selfieMode && (player.flightMode === 'glide' || player.isDiving)
+      ? Math.max(-0.14, Math.min(0.14, -player.roll * 0.18))
+      : 0;
+  next.roll += (targetRoll - next.roll) * (1 - Math.exp(-6.5 * dt));
+  if (Math.abs(next.roll) < 0.001 && targetRoll === 0) {
+    next.roll = 0;
+  }
+
+  return next;
+}
+
+// ============================================================================
+// MODULE 4 UPGRADE: OVERALL ART DIRECTION, LIGHTING, ATMOSPHERE & SKY SYSTEM
+// (Unified Healing Color System, Sub-Zone Biome Themes, Volumetric God-Rays,
+//  Highlight-Safe Filmic Exposure, & Multi-Layer Terrain/Cloud Shading)
+// ============================================================================
+
+export interface RegionalBiomeTheme {
+  id: string;
+  name: string;
+  x: number;
+  z: number;
+  innerRadius: number;
+  outerRadius: number;
+  skyTopTint: string;
+  skyHorizonTint: string;
+  fogTint: string;
+  fogDensityMultiplier: number;
+  godRayColor: string;
+  godRayBoost: number;
+  auroraBoost: number;
+}
+
+export const REGIONAL_BIOME_THEMES: RegionalBiomeTheme[] = [
+  {
+    id: 'biome_echo_cavern',
+    name: '幽光晶石洞窟·冷翠微光',
+    x: -18.5,
+    z: -16.0,
+    innerRadius: 7.0,
+    outerRadius: 19.0,
+    skyTopTint: '#133B5C',
+    skyHorizonTint: '#5EC2D6',
+    fogTint: '#4BA8BE',
+    fogDensityMultiplier: 1.18,
+    godRayColor: '#8CE9F7',
+    godRayBoost: 0.14,
+    auroraBoost: 0.15,
+  },
+  {
+    id: 'biome_sanctuary_islands',
+    name: '圣岛海螺群岛·晴海暖金',
+    x: 52.0,
+    z: -28.0,
+    innerRadius: 12.0,
+    outerRadius: 32.0,
+    skyTopTint: '#1B6CA8',
+    skyHorizonTint: '#FBE0B4',
+    fogTint: '#F5E4C8',
+    fogDensityMultiplier: 0.85,
+    godRayColor: '#FFF3C4',
+    godRayBoost: 0.12,
+    auroraBoost: 0.0,
+  },
+  {
+    id: 'biome_citadel_sky',
+    name: '千鸟落日天城·流霞玫瑰',
+    x: 46.0,
+    z: -68.0,
+    innerRadius: 14.0,
+    outerRadius: 34.0,
+    skyTopTint: '#3A2875',
+    skyHorizonTint: '#F498A8',
+    fogTint: '#F8BDC8',
+    fogDensityMultiplier: 0.82,
+    godRayColor: '#FDE293',
+    godRayBoost: 0.15,
+    auroraBoost: 0.25,
+  },
+  {
+    id: 'biome_grandma_treehouse',
+    name: '老奶奶秘密树屋·暖林琥珀',
+    x: -54.0,
+    z: -32.0,
+    innerRadius: 10.0,
+    outerRadius: 26.0,
+    skyTopTint: '#1B433E',
+    skyHorizonTint: '#E5B47A',
+    fogTint: '#C89E6E',
+    fogDensityMultiplier: 1.15,
+    godRayColor: '#FDE68A',
+    godRayBoost: 0.18,
+    auroraBoost: 0.0,
+  },
+  {
+    id: 'biome_aurora_colosseum',
+    name: '欧若拉星河剧场·极光星夜',
+    x: 0.0,
+    z: -148.0,
+    innerRadius: 18.0,
+    outerRadius: 42.0,
+    skyTopTint: '#11163B',
+    skyHorizonTint: '#5E54A4',
+    fogTint: '#484088',
+    fogDensityMultiplier: 0.88,
+    godRayColor: '#C4B5FD',
+    godRayBoost: 0.10,
+    auroraBoost: 0.75,
+  },
+  {
+    id: 'biome_hermit_snow_peak',
+    name: '隐士雪峰冰屋·寒晶晚照',
+    x: 96.0,
+    z: 64.0,
+    innerRadius: 12.0,
+    outerRadius: 30.0,
+    skyTopTint: '#2E3B78',
+    skyHorizonTint: '#F2B5D4',
+    fogTint: '#E2C8E8',
+    fogDensityMultiplier: 0.92,
+    godRayColor: '#E0F2FE',
+    godRayBoost: 0.08,
+    auroraBoost: 0.35,
+  },
+  {
+    id: 'biome_abyss_coral',
+    name: '深海珊瑚渊·碧海荧光',
+    x: -108.0,
+    z: 68.0,
+    innerRadius: 12.0,
+    outerRadius: 30.0,
+    skyTopTint: '#0D2B3E',
+    skyHorizonTint: '#228B9E',
+    fogTint: '#1B6F82',
+    fogDensityMultiplier: 1.22,
+    godRayColor: '#67E8F9',
+    godRayBoost: 0.16,
+    auroraBoost: 0.2,
+  },
+  {
+    id: 'biome_celestial_observatory',
+    name: '云端天星观景浮岛·星穹琉璃',
+    x: -28.0,
+    z: -80.0,
+    innerRadius: 10.0,
+    outerRadius: 26.0,
+    skyTopTint: '#1E295B',
+    skyHorizonTint: '#93C5FD',
+    fogTint: '#BAE6FD',
+    fogDensityMultiplier: 0.78,
+    godRayColor: '#FEF08A',
+    godRayBoost: 0.18,
+    auroraBoost: 0.45,
+  },
+  {
+    id: 'biome_canyon_ruins',
+    name: '东境云谷遗迹·暖霞金辉',
+    x: 42.0,
+    z: -6.0,
+    innerRadius: 8.0,
+    outerRadius: 22.0,
+    skyTopTint: '#284E78',
+    skyHorizonTint: '#FCD392',
+    fogTint: '#FDE6B8',
+    fogDensityMultiplier: 0.88,
+    godRayColor: '#FDE047',
+    godRayBoost: 0.15,
+    auroraBoost: 0.1,
+  },
+];
+
+export interface AtmosphericVisualProfile {
+  realmId: RealmId;
+  dayNightPhase: DayNightPhase;
+  localThemeName: string;
+  skyTopColor: string;
+  skyMidColor: string;
+  skyHorizonColor: string;
+  fogColor: string;
+  fogDensity: number;
+  sunColor: string;
+  sunIntensity: number;
+  sunDirection: { x: number; y: number; z: number };
+  hemiSkyColor: string;
+  hemiGroundColor: string;
+  hemiIntensity: number;
+  rimLightColor: string;
+  rimLightIntensity: number;
+  cloudColor: string;
+  cloudShadowColor: string;
+  godRayColor: string;
+  godRayOpacity: number;
+  starfieldIntensity: number;
+  auroraIntensity: number;
+  toneMappingExposure: number;
+}
+
+function parseHexToRgb01(hex: string): [number, number, number] {
+  const clean = hex.replace('#', '').trim();
+  const num = parseInt(clean.length === 3
+    ? clean.split('').map((c) => c + c).join('')
+    : clean.padEnd(6, '0').slice(0, 6), 16);
+  if (Number.isNaN(num)) return [0.8, 0.85, 0.9];
+  return [
+    ((num >> 16) & 255) / 255,
+    ((num >> 8) & 255) / 255,
+    (num & 255) / 255,
+  ];
+}
+
+function rgb01ToHex(r: number, g: number, b: number): string {
+  const clampByte = (v: number) => Math.max(0, Math.min(255, Math.round(v * 255)));
+  const hr = clampByte(r).toString(16).padStart(2, '0');
+  const hg = clampByte(g).toString(16).padStart(2, '0');
+  const hb = clampByte(b).toString(16).padStart(2, '0');
+  return `#${hr}${hg}${hb}`.toUpperCase();
+}
+
+/**
+ * Pure color interpolation helper that also softly desaturates overly neon hues
+ * so all realm and time-of-day transitions maintain a cohesive, gentle healing palette.
+ */
+export function blendHexColorsPure(
+  hexA: string,
+  hexB: string,
+  t: number,
+  maxSaturation = 0.82
+): string {
+  const clampedT = Math.max(0, Math.min(1, t));
+  const [rA, gA, bA] = parseHexToRgb01(hexA);
+  const [rB, gB, bB] = parseHexToRgb01(hexB);
+  let r = rA + (rB - rA) * clampedT;
+  let g = gA + (gB - gA) * clampedT;
+  let b = bA + (bB - bA) * clampedT;
+
+  // Softly tame excessive saturation so colors never look garish or neon
+  const maxC = Math.max(r, g, b);
+  const minC = Math.min(r, g, b);
+  const luma = 0.299 * r + 0.587 * g + 0.114 * b;
+  const sat = maxC > 0.001 ? (maxC - minC) / maxC : 0;
+  if (sat > maxSaturation) {
+    const pull = (sat - maxSaturation) * 0.55;
+    r = r + (luma - r) * pull;
+    g = g + (luma - g) * pull;
+    b = b + (luma - b) * pull;
+  }
+
+  return rgb01ToHex(r, g, b);
+}
+
+/**
+ * Pure function computing the complete Module 4 Atmospheric, Lighting, Sky, Fog & Post-Processing
+ * profile for any realm, time-of-day phase, and player 3D position.
+ */
+export function computeAtmosphericVisualProfilePure(
+  realmId: RealmId,
+  phase: DayNightPhase,
+  playerX = 0,
+  playerY = 1.2,
+  playerZ = 6,
+  inCloudBank = false
+): AtmosphericVisualProfile {
+  const realm = REALMS[realmId];
+  const atmo = getDayNightAtmosphere(phase);
+
+  // When phase === 'noon', preserve each realm's unique signature color palette;
+  // When phase !== 'noon' (morning, sunset, starry_night), blend 68% time-of-day atmosphere with 32% realm signature!
+  const phaseBlend = phase === 'noon' ? 0.0 : 0.68;
+
+  let skyTopColor = blendHexColorsPure(realm.skyTopColor, atmo.skyTopColor, phaseBlend, 0.78);
+  let skyHorizonColor = blendHexColorsPure(
+    realm.skyHorizonColor,
+    atmo.skyHorizonColor,
+    phaseBlend,
+    0.82
+  );
+  let fogColor = blendHexColorsPure(realm.fogColor, atmo.fogColor, phaseBlend, 0.80);
+  let sunColor = blendHexColorsPure(realm.sunColor, atmo.sunColor, phaseBlend, 0.75);
+  let hemiSkyColor = blendHexColorsPure(realm.hemiSkyColor, atmo.hemiSkyColor, phaseBlend, 0.78);
+  let hemiGroundColor = blendHexColorsPure(
+    realm.hemiGroundColor,
+    atmo.hemiGroundColor,
+    phaseBlend,
+    0.72
+  );
+  let cloudColor = blendHexColorsPure(realm.cloudColor, atmo.cloudColor, phaseBlend, 0.76);
+
+  let fogDensity =
+    realm.fogDensity * (1 - phaseBlend) + atmo.fogDensity * phaseBlend;
+  let rawSunIntensity =
+    realm.sunIntensity * (1 - phaseBlend) + atmo.sunIntensity * phaseBlend;
+
+  // Evaluate local sub-zone biome color theme
+  let localThemeName = `${realm.name.split('·')[0].trim()}·${atmo.label}`;
+  let godRayColor = blendHexColorsPure(sunColor, skyHorizonColor, 0.35, 0.78);
+  let godRayBoost = 0;
+  let auroraBoost = 0;
+
+  for (const biome of REGIONAL_BIOME_THEMES) {
+    const dist = Math.hypot(playerX - biome.x, playerZ - biome.z);
+    if (dist < biome.outerRadius) {
+      const rawT =
+        dist <= biome.innerRadius
+          ? 1.0
+          : 1.0 - (dist - biome.innerRadius) / Math.max(0.1, biome.outerRadius - biome.innerRadius);
+      const smoothT = rawT * rawT * (3 - 2 * rawT) * 0.62;
+      if (smoothT > 0.05) {
+        skyTopColor = blendHexColorsPure(skyTopColor, biome.skyTopTint, smoothT, 0.78);
+        skyHorizonColor = blendHexColorsPure(skyHorizonColor, biome.skyHorizonTint, smoothT, 0.80);
+        fogColor = blendHexColorsPure(fogColor, biome.fogTint, smoothT, 0.78);
+        fogDensity *= 1 + (biome.fogDensityMultiplier - 1) * smoothT;
+        godRayColor = blendHexColorsPure(godRayColor, biome.godRayColor, smoothT, 0.80);
+        godRayBoost += biome.godRayBoost * smoothT;
+        auroraBoost += biome.auroraBoost * smoothT;
+        if (smoothT > 0.25) {
+          localThemeName = biome.name;
+        }
+      }
+    }
+  }
+
+  // Ensure fogColor seamlessly harmonizes with skyHorizonColor for natural aerial perspective
+  fogColor = blendHexColorsPure(fogColor, skyHorizonColor, 0.42, 0.78);
+  const skyMidColor = blendHexColorsPure(skyTopColor, skyHorizonColor, 0.54, 0.78);
+  const cloudShadowColor = blendHexColorsPure(skyTopColor, hemiGroundColor, 0.38, 0.68);
+
+  // Altitude-based atmospheric thinning: high altitude views open up slightly while valleys retain cozy mist
+  const altitudeThinning = Math.max(0.76, Math.min(1.05, 1.0 - (playerY - 4.0) * 0.008));
+  fogDensity = Math.max(0.0022, Math.min(0.0072, fogDensity * altitudeThinning * 0.64));
+
+  // Sun direction shifts naturally across Morning -> Noon -> Sunset -> Starry Night
+  const rawSunPos =
+    phase === 'morning'
+      ? { x: 38, y: 24, z: -22 }
+      : phase === 'sunset'
+        ? { x: -36, y: 19, z: -32 }
+        : phase === 'starry_night'
+          ? { x: -18, y: 34, z: -38 }
+          : { x: 24, y: 42, z: -18 };
+  const sunLen = Math.hypot(rawSunPos.x, rawSunPos.y, rawSunPos.z) || 1;
+  const sunDirection = {
+    x: rawSunPos.x / sunLen,
+    y: rawSunPos.y / sunLen,
+    z: rawSunPos.z / sunLen,
+  };
+
+  // Clamp sun & hemisphere intensities so white/gold surfaces never clip or overexpose
+  const sunIntensity = Math.max(0.95, Math.min(1.88, rawSunIntensity * 0.78));
+  const hemiIntensity =
+    phase === 'starry_night' ? 0.58 : phase === 'sunset' ? 0.68 : 0.74;
+
+  const rimLightColor = blendHexColorsPure(skyHorizonColor, '#7DD3FC', 0.45, 0.76);
+  const rimLightIntensity = phase === 'starry_night' ? 0.48 : 0.62;
+
+  // Volumetric God-Ray opacity (stronger in dawn/dusk/forest/prairie shafts, softer at night)
+  const baseGodRay =
+    phase === 'starry_night'
+      ? 0.08
+      : phase === 'morning' || phase === 'sunset'
+        ? 0.24
+        : realmId === 'forest'
+          ? 0.26
+          : 0.18;
+  const godRayOpacity = Math.max(0.06, Math.min(0.36, baseGodRay + godRayBoost));
+
+  // Starfield & Aurora visibility
+  const starfieldIntensity =
+    phase === 'starry_night' || realmId === 'vault'
+      ? 0.95
+      : phase === 'sunset' || realmId === 'home' || realmId === 'eden'
+        ? 0.52
+        : phase === 'morning'
+          ? 0.25
+          : 0.08;
+
+  const baseAurora =
+    realmId === 'vault' || phase === 'starry_night'
+      ? 0.65
+      : realmId === 'home' || realmId === 'valley' || phase === 'sunset'
+        ? 0.38
+        : 0.12;
+  const auroraIntensity = Math.max(0, Math.min(1.0, baseAurora + auroraBoost));
+
+  // Highlight-Safe Filmic Exposure Adaptation (prevents overexposure in bright snow/clouds)
+  let baseExposure =
+    phase === 'starry_night'
+      ? 1.02
+      : phase === 'noon' && (realmId === 'prairie' || realmId === 'valley')
+        ? 0.90
+        : 0.94;
+  if (inCloudBank) {
+    baseExposure -= 0.04;
+  }
+  const toneMappingExposure = Math.max(0.84, Math.min(1.04, baseExposure));
+
+  return {
+    realmId,
+    dayNightPhase: phase,
+    localThemeName,
+    skyTopColor,
+    skyMidColor,
+    skyHorizonColor,
+    fogColor,
+    fogDensity,
+    sunColor,
+    sunIntensity,
+    sunDirection,
+    hemiSkyColor,
+    hemiGroundColor,
+    hemiIntensity,
+    rimLightColor,
+    rimLightIntensity,
+    cloudColor,
+    cloudShadowColor,
+    godRayColor,
+    godRayOpacity,
+    starfieldIntensity,
+    auroraIntensity,
+    toneMappingExposure,
+  };
+}
+
+/**
+ * Pure helper computing multi-layered vertex colors + analytical Ambient Occlusion (AO)
+ * for the 520x520m continent terrain so ground, slopes, shorelines, and cliffs have
+ * organic painterly gradation instead of a flat single-color plastic surface.
+ */
+export function computeTerrainVertexColorPure(
+  vx: number,
+  vy: number,
+  vz: number,
+  ny: number,
+  primaryHex: string,
+  secondaryHex: string,
+  horizonHex: string
+): [number, number, number] {
+  const [pR, pG, pB] = parseHexToRgb01(primaryHex);
+  const [sR, sG, sB] = parseHexToRgb01(secondaryHex);
+  const [hR, hG, hB] = parseHexToRgb01(horizonHex);
+
+  // 1. Organic spatial meadow dapple wave [0..1]
+  const meadowWave =
+    0.5 +
+    0.32 * Math.sin(vx * 0.075 + vz * 0.06) +
+    0.18 * Math.cos(vx * 0.19 - vz * 0.14);
+  let r = pR * (1 - meadowWave * 0.45) + sR * (meadowWave * 0.45);
+  let g = pG * (1 - meadowWave * 0.45) + sG * (meadowWave * 0.45);
+  let b = pB * (1 - meadowWave * 0.45) + sB * (meadowWave * 0.45);
+
+  // 2. Warm coastal sand / shallow shore transition near water level (vy < 0.72m)
+  if (vy < 0.72) {
+    const shoreT = Math.max(0, Math.min(1, (0.72 - vy) / 0.75));
+    const sandR = 0.84 * 0.7 + hR * 0.3;
+    const sandG = 0.76 * 0.7 + hG * 0.3;
+    const sandB = 0.62 * 0.7 + hB * 0.3;
+    r = r * (1 - shoreT * 0.65) + sandR * (shoreT * 0.65);
+    g = g * (1 - shoreT * 0.65) + sandG * (shoreT * 0.65);
+    b = b * (1 - shoreT * 0.65) + sandB * (shoreT * 0.65);
+  }
+
+  // 3. Steep cliff rock & high-altitude sunlit ridge highlights
+  const slopeSteepness = Math.max(0, Math.min(1, (0.88 - ny) / 0.42));
+  if (slopeSteepness > 0.02) {
+    // Warm weathered limestone-slate cliff tone
+    const rockR = 0.56 * 0.75 + hR * 0.25;
+    const rockG = 0.58 * 0.75 + hG * 0.25;
+    const rockB = 0.63 * 0.75 + hB * 0.25;
+    r = r * (1 - slopeSteepness * 0.7) + rockR * (slopeSteepness * 0.7);
+    g = g * (1 - slopeSteepness * 0.7) + rockG * (slopeSteepness * 0.7);
+    b = b * (1 - slopeSteepness * 0.7) + rockB * (slopeSteepness * 0.7);
+  }
+
+  if (vy > 3.6) {
+    const ridgeT = Math.max(0, Math.min(1, (vy - 3.6) / 11.0)) * 0.34;
+    r = r * (1 - ridgeT) + hR * ridgeT;
+    g = g * (1 - ridgeT) + hG * ridgeT;
+    b = b * (1 - ridgeT) + hB * ridgeT;
+  }
+
+  // 4. Analytical Ambient Occlusion (AO) in low hollows and around stone foundations
+  const distCenter = Math.hypot(vx, vz);
+  const distTemple = Math.hypot(vx, vz + 50);
+  let ao = 1.0;
+  if (distCenter < 8.4 && distCenter > 6.4) {
+    ao -= 0.12;
+  } else if (distTemple < 12.2 && distTemple > 9.2) {
+    ao -= 0.14;
+  }
+  if (ny < 0.82) {
+    ao -= (0.82 - ny) * 0.18;
+  }
+  ao = Math.max(0.76, Math.min(1.04, ao));
+
+  return [
+    Math.max(0.04, Math.min(0.98, r * ao)),
+    Math.max(0.04, Math.min(0.98, g * ao)),
+    Math.max(0.04, Math.min(0.98, b * ao)),
+  ];
+}
+
+// ============================================================================
+// MODULE 6 UPGRADE: ORIGINAL 4-TIER LUMINA SHARD COLLECTION, SECRET LANDMARKS
+// COMPENDIUM & EXPLORATION-DRIVEN GROWTH SYSTEM
+// ============================================================================
+
+export type LightShardTier =
+  | 'dew_glimmer'
+  | 'prism_crystal'
+  | 'nebula_core'
+  | 'aether_crown';
+
+export interface LightShardSpec {
+  id: string;
+  tier: LightShardTier;
+  tierLabel: string;
+  icon: string;
+  name: string;
+  zoneName: string;
+  loreHint: string;
+  x: number;
+  y: number;
+  z: number;
+  colorHex: string;
+  resonancePts: number;
+  waxValue: number;
+  firstCandlesBonus: number;
+  firstHeartsBonus: number;
+  firstAscendedBonus: number;
+  firstWingedLightBonus: number;
+  echoWaxValue: number; // Gentle repeat-visit echo wax when already collected in a previous session
+}
+
+export const LUMINA_SHARD_CATALOG: LightShardSpec[] = [
+  // Tier 1: 晨露微光碎片 (Dew Glimmer · 6 Shards along ground routes, meadows & bridges)
+  {
+    id: 'shard_dew_shrine_arch',
+    tier: 'dew_glimmer',
+    tierLabel: '晨露微光',
+    icon: '💧',
+    name: '晨露微光 · 迎宾石拱星滴',
+    zoneName: '蝴蝶平原 · 迎宾石拱门',
+    loreHint: '凝结在古石拱门脚下的第一滴破晓晨露，指引初醒旅人踏入花海。',
+    x: 2.8,
+    y: groundHeightAt(2.8, -8.0) + 1.05,
+    z: -8.0,
+    colorHex: '#FDE047',
+    resonancePts: 15,
+    waxValue: 35,
+    firstCandlesBonus: 1,
+    firstHeartsBonus: 0,
+    firstAscendedBonus: 0,
+    firstWingedLightBonus: 0,
+    echoWaxValue: 15,
+  },
+  {
+    id: 'shard_dew_reflection_pool',
+    tier: 'dew_glimmer',
+    tierLabel: '晨露微光',
+    icon: '💧',
+    name: '晨露微光 · 镜湖浅滩浮珠',
+    zoneName: '西侧 · 镜水浅滩池',
+    loreHint: '漂浮在清澈浅滩水面的微光水珠，随涟漪轻轻律动。',
+    x: -13.2,
+    y: groundHeightAt(-13.2, 1.5) + 1.05,
+    z: 1.5,
+    colorHex: '#FDE047',
+    resonancePts: 15,
+    waxValue: 35,
+    firstCandlesBonus: 1,
+    firstHeartsBonus: 0,
+    firstAscendedBonus: 0,
+    firstWingedLightBonus: 0,
+    echoWaxValue: 15,
+  },
+  {
+    id: 'shard_dew_aviary_teahouse',
+    tier: 'dew_glimmer',
+    tierLabel: '晨露微光',
+    icon: '💧',
+    name: '晨露微光 · 云巢茶歇暖星',
+    zoneName: '南境 · 云巢八角茶亭',
+    loreHint: '茶亭檐角垂落的一缕暖金微光，带着炉火与花茶的余温。',
+    x: -3.8,
+    y: groundHeightAt(-3.8, 26.5) + 1.1,
+    z: 26.5,
+    colorHex: '#FDE047',
+    resonancePts: 15,
+    waxValue: 35,
+    firstCandlesBonus: 1,
+    firstHeartsBonus: 0,
+    firstAscendedBonus: 0,
+    firstWingedLightBonus: 0,
+    echoWaxValue: 15,
+  },
+  {
+    id: 'shard_dew_creek_bridge',
+    tier: 'dew_glimmer',
+    tierLabel: '晨露微光',
+    icon: '💧',
+    name: '晨露微光 · 溪谷拱桥流萤',
+    zoneName: '西南 · 荧光蘑菇溪谷与古石拱桥',
+    loreHint: '古石拱桥桥洞旁聚集的流萤光滴，伴随潺潺水声闪烁。',
+    x: -22.5,
+    y: groundHeightAt(-22.5, 16.5) + 1.1,
+    z: 16.5,
+    colorHex: '#FDE047',
+    resonancePts: 15,
+    waxValue: 35,
+    firstCandlesBonus: 1,
+    firstHeartsBonus: 0,
+    firstAscendedBonus: 0,
+    firstWingedLightBonus: 0,
+    echoWaxValue: 15,
+  },
+  {
+    id: 'shard_dew_slide_crest',
+    tier: 'dew_glimmer',
+    tierLabel: '晨露微光',
+    icon: '💧',
+    name: '晨露微光 · 东岭滑道跃星',
+    zoneName: '东侧 · 陡坡起跳高台',
+    loreHint: '悬于东侧高台滑道顶端的微光星滴，鼓励旅人迎风助跑起跳。',
+    x: 23.5,
+    y: groundHeightAt(23.5, 0.0) + 1.2,
+    z: 0.0,
+    colorHex: '#FDE047',
+    resonancePts: 15,
+    waxValue: 35,
+    firstCandlesBonus: 1,
+    firstHeartsBonus: 0,
+    firstAscendedBonus: 0,
+    firstWingedLightBonus: 0,
+    echoWaxValue: 15,
+  },
+  {
+    id: 'shard_dew_temple_steps',
+    tier: 'dew_glimmer',
+    tierLabel: '晨露微光',
+    icon: '💧',
+    name: '晨露微光 · 神殿石阶引路光',
+    zoneName: '北境 · 长老神庙石阶',
+    loreHint: '静候在长老神庙长阶前的守望星滴，见证旅人一路前行的足迹。',
+    x: 2.5,
+    y: groundHeightAt(2.5, -38.0) + 1.15,
+    z: -38.0,
+    colorHex: '#FDE047',
+    resonancePts: 15,
+    waxValue: 35,
+    firstCandlesBonus: 1,
+    firstHeartsBonus: 0,
+    firstAscendedBonus: 0,
+    firstWingedLightBonus: 0,
+    echoWaxValue: 15,
+  },
+
+  // Tier 2: 星棱晶簇碎片 (Prism Crystal · 4 Shards in caverns, ruins & towers)
+  {
+    id: 'shard_prism_echo_cavern',
+    tier: 'prism_crystal',
+    tierLabel: '星棱晶簇',
+    icon: '💎',
+    name: '星棱晶簇 · 幽谷回音翠晶',
+    zoneName: '幽光洞窟 · 晶石秘境',
+    loreHint: '洞窟深处共鸣生长的冷翠棱晶，靠近时会发出清澈的空谷泛音。',
+    x: -19.5,
+    y: groundHeightAt(-19.5, -18.0) + 1.35,
+    z: -18.0,
+    colorHex: '#38BDF8',
+    resonancePts: 30,
+    waxValue: 60,
+    firstCandlesBonus: 2,
+    firstHeartsBonus: 0,
+    firstAscendedBonus: 0,
+    firstWingedLightBonus: 0,
+    echoWaxValue: 20,
+  },
+  {
+    id: 'shard_prism_bell_belfry',
+    tier: 'prism_crystal',
+    tierLabel: '星棱晶簇',
+    icon: '💎',
+    name: '星棱晶簇 · 三塔钟鸣琉璃',
+    zoneName: '三塔钟楼村落',
+    loreHint: '受三塔古钟声波凝聚而成的琉璃棱晶，折射着晴空与云海的流光。',
+    x: 18.2,
+    y: groundHeightAt(18.2, -25.5) + 1.4,
+    z: -25.5,
+    colorHex: '#38BDF8',
+    resonancePts: 30,
+    waxValue: 60,
+    firstCandlesBonus: 2,
+    firstHeartsBonus: 0,
+    firstAscendedBonus: 0,
+    firstWingedLightBonus: 0,
+    echoWaxValue: 20,
+  },
+  {
+    id: 'shard_prism_fallen_colossus',
+    tier: 'prism_crystal',
+    tierLabel: '星棱晶簇',
+    icon: '💎',
+    name: '星棱晶簇 · 守望巨人掌心晶',
+    zoneName: '遗落巨人山谷 · 守望者残像',
+    loreHint: '倾颓的远古守望石像历经千年仍护在掌心的不灭星棱晶簇。',
+    x: -25.0,
+    y: groundHeightAt(-25.0, -4.5) + 1.45,
+    z: -4.5,
+    colorHex: '#38BDF8',
+    resonancePts: 30,
+    waxValue: 60,
+    firstCandlesBonus: 2,
+    firstHeartsBonus: 0,
+    firstAscendedBonus: 0,
+    firstWingedLightBonus: 0,
+    echoWaxValue: 20,
+  },
+  {
+    id: 'shard_prism_broken_aqueduct',
+    tier: 'prism_crystal',
+    tierLabel: '星棱晶簇',
+    icon: '💎',
+    name: '星棱晶簇 · 云海断桥引航晶',
+    zoneName: '云海断桥遗迹 · 引星渡槽',
+    loreHint: '悬浮于断裂渡槽尽头的引航棱晶，指向东侧高空断桥浮屿。',
+    x: 31.5,
+    y: groundHeightAt(31.5, -12.5) + 2.2,
+    z: -12.5,
+    colorHex: '#38BDF8',
+    resonancePts: 30,
+    waxValue: 60,
+    firstCandlesBonus: 2,
+    firstHeartsBonus: 0,
+    firstAscendedBonus: 0,
+    firstWingedLightBonus: 0,
+    echoWaxValue: 20,
+  },
+
+  // Tier 3: 云海星核碎片 (Nebula Core · 4 Shards on floating islands & sanctuaries)
+  {
+    id: 'shard_nebula_west_step_1',
+    tier: 'nebula_core',
+    tierLabel: '云海星核',
+    icon: '🔮',
+    name: '云海星核 · 西境一阶微风核',
+    zoneName: '西境云阶浮岛 · 一阶微风台',
+    loreHint: '托举西境第一级浮空岛的旋转星云核心，蕴含丰沛的高空风能。',
+    x: -30.5,
+    y: 9.5 + 1.5,
+    z: -27.0,
+    colorHex: '#C084FC',
+    resonancePts: 50,
+    waxValue: 80,
+    firstCandlesBonus: 2,
+    firstHeartsBonus: 1,
+    firstAscendedBonus: 0,
+    firstWingedLightBonus: 0,
+    echoWaxValue: 25,
+  },
+  {
+    id: 'shard_nebula_nw_step_2',
+    tier: 'nebula_core',
+    tierLabel: '云海星核',
+    icon: '🔮',
+    name: '云海星核 · 西北流云飞瀑核',
+    zoneName: '西北云海浮岛 · 二阶流云屿',
+    loreHint: '在海拔 14.8m 悬空飞瀑源头流转的星核，吸收后可令斗篷流光溢彩。',
+    x: -46.5,
+    y: 14.8 + 1.5,
+    z: -52.5,
+    colorHex: '#C084FC',
+    resonancePts: 50,
+    waxValue: 80,
+    firstCandlesBonus: 2,
+    firstHeartsBonus: 1,
+    firstAscendedBonus: 0,
+    firstWingedLightBonus: 0,
+    echoWaxValue: 25,
+  },
+  {
+    id: 'shard_nebula_east_canyon',
+    tier: 'nebula_core',
+    tierLabel: '云海星核',
+    icon: '🔮',
+    name: '云海星核 · 东境断桥飞跃核',
+    zoneName: '东境云谷断桥浮屿 · 飞跃跳板',
+    loreHint: '衔接东岭与圣岛群峰的空中星核，记录着远古翼族横跨裂谷的航迹。',
+    x: 43.2,
+    y: 11.2 + 1.5,
+    z: -5.2,
+    colorHex: '#C084FC',
+    resonancePts: 50,
+    waxValue: 80,
+    firstCandlesBonus: 2,
+    firstHeartsBonus: 1,
+    firstAscendedBonus: 0,
+    firstWingedLightBonus: 0,
+    echoWaxValue: 25,
+  },
+  {
+    id: 'shard_nebula_sanctuary_geyser',
+    tier: 'nebula_core',
+    tierLabel: '云海星核',
+    icon: '🔮',
+    name: '云海星核 · 圣岛海螺潮汐核',
+    zoneName: '圣岛 · 海螺间歇泉群岛',
+    loreHint: '与圣岛白鲸歌声共鸣的潮汐星核，散发着晴海与暖霞交融的辉光。',
+    x: 50.0,
+    y: groundHeightAt(50.0, -26.5) + 1.5,
+    z: -26.5,
+    colorHex: '#C084FC',
+    resonancePts: 50,
+    waxValue: 80,
+    firstCandlesBonus: 2,
+    firstHeartsBonus: 1,
+    firstAscendedBonus: 0,
+    firstWingedLightBonus: 0,
+    echoWaxValue: 25,
+  },
+
+  // Tier 4: 苍穹王冠圣辉 (Aether Crown · 2 Apex Shards at high-altitude summits)
+  {
+    id: 'shard_aether_celestial_crown',
+    tier: 'aether_crown',
+    tierLabel: '苍穹圣辉',
+    icon: '👑',
+    name: '苍穹圣辉 · 云端天星浑天冕',
+    zoneName: '云端天星观景浮岛 · 秘境穹顶',
+    loreHint: '悬浮于海拔 21.5m 天星观景台浑天仪中心的至高圣辉，赐予永久翼阶成长与升华洗礼。',
+    x: -28.0,
+    y: 21.5 + 1.85,
+    z: -78.2,
+    colorHex: '#F472B6',
+    resonancePts: 85,
+    waxValue: 100,
+    firstCandlesBonus: 3,
+    firstHeartsBonus: 2,
+    firstAscendedBonus: 2,
+    firstWingedLightBonus: 1,
+    echoWaxValue: 35,
+  },
+  {
+    id: 'shard_aether_sundial_zenith',
+    tier: 'aether_crown',
+    tierLabel: '苍穹圣辉',
+    icon: '👑',
+    name: '苍穹圣辉 · 远古日晷天顶冕',
+    zoneName: '正南中域 · 远古日晷八星柱剧场',
+    loreHint: '在八星柱日晷方尖碑正上方凝聚的太阳圣辉，象征星光王国的永恒盟约。',
+    x: 0.0,
+    y: groundHeightAt(0.0, 62.0) + 2.2,
+    z: 60.2,
+    colorHex: '#F472B6',
+    resonancePts: 85,
+    waxValue: 100,
+    firstCandlesBonus: 3,
+    firstHeartsBonus: 2,
+    firstAscendedBonus: 2,
+    firstWingedLightBonus: 1,
+    echoWaxValue: 35,
+  },
+];
+
+export interface SecretLandmarkCompendiumEntry {
+  id: string;
+  name: string;
+  category: 'floating_island' | 'story_mural';
+  subtitle: string;
+  x: number;
+  y: number;
+  z: number;
+  discoverRadius: number;
+  resonanceRewardPts: number;
+}
+
+export const SECRET_EXPLORATION_LANDMARKS: SecretLandmarkCompendiumEntry[] = [
+  ...FLOATING_SKY_ISLANDS.map((isl) => ({
+    id: isl.id,
+    name: isl.name,
+    category: 'floating_island' as const,
+    subtitle: isl.subtitle,
+    x: isl.x,
+    y: isl.y,
+    z: isl.z,
+    discoverRadius: isl.outerRadius,
+    resonanceRewardPts: 25,
+  })),
+  ...ANCIENT_STORY_MURALS.filter(
+    (m) => m.id !== 'mural_celestial_stargazer_crown'
+  ).map((m) => ({
+    id: m.id,
+    name: m.zoneName,
+    category: 'story_mural' as const,
+    subtitle: m.visualStoryTheme,
+    x: m.x,
+    y: m.y,
+    z: m.z,
+    discoverRadius: m.radius,
+    resonanceRewardPts: 25,
+  })),
+  {
+    id: 'mural_celestial_stargazer_crown',
+    name: '失落观星圣坛 · 苍穹浑天仪碑',
+    category: 'story_mural',
+    subtitle: '高空浮岛之巅的古老浑天仪与观星石座，无字诉说星辰王国的辉煌历史',
+    x: -28.0,
+    y: 21.5,
+    z: -80.0,
+    discoverRadius: 6.8,
+    resonanceRewardPts: 30,
+  },
+];
+
+export interface NearbyLuminaShardEvaluation {
+  nearestShard: LightShardSpec | null;
+  distance3d: number;
+  isAlreadyCollected: boolean;
+  isWithinVisualHintRadius: boolean; // <= 14.5m soft proximity visual hint
+  isWithinCollectRadius: boolean; // <= 2.65m automatic magnetic absorption
+  proximityIntensity: number; // 0..1 smooth pulse intensity
+}
+
+/**
+ * Pure helper evaluating proximity to the 16 Lumina Shards across the world:
+ * - Within 14.5m: triggers soft proximity visual hint (glowing tether / HUD resonance pulse)
+ * - Within 2.65m: triggers magnetic absorption (or repeat-session echo resonance if not yet echoed this session)
+ */
+export function evaluateNearbyLuminaShardPure(
+  px: number,
+  py: number,
+  pz: number,
+  collectedShardIds: string[],
+  sessionEchoedShardIds: string[] = []
+): NearbyLuminaShardEvaluation {
+  let bestShard: LightShardSpec | null = null;
+  let bestScoreDist = Infinity;
+  let bestRawDist = Infinity;
+
+  for (const shard of LUMINA_SHARD_CATALOG) {
+    const isCollected = collectedShardIds.includes(shard.id);
+    const isEchoedThisSession = sessionEchoedShardIds.includes(shard.id);
+    if (isCollected && isEchoedThisSession) {
+      continue;
+    }
+
+    const dx = shard.x - px;
+    const dy = shard.y - (py + 1.0);
+    const dz = shard.z - pz;
+    const rawDist = Math.hypot(dx, dy, dz);
+    // Prioritize uncollected shards slightly when distances are similar
+    const scoreDist = isCollected ? rawDist + 3.0 : rawDist;
+    if (scoreDist < bestScoreDist) {
+      bestScoreDist = scoreDist;
+      bestRawDist = rawDist;
+      bestShard = shard;
+    }
+  }
+
+  if (!bestShard) {
+    return {
+      nearestShard: null,
+      distance3d: Infinity,
+      isAlreadyCollected: false,
+      isWithinVisualHintRadius: false,
+      isWithinCollectRadius: false,
+      proximityIntensity: 0,
+    };
+  }
+
+  const isAlreadyCollected = collectedShardIds.includes(bestShard.id);
+  const hintRadius = 11.5;
+  const collectRadius = 2.65;
+  const isWithinVisualHintRadius = bestRawDist <= hintRadius;
+  const isWithinCollectRadius = bestRawDist <= collectRadius;
+  const proximityIntensity = isWithinVisualHintRadius
+    ? Math.max(0.08, Math.min(1.0, 1.0 - (bestRawDist - collectRadius) / (hintRadius - collectRadius)))
+    : 0;
+
+  return {
+    nearestShard: bestShard,
+    distance3d: Number(bestRawDist.toFixed(2)),
+    isAlreadyCollected,
+    isWithinVisualHintRadius,
+    isWithinCollectRadius,
+    proximityIntensity: Number(proximityIntensity.toFixed(3)),
+  };
+}
+
+/**
+ * Pure helper checking if the player has just entered an undiscovered Secret Exploration Landmark.
+ */
+export function findNewlyDiscoveredSecretLandmarkAtPure(
+  px: number,
+  py: number,
+  pz: number,
+  discoveredSecretZoneIds: string[]
+): SecretLandmarkCompendiumEntry | null {
+  for (const entry of SECRET_EXPLORATION_LANDMARKS) {
+    if (discoveredSecretZoneIds.includes(entry.id)) continue;
+    const distXZ = Math.hypot(px - entry.x, pz - entry.z);
+    const altDiff = Math.abs(py - entry.y);
+    if (distXZ <= entry.discoverRadius && altDiff <= 6.5) {
+      return entry;
+    }
+  }
+  return null;
+}
+
+// ============================================================================
+// MODULE 8 UPGRADE: PLAYER SOCIAL, CO-OP MECHANISMS, PARTNER FOLLOW & NETWORK HONESTY
+// (Strict Distinction Between Real Online Players vs. Local AI Companions,
+//  Contextual Proximity Social Prompts, Multi-Player Co-op Mechanisms,
+//  Partner Follow Mode, and Shared Scenic / Emotional Resonance)
+// ============================================================================
+
+export interface SocialPeerSnapshot {
+  playerId: string;
+  name: string;
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  grounded?: boolean;
+  flightMode?: 'hover' | 'glide';
+  sitMode?: string;
+  activeEmote?: string | null;
+  isBot: boolean;
+}
+
+export type ProximityQuickActionType =
+  | 'ignite'
+  | 'wave_greet'
+  | 'dance'
+  | 'sit_together'
+  | 'friend_request'
+  | 'high_five'
+  | 'hug'
+  | 'hand_hold'
+  | 'follow_partner';
+
+export interface NearbySocialPeerEvaluation {
+  nearestPeer: SocialPeerSnapshot | null;
+  distance3d: number;
+  isWithinPromptRadius: boolean; // <= 4.5m triggers contextual non-intrusive HUD prompt
+  peerSourceType: 'real_online_player' | 'local_ai_companion' | null;
+  peerSourceBadge: string;
+  ignited: boolean;
+  isFriend: boolean;
+  unlockLevel: number;
+  displayName: string;
+  availableQuickActions: ProximityQuickActionType[];
+}
+
+/**
+ * Pure helper evaluating the closest unblocked traveler within `promptRadius` (default 4.5m).
+ * Strictly distinguishes real WebSocket/BroadcastChannel online players (`!peer.isBot`)
+ * from local single-player AI companions (`peer.isBot`).
+ */
+export function evaluateNearbySocialPeerPure(
+  px: number,
+  py: number,
+  pz: number,
+  peers: SocialPeerSnapshot[],
+  friendsMap: Record<
+    string,
+    {
+      nickname?: string;
+      ignited?: boolean;
+      isFriend?: boolean;
+      unlockLevel?: number;
+    }
+  > = {},
+  blockedIds: string[] = [],
+  promptRadius = 4.5
+): NearbySocialPeerEvaluation {
+  let bestPeer: SocialPeerSnapshot | null = null;
+  let bestDist = Infinity;
+
+  for (const peer of peers) {
+    if (blockedIds.includes(peer.playerId)) continue;
+    const dx = peer.x - px;
+    const dy = (peer.y || 0) - py;
+    const dz = peer.z - pz;
+    const dist = Math.hypot(dx, dy * 0.5, dz);
+    // Slightly prioritize real online players if at identical distance
+    const scoreDist = peer.isBot ? dist : dist - 0.15;
+    if (scoreDist < bestDist) {
+      bestDist = dist;
+      bestPeer = peer;
+    }
+  }
+
+  if (!bestPeer || bestDist > promptRadius) {
+    return {
+      nearestPeer: null,
+      distance3d: bestPeer ? Number(bestDist.toFixed(2)) : Infinity,
+      isWithinPromptRadius: false,
+      peerSourceType: null,
+      peerSourceBadge: '',
+      ignited: false,
+      isFriend: false,
+      unlockLevel: 0,
+      displayName: '',
+      availableQuickActions: [],
+    };
+  }
+
+  const record = friendsMap[bestPeer.playerId];
+  const ignited = Boolean(record?.ignited);
+  const isFriend = Boolean(record?.isFriend);
+  const unlockLevel = record?.unlockLevel ?? (isFriend ? 1 : 0);
+  const peerSourceType = bestPeer.isBot
+    ? 'local_ai_companion'
+    : 'real_online_player';
+  const peerSourceBadge = bestPeer.isBot
+    ? '🤖 本地AI旅伴'
+    : '🌐 真实联机玩家';
+  const displayName = ignited
+    ? record?.nickname || bestPeer.name
+    : '未点亮的陌生旅人 (心火剪影)';
+
+  const actions: ProximityQuickActionType[] = [];
+  if (!ignited) {
+    actions.push('ignite', 'wave_greet');
+  } else {
+    actions.push('wave_greet', 'dance', 'sit_together', 'follow_partner');
+    if (!isFriend) {
+      actions.push('friend_request');
+    } else {
+      actions.push('hand_hold', 'high_five', 'hug');
+    }
+  }
+
+  return {
+    nearestPeer: bestPeer,
+    distance3d: Number(bestDist.toFixed(2)),
+    isWithinPromptRadius: true,
+    peerSourceType,
+    peerSourceBadge,
+    ignited,
+    isFriend,
+    unlockLevel,
+    displayName,
+    availableQuickActions: actions,
+  };
+}
+
+export interface CoopMechanismEvaluation {
+  mechanismId: string;
+  mechanismName: string;
+  participantCount: number;
+  requiredParticipants: number;
+  canActivate: boolean;
+  chargeProgress01: number;
+  realHumanParticipants: number;
+  aiCompanionParticipants: number;
+  participantLabels: string[];
+  statusHint: string;
+}
+
+/**
+ * Pure helper evaluating multi-player / companion co-op mechanism readiness (`coop_door`).
+ * Counts both real connected players and summoned AI companions standing within `activationRadius` (default 5.8m).
+ */
+export function evaluateCoopMechanismPure(
+  px: number,
+  py: number,
+  pz: number,
+  mechanism: { id: string; name: string; x: number; y: number; z: number },
+  peers: SocialPeerSnapshot[],
+  requiredParticipants = 2,
+  activationRadius = 5.8
+): CoopMechanismEvaluation {
+  const localDist = Math.hypot(px - mechanism.x, pz - mechanism.z);
+  const localInRange = localDist <= activationRadius;
+
+  let realHumanParticipants = localInRange ? 1 : 0;
+  let aiCompanionParticipants = 0;
+  const participantLabels: string[] = [];
+
+  if (localInRange) {
+    participantLabels.push('你 [🌐 本地玩家]');
+  }
+
+  for (const peer of peers) {
+    const d = Math.hypot(peer.x - mechanism.x, peer.z - mechanism.z);
+    if (d <= activationRadius) {
+      if (peer.isBot) {
+        aiCompanionParticipants += 1;
+        participantLabels.push(`${peer.name} [🤖 本地AI旅伴]`);
+      } else {
+        realHumanParticipants += 1;
+        participantLabels.push(`${peer.name} [🌐 真实联机玩家]`);
+      }
+    }
+  }
+
+  const participantCount = realHumanParticipants + aiCompanionParticipants;
+  const canActivate = participantCount >= requiredParticipants;
+  const chargeProgress01 = Number(
+    Math.min(1, participantCount / Math.max(1, requiredParticipants)).toFixed(2)
+  );
+
+  const statusHint = canActivate
+    ? `✦ 双人星芒共鸣已就绪 (${participantCount}/${requiredParticipants} 人) · 按 [E] 协力开启「${mechanism.name}」！`
+    : `⏳ 需 ${requiredParticipants} 名旅人同时就位 (${participantCount}/${requiredParticipants} 人) · 点击「🔔 呼唤旅伴协力」或等待联机好友靠近`;
+
+  return {
+    mechanismId: mechanism.id,
+    mechanismName: mechanism.name,
+    participantCount,
+    requiredParticipants,
+    canActivate,
+    chargeProgress01,
+    realHumanParticipants,
+    aiCompanionParticipants,
+    participantLabels,
+    statusHint,
+  };
+}
+
+export interface SharedEmotionalMomentEvaluation {
+  active: boolean;
+  momentType:
+    | 'none'
+    | 'shared_bench'
+    | 'shared_hand_hold_flight'
+    | 'shared_scenic_vista'
+    | 'shared_music_duet';
+  title: string;
+  subtitle: string;
+  partnerName: string;
+  partnerIsBot: boolean;
+  wingRechargeBonusPerSec: number;
+  waxBonusOnce: number;
+}
+
+/**
+ * Pure helper evaluating warm emotional co-experiences (co-sitting on bench, hand-hold flight,
+ * co-viewing a Scenic Vista, or musical duet harmony) with an ignited partner within 4.8m.
+ */
+export function evaluateSharedEmotionalMomentPure(
+  px: number,
+  py: number,
+  pz: number,
+  sitMode: string,
+  dualActionMode: 'none' | 'hand_hold' | 'carry',
+  inScenicVistaName: string | null,
+  isPlayingMusicOrDance: boolean,
+  peers: SocialPeerSnapshot[],
+  friendsMap: Record<string, { nickname?: string; ignited?: boolean; isFriend?: boolean }> = {}
+): SharedEmotionalMomentEvaluation {
+  let closestIgnitedPeer: SocialPeerSnapshot | null = null;
+  let bestDist = Infinity;
+
+  for (const peer of peers) {
+    const rec = friendsMap[peer.playerId];
+    if (!rec?.ignited && !rec?.isFriend) continue;
+    const d = Math.hypot(peer.x - px, peer.z - pz);
+    if (d <= 4.8 && d < bestDist) {
+      bestDist = d;
+      closestIgnitedPeer = peer;
+    }
+  }
+
+  if (!closestIgnitedPeer) {
+    return {
+      active: false,
+      momentType: 'none',
+      title: '',
+      subtitle: '',
+      partnerName: '',
+      partnerIsBot: false,
+      wingRechargeBonusPerSec: 0,
+      waxBonusOnce: 0,
+    };
+  }
+
+  const partnerName =
+    friendsMap[closestIgnitedPeer.playerId]?.nickname || closestIgnitedPeer.name;
+  const roleTag = closestIgnitedPeer.isBot ? '🤖 AI旅伴' : '🌐 联机好友';
+
+  if (dualActionMode === 'hand_hold' || dualActionMode === 'carry') {
+    return {
+      active: true,
+      momentType: 'shared_hand_hold_flight',
+      title: '🤝 并肩同行 · 心火共飞',
+      subtitle: `正与 ${partnerName} (${roleTag}) 同步翱翔 · 翼能互助持续恢复中`,
+      partnerName,
+      partnerIsBot: closestIgnitedPeer.isBot,
+      wingRechargeBonusPerSec: 1.45,
+      waxBonusOnce: 15,
+    };
+  }
+
+  if (sitMode === 'sit_bench') {
+    return {
+      active: true,
+      momentType: 'shared_bench',
+      title: '🪑 长椅夜话 · 烛光静坐',
+      subtitle: `与 ${partnerName} (${roleTag}) 同坐石椅共赏云海 · 自由密语已开启`,
+      partnerName,
+      partnerIsBot: closestIgnitedPeer.isBot,
+      wingRechargeBonusPerSec: 1.6,
+      waxBonusOnce: 20,
+    };
+  }
+
+  if (isPlayingMusicOrDance) {
+    return {
+      active: true,
+      momentType: 'shared_music_duet',
+      title: '🎵 星光和鸣 · 共舞同欢',
+      subtitle: `与 ${partnerName} (${roleTag}) 心意相通合奏共舞 · 传递温暖微光`,
+      partnerName,
+      partnerIsBot: closestIgnitedPeer.isBot,
+      wingRechargeBonusPerSec: 1.35,
+      waxBonusOnce: 15,
+    };
+  }
+
+  if (inScenicVistaName || sitMode === 'sit_ground') {
+    const vistaTitle = inScenicVistaName
+      ? inScenicVistaName.split('·')[0].trim()
+      : '云海静谧草坡';
+    return {
+      active: true,
+      momentType: 'shared_scenic_vista',
+      title: `✨ 共赏胜景 · ${vistaTitle}`,
+      subtitle: `与 ${partnerName} (${roleTag}) 并肩眺望远方奇观 · 心火共鸣加成`,
+      partnerName,
+      partnerIsBot: closestIgnitedPeer.isBot,
+      wingRechargeBonusPerSec: 1.25,
+      waxBonusOnce: 20,
+    };
+  }
+
+  return {
+    active: false,
+    momentType: 'none',
+    title: '',
+    subtitle: '',
+    partnerName: '',
+    partnerIsBot: false,
+    wingRechargeBonusPerSec: 0,
+    waxBonusOnce: 0,
+  };
+}
+
+/**
+ * Pure helper stepping the local player when in Partner Follow Mode (`🧭 跟随伙伴探索`).
+ * Smoothly guides the player behind/beside the followed leader and automatically cancels
+ * if the player provides manual directional input (`manualInputMagnitude > 0.15`).
+ */
+export function computeFollowerStepPure(
+  follower: { x: number; y: number; z: number; yaw: number },
+  leader: {
+    x: number;
+    y: number;
+    z: number;
+    yaw: number;
+    grounded?: boolean;
+    flightMode?: 'hover' | 'glide';
+  },
+  manualInputMagnitude: number,
+  dt: number
+): {
+  cancelledByInput: boolean;
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  grounded: boolean;
+  flightMode: 'hover' | 'glide';
+} {
+  if (manualInputMagnitude > 0.15) {
+    return {
+      cancelledByInput: true,
+      x: follower.x,
+      y: follower.y,
+      z: follower.z,
+      yaw: follower.yaw,
+      grounded: leader.grounded ?? true,
+      flightMode: leader.flightMode ?? 'hover',
+    };
+  }
+
+  const safeDt = Math.min(0.1, Math.max(0.001, dt));
+  const trailDist = 1.65;
+  const targetX = leader.x - Math.sin(leader.yaw) * trailDist;
+  const targetZ = leader.z - Math.cos(leader.yaw) * trailDist;
+  const targetY =
+    leader.grounded === false ? leader.y : groundHeightAt(targetX, targetZ);
+
+  const alpha = 1 - Math.exp(-8.5 * safeDt);
+  const nextX = follower.x + (targetX - follower.x) * alpha;
+  const nextY = follower.y + (targetY - follower.y) * alpha;
+  const nextZ = follower.z + (targetZ - follower.z) * alpha;
+
+  const dx = leader.x - nextX;
+  const dz = leader.z - nextZ;
+  const desiredYaw = Math.hypot(dx, dz) > 0.05 ? Math.atan2(dx, dz) : leader.yaw;
+  const diffYaw = Math.atan2(
+    Math.sin(desiredYaw - follower.yaw),
+    Math.cos(desiredYaw - follower.yaw)
+  );
+  const nextYaw = follower.yaw + diffYaw * alpha;
+
+  return {
+    cancelledByInput: false,
+    x: nextX,
+    y: nextY,
+    z: nextZ,
+    yaw: nextYaw,
+    grounded: leader.grounded ?? true,
+    flightMode: leader.flightMode ?? 'hover',
+  };
+}
+
+/**
+ * Pure helper for idempotent network event deduplication across WebSocket + BroadcastChannel
+ * or reconnect flushes so emotes, calls, chat, and co-op activations never double-trigger.
+ */
+export function deduplicateNetworkEventPure(
+  eventId: string | undefined,
+  seenEventIds: string[],
+  maxRingBufferSize = 120
+): {
+  isDuplicate: boolean;
+  nextSeenEventIds: string[];
+} {
+  if (!eventId) {
+    return { isDuplicate: false, nextSeenEventIds: seenEventIds };
+  }
+  if (seenEventIds.includes(eventId)) {
+    return { isDuplicate: true, nextSeenEventIds: seenEventIds };
+  }
+  const next = [...seenEventIds, eventId];
+  if (next.length > maxRingBufferSize) {
+    next.splice(0, next.length - maxRingBufferSize);
+  }
+  return { isDuplicate: false, nextSeenEventIds: next };
+}
+
+// ============================================================================
+// MODULE 9 (EIGHTH MODULE): UI & INTERACTION EXPERIENCE PURE HELPERS
+// ============================================================================
+
+export type ActiveInputDeviceType = 'keyboard' | 'gamepad' | 'touch';
+
+export type ContextualHintCategory =
+  | 'none'
+  | 'collect'
+  | 'interact'
+  | 'coop'
+  | 'social'
+  | 'flight_dive'
+  | 'flight_glide'
+  | 'flight_hover'
+  | 'walk_run'
+  | 'sit';
+
+export interface ContextualControlHintEvaluation {
+  visible: boolean;
+  category: ContextualHintCategory;
+  icon: string;
+  primaryText: string;
+  keybindLabel: string;
+  opacity01: number;
+  isEphemeralTimedOut: boolean;
+}
+
+/**
+ * Pure helper evaluating contextual, state-driven operation hints (walking, flying, diving,
+ * interacting, collecting, co-op, and sitting).
+ * Enforces the anti-permanence rule: continuous locomotion/idle hints automatically fade out
+ * after `maxDisplaySec` (default 4.2s) in the same state so hints never stay permanently
+ * burned into the screen.
+ */
+export function evaluateContextualControlHintPure(params: {
+  grounded: boolean;
+  locomotionMode: string;
+  flightMode: 'hover' | 'glide';
+  isDiving: boolean;
+  sitMode: string;
+  wingEnergy: number;
+  inWindTunnel?: boolean;
+  nearestInteractable?: { id: string; name: string; type: string } | null;
+  nearbyLuminaShard?: {
+    isWithinVisualHintRadius: boolean;
+    nearestShard: { id: string; name: string; tierLabel: string } | null;
+    isAlreadyCollected: boolean;
+  } | null;
+  nearbySocialPeer?: {
+    isWithinPromptRadius: boolean;
+    displayName: string;
+    ignited: boolean;
+  } | null;
+  coopEval?: {
+    mechanismName: string;
+    canActivate: boolean;
+    participantCount: number;
+    requiredParticipants: number;
+  } | null;
+  stateAgeSec: number;
+  inputDevice?: ActiveInputDeviceType;
+  maxDisplaySec?: number;
+}): ContextualControlHintEvaluation {
+  const device = params.inputDevice || 'keyboard';
+  const maxSec = params.maxDisplaySec ?? 4.2;
+
+  const keyInteract =
+    device === 'gamepad' ? '[X / ⬜]' : device === 'touch' ? '[点击按钮]' : '[E / F]';
+  const keyFlap =
+    device === 'gamepad' ? '[A / ✕]' : device === 'touch' ? '[点击振翅]' : '[Space]';
+  const keyFlightToggle =
+    device === 'gamepad' ? '[RB / R1]' : device === 'touch' ? '[切换模式]' : '[Shift]';
+  const keyDive =
+    device === 'gamepad' ? '[B / ◯]' : device === 'touch' ? '[按住俯冲]' : '[X]';
+  const keyCall =
+    device === 'gamepad' ? '[Y / △]' : device === 'touch' ? '[点击呼唤]' : '[Q]';
+  const keyMove =
+    device === 'gamepad' ? '[左摇杆]' : device === 'touch' ? '[左下摇杆]' : '[WASD]';
+
+  //Compute ephemeral fade for steady states (fades smoothly between maxSec - 1.0 and maxSec)
+  const isTimedOut = params.stateAgeSec > maxSec;
+  const steadyOpacity = isTimedOut
+    ? 0
+    : params.stateAgeSec > maxSec - 1.0
+      ? Number(Math.max(0, maxSec - params.stateAgeSec).toFixed(2))
+      : 1;
+
+  // 1. Highest priority: Co-op mechanism right in front of the player
+  if (params.coopEval) {
+    if (params.coopEval.canActivate) {
+      return {
+        visible: true,
+        category: 'coop',
+        icon: '✨',
+        primaryText: `双人星芒共鸣已满 (${params.coopEval.participantCount}/${params.coopEval.requiredParticipants}) · 开启「${params.coopEval.mechanismName}」`,
+        keybindLabel: `${keyInteract} 协力开启`,
+        opacity01: 1,
+        isEphemeralTimedOut: false,
+      };
+    }
+    return {
+      visible: !isTimedOut,
+      category: 'coop',
+      icon: '🚪',
+      primaryText: `靠近「${params.coopEval.mechanismName}」· 需 ${params.coopEval.requiredParticipants} 人同时就位`,
+      keybindLabel: '点击 [呼唤旅伴] 协力',
+      opacity01: steadyOpacity,
+      isEphemeralTimedOut: isTimedOut,
+    };
+  }
+
+  // 2. Collectible Lumina Shard or Winged Light in range
+  if (
+    params.nearbyLuminaShard?.isWithinVisualHintRadius &&
+    params.nearbyLuminaShard.nearestShard
+  ) {
+    const shard = params.nearbyLuminaShard.nearestShard;
+    return {
+      visible: true,
+      category: 'collect',
+      icon: '💎',
+      primaryText: params.nearbyLuminaShard.isAlreadyCollected
+        ? `感应到「${shard.name}」星光回响`
+        : `发现${shard.tierLabel}「${shard.name}」`,
+      keybindLabel: `${keyInteract} 吸收光能`,
+      opacity01: 1,
+      isEphemeralTimedOut: false,
+    };
+  }
+
+  if (params.nearestInteractable) {
+    const item = params.nearestInteractable;
+    const isCollectible =
+      item.type === 'winged_light' || item.type === 'easter_egg';
+    return {
+      visible: true,
+      category: isCollectible ? 'collect' : 'interact',
+      icon: isCollectible ? '🌟' : '🕯️',
+      primaryText: isCollectible
+        ? `发现光之馈赠「${item.name}」`
+        : `靠近「${item.name}」`,
+      keybindLabel: `${keyInteract} ${isCollectible ? '拾取共鸣' : '点亮互动'}`,
+      opacity01: 1,
+      isEphemeralTimedOut: false,
+    };
+  }
+
+  // 3. Nearby Traveler Social Prompt
+  if (params.nearbySocialPeer?.isWithinPromptRadius) {
+    return {
+      visible: !isTimedOut,
+      category: 'social',
+      icon: params.nearbySocialPeer.ignited ? '🤝' : '🕯️',
+      primaryText: params.nearbySocialPeer.ignited
+        ? `与「${params.nearbySocialPeer.displayName}」相遇 · 可挥手、牵手或跟随`
+        : '靠近陌生旅人剪影 · 递出烛火照亮彼此',
+      keybindLabel: params.nearbySocialPeer.ignited ? '点击互动栏' : '点亮心火',
+      opacity01: steadyOpacity,
+      isEphemeralTimedOut: isTimedOut,
+    };
+  }
+
+  // 4. Aerial Flight States (Dive / Glide / Hover) — Ephemeral (fades after maxSec)
+  if (!params.grounded) {
+    if (params.isDiving) {
+      return {
+        visible: !isTimedOut,
+        category: 'flight_dive',
+        icon: '☄️',
+        primaryText: '高空收翼俯冲蓄势中 · 松开俯冲可转化为强力升空',
+        keybindLabel: `松开 ${keyDive} 拉起升空`,
+        opacity01: steadyOpacity,
+        isEphemeralTimedOut: isTimedOut,
+      };
+    }
+    if (params.flightMode === 'glide') {
+      return {
+        visible: !isTimedOut,
+        category: 'flight_glide',
+        icon: params.inWindTunnel ? '🌬️' : '🕊️',
+        primaryText: params.inWindTunnel
+          ? '乘风行网道高速滑翔中 · 翼能持续恢复'
+          : '展翼滑翔乘风中 · 倾侧方向控制轨迹',
+        keybindLabel: `${keyMove} 转向 · ${keyDive} 俯冲 · ${keyFlightToggle} 切悬停`,
+        opacity01: steadyOpacity,
+        isEphemeralTimedOut: isTimedOut,
+      };
+    }
+    return {
+      visible: !isTimedOut,
+      category: 'flight_hover',
+      icon: '🪽',
+      primaryText:
+        params.wingEnergy <= 0.2
+          ? '翼能即将耗尽 · 靠近云层、烛火或长按呼唤回能'
+          : '空中悬停升空模式 · 振翅攀升或展开滑翔',
+      keybindLabel: `${keyFlap} 振翅 · ${keyFlightToggle} 切滑翔`,
+      opacity01: steadyOpacity,
+      isEphemeralTimedOut: isTimedOut,
+    };
+  }
+
+  // 5. Sitting / Meditation State — Ephemeral
+  if (params.sitMode && params.sitMode !== 'none' && params.sitMode !== 'stand') {
+    return {
+      visible: !isTimedOut,
+      category: 'sit',
+      icon: '🧘',
+      primaryText: '静坐冥想与调息中 · 心火微光平稳流淌',
+      keybindLabel: `推动 ${keyMove} 或按 [Z] 起身`,
+      opacity01: steadyOpacity,
+      isEphemeralTimedOut: isTimedOut,
+    };
+  }
+
+  // 6. Ground Walking / Running State — Ephemeral (fades out after 4.2s)
+  if (params.locomotionMode === 'walk' || params.locomotionMode === 'run') {
+    return {
+      visible: !isTimedOut,
+      category: 'walk_run',
+      icon: '🌿',
+      primaryText:
+        params.locomotionMode === 'run'
+          ? '疾步穿行云野 · 跃起即可顺势展翼起飞'
+          : '漫步探索世界 · 轻推漫步，推满或按 Shift 奔跑',
+      keybindLabel: `${keyFlap} 跳跃/起飞 · ${keyCall} 星音呼唤`,
+      opacity01: steadyOpacity,
+      isEphemeralTimedOut: isTimedOut,
+    };
+  }
+
+  return {
+    visible: false,
+    category: 'none',
+    icon: '',
+    primaryText: '',
+    keybindLabel: '',
+    opacity01: 0,
+    isEphemeralTimedOut: true,
+  };
+}
+
+export interface ResponsiveUiProfile {
+  deviceCategory: 'mobile' | 'tablet' | 'desktop';
+  primaryInput: ActiveInputDeviceType;
+  isCompactViewport: boolean;
+  minTouchTargetPx: number;
+  joystickDiameterPx: number;
+  dockButtonHeightClass: string;
+  dockFontSizeClass: string;
+  autoCollapseSecondaryHud: boolean;
+}
+
+/**
+ * Pure helper computing device & viewport adaptation parameters across PC, Gamepad, Tablet, and Mobile.
+ */
+export function resolveResponsiveUiProfilePure(
+  viewportWidth: number,
+  viewportHeight: number,
+  hasTouch: boolean,
+  gamepadConnected: boolean
+): ResponsiveUiProfile {
+  const safeW = Math.max(320, viewportWidth || 1440);
+  const safeH = Math.max(320, viewportHeight || 900);
+
+  const deviceCategory: 'mobile' | 'tablet' | 'desktop' =
+    safeW < 768 ? 'mobile' : safeW < 1100 ? 'tablet' : 'desktop';
+
+  const primaryInput: ActiveInputDeviceType = gamepadConnected
+    ? 'gamepad'
+    : hasTouch && safeW < 1024
+      ? 'touch'
+      : 'keyboard';
+
+  const isCompactViewport = safeW < 960 || safeH < 620;
+  const minTouchTargetPx =
+    deviceCategory === 'mobile' || primaryInput === 'touch' ? 44 : 36;
+  const joystickDiameterPx =
+    deviceCategory === 'mobile' ? 68 : deviceCategory === 'tablet' ? 62 : 56;
+
+  return {
+    deviceCategory,
+    primaryInput,
+    isCompactViewport,
+    minTouchTargetPx,
+    joystickDiameterPx,
+    dockButtonHeightClass:
+      deviceCategory === 'mobile' ? 'h-9 px-3' : 'h-7.5 px-2.5',
+    dockFontSizeClass:
+      deviceCategory === 'mobile' ? 'text-xs' : 'text-[11px] sm:text-xs',
+    autoCollapseSecondaryHud: isCompactViewport,
+  };
+}
+
+export interface HudBreathingVisibilityState {
+  showExpandedCurrencies: boolean;
+  showSubZoneLabel: boolean;
+  topBarOpacityClass: string;
+  bottomDockOpacityClass: string;
+  isWhisperMinimalMode: boolean;
+}
+
+/**
+ * Pure helper determining when in-game HUD elements should auto-recede into
+ * Sky-style "Whisper Minimal Mode" so the 3D world remains unobstructed.
+ */
+export function evaluateHudAutoHideStatePure(params: {
+  immersiveModeManual: boolean;
+  isHoveringHud: boolean;
+  secondsSinceCurrencyChange: number;
+  secondsSinceInteraction: number;
+  isCompactViewport: boolean;
+  hasActiveEmergencyAlert: boolean;
+}): HudBreathingVisibilityState {
+  if (params.immersiveModeManual && !params.isHoveringHud) {
+    return {
+      showExpandedCurrencies: false,
+      showSubZoneLabel: false,
+      topBarOpacityClass: 'opacity-55 hover:opacity-100',
+      bottomDockOpacityClass: 'opacity-60 hover:opacity-100',
+      isWhisperMinimalMode: true,
+    };
+  }
+
+  const recentlyChangedCurrency = params.secondsSinceCurrencyChange <= 4.0;
+  const recentlyInteracted = params.secondsSinceInteraction <= 3.5;
+  const showExpandedCurrencies =
+    params.isHoveringHud ||
+    recentlyChangedCurrency ||
+    (!params.isCompactViewport && recentlyInteracted);
+
+  const isCalmCruising =
+    !params.isHoveringHud &&
+    !recentlyChangedCurrency &&
+    !recentlyInteracted &&
+    !params.hasActiveEmergencyAlert;
+
+  return {
+    showExpandedCurrencies,
+    showSubZoneLabel: !params.isCompactViewport || params.isHoveringHud,
+    topBarOpacityClass: isCalmCruising
+      ? 'opacity-80 hover:opacity-100'
+      : 'opacity-100',
+    bottomDockOpacityClass: isCalmCruising
+      ? 'opacity-85 hover:opacity-100'
+      : 'opacity-100',
+    isWhisperMinimalMode: isCalmCruising,
+  };
+}
+
+// ============================================================================
+// MODULE 10 (NINTH MODULE): MUSIC, SPATIAL AUDIO & SOUNDSCAPE PURE HELPERS
+// ============================================================================
+
+export type AcousticZoneType =
+  | 'meadow_breeze'
+  | 'forest_rain_canopy'
+  | 'cavern_crystal_echo'
+  | 'valley_glacial_wind'
+  | 'cloud_sea_aether'
+  | 'sanctuary_water_shore';
+
+export type DynamicMusicMood =
+  | 'calm_explore'
+  | 'soaring_flight'
+  | 'mystic_cavern'
+  | 'scenic_leitmotif'
+  | 'hazard_tension';
+
+export type SpatialEmitterKind =
+  | 'campfire_hearth'
+  | 'water_stream'
+  | 'waterfall_cascade'
+  | 'wind_chime_shrine'
+  | 'ancient_bell_tower'
+  | 'cavern_crystal_spring'
+  | 'cloud_updraft_vortex'
+  | 'manta_sanctuary_choir';
+
+export interface SpatialSoundEmitterSpec {
+  id: string;
+  name: string;
+  kind: SpatialEmitterKind;
+  x: number;
+  y: number;
+  z: number;
+  refDistance: number;
+  maxDistance: number;
+  baseFreqHz: number;
+  description: string;
+}
+
+export const WORLD_SPATIAL_SOUND_EMITTERS: SpatialSoundEmitterSpec[] = [
+  {
+    id: 'emit_home_campfire',
+    name: '遇境星盘暖篝火',
+    kind: 'campfire_hearth',
+    x: 4.5,
+    y: 1.2,
+    z: 3.5,
+    refDistance: 3.5,
+    maxDistance: 34.0,
+    baseFreqHz: 220.0,
+    description: '温暖木柴轻响与星火微鸣',
+  },
+  {
+    id: 'emit_mirror_lake_shore',
+    name: '镜湖浅滩流泉',
+    kind: 'water_stream',
+    x: -14.0,
+    y: 0.4,
+    z: 10.0,
+    refDistance: 5.0,
+    maxDistance: 46.0,
+    baseFreqHz: 340.0,
+    description: '清澈湖水拍岸与潺潺溪流声',
+  },
+  {
+    id: 'emit_temple_bell_spire',
+    name: '云端圣殿古钟塔',
+    kind: 'ancient_bell_tower',
+    x: 0.0,
+    y: 13.5,
+    z: -48.0,
+    refDistance: 8.0,
+    maxDistance: 85.0,
+    baseFreqHz: 293.66,
+    description: '悠远空灵的圣殿铜钟泛音共鸣',
+  },
+  {
+    id: 'emit_east_wind_chime_pavilion',
+    name: '东翼晨曦风铃亭',
+    kind: 'wind_chime_shrine',
+    x: 48.0,
+    y: 7.5,
+    z: -12.0,
+    refDistance: 5.5,
+    maxDistance: 52.0,
+    baseFreqHz: 587.33,
+    description: '随山谷微风轻摇的琉璃风铃清音',
+  },
+  {
+    id: 'emit_west_crystal_cavern_spring',
+    name: '西翼幽谷水晶暗泉',
+    kind: 'cavern_crystal_spring',
+    x: -54.0,
+    y: 2.2,
+    z: -18.0,
+    refDistance: 6.0,
+    maxDistance: 55.0,
+    baseFreqHz: 440.0,
+    description: '洞窟钟乳石水滴与晶簇空灵回响',
+  },
+  {
+    id: 'emit_north_waterfall_cascade',
+    name: '北境云崖飞瀑',
+    kind: 'waterfall_cascade',
+    x: -22.0,
+    y: 9.0,
+    z: -78.0,
+    refDistance: 7.0,
+    maxDistance: 68.0,
+    baseFreqHz: 260.0,
+    description: '高处跌落的云崖飞瀑与水雾轰鸣',
+  },
+  {
+    id: 'emit_sky_island_updraft',
+    name: '苍穹浮岛上升气旋',
+    kind: 'cloud_updraft_vortex',
+    x: 0.0,
+    y: 28.0,
+    z: -32.0,
+    refDistance: 8.0,
+    maxDistance: 64.0,
+    baseFreqHz: 392.0,
+    description: '高空云海暖流盘旋上升的和弦风吟',
+  },
+  {
+    id: 'emit_manta_sanctuary_choir',
+    name: '圣岛遥鲲巡游天籁',
+    kind: 'manta_sanctuary_choir',
+    x: 24.0,
+    y: 18.0,
+    z: -24.0,
+    refDistance: 9.0,
+    maxDistance: 75.0,
+    baseFreqHz: 523.25,
+    description: '远处光之遥鲲群掠过云层的空灵长鸣',
+  },
+];
+
+export interface SpatialAudioEvaluation {
+  emitterId: string;
+  emitterName: string;
+  emitterKind: SpatialEmitterKind;
+  distance3d: number;
+  gain01: number;
+  panStereo: number; // -1 (left) .. +1 (right)
+  lowpassCutoffHz: number; // Air absorption filter
+  isAudible: boolean;
+}
+
+/**
+ * Pure 3D spatial audio calculator: computes smooth inverse-cosine distance attenuation,
+ * listener-yaw stereo panning (-1..+1), and air-absorption low-pass filter cutoff.
+ */
+export function computeSpatialAudioGainAndPanPure(
+  listenerX: number,
+  listenerY: number,
+  listenerZ: number,
+  listenerYaw: number,
+  emitter: SpatialSoundEmitterSpec
+): SpatialAudioEvaluation {
+  const dx = emitter.x - listenerX;
+  const dy = emitter.y - listenerY;
+  const dz = emitter.z - listenerZ;
+  const dist3d = Math.hypot(dx, dy, dz);
+
+  if (dist3d >= emitter.maxDistance) {
+    return {
+      emitterId: emitter.id,
+      emitterName: emitter.name,
+      emitterKind: emitter.kind,
+      distance3d: Number(dist3d.toFixed(2)),
+      gain01: 0,
+      panStereo: 0,
+      lowpassCutoffHz: 1600,
+      isAudible: false,
+    };
+  }
+
+  let gain01 = 1.0;
+  if (dist3d > emitter.refDistance) {
+    const t = Math.min(
+      1,
+      Math.max(
+        0,
+        (dist3d - emitter.refDistance) /
+          Math.max(0.001, emitter.maxDistance - emitter.refDistance)
+      )
+    );
+    // Smooth raised-cosine rolloff for natural spatial fade
+    gain01 = 0.5 * (1 + Math.cos(Math.PI * t));
+    gain01 = Math.pow(gain01, 1.35);
+  }
+
+  // Listener forward in our coordinate system: (-sin(yaw), -cos(yaw))
+  // Listener right vector: (cos(yaw), -sin(yaw))
+  const horizDist = Math.hypot(dx, dz);
+  let panStereo = 0;
+  if (horizDist > 0.25) {
+    const nx = dx / horizDist;
+    const nz = dz / horizDist;
+    const rightX = Math.cos(listenerYaw);
+    const rightZ = -Math.sin(listenerYaw);
+    const dotRight = nx * rightX + nz * rightZ;
+    panStereo = Math.max(-0.92, Math.min(0.92, dotRight));
+  }
+
+  // Distance air absorption: high frequencies attenuate naturally over distance
+  const distRatio = Math.min(1, dist3d / Math.max(1, emitter.maxDistance));
+  const lowpassCutoffHz = Math.round(14000 - distRatio * 11600);
+
+  return {
+    emitterId: emitter.id,
+    emitterName: emitter.name,
+    emitterKind: emitter.kind,
+    distance3d: Number(dist3d.toFixed(2)),
+    gain01: Number(gain01.toFixed(3)),
+    panStereo: Number(panStereo.toFixed(3)),
+    lowpassCutoffHz,
+    isAudible: gain01 > 0.015,
+  };
+}
+
+export interface AcousticSoundscapeProfile {
+  acousticZone: AcousticZoneType;
+  zoneLabel: string;
+  reverbWetMix01: number;
+  reverbDecaySec: number;
+  echoDelayMs: number;
+  windLayerPresence01: number;
+  waterLayerPresence01: number;
+  birdsongPresence01: number;
+  distantChimePresence01: number;
+  musicMood: DynamicMusicMood;
+  musicThemeTitle: string;
+  rootFreqHz: number;
+  nearestEmitter: SpatialAudioEvaluation | null;
+  audibleEmitters: SpatialAudioEvaluation[];
+}
+
+/**
+ * Pure helper evaluating the current 3D position, realm, altitude, and movement state
+ * to determine the regional ambient soundscape (meadow, forest, cavern, valley, cloud sea, shore),
+ * cave/valley reverb parameters, 3D spatial emitters, and adaptive musical theme.
+ */
+export function evaluateAcousticSoundscapeAtPure(params: {
+  realmId: RealmId;
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  grounded: boolean;
+  inCloudBank: boolean;
+  inWindTunnel?: boolean;
+  horizSpeed: number;
+  vy: number;
+  isDiving: boolean;
+  krillAlertLevel: number;
+  activeVistaId?: string | null;
+}): AcousticSoundscapeProfile {
+  const { x, y, z, yaw, realmId, grounded, inCloudBank } = params;
+
+  // Evaluate all spatial emitters and sort by highest audible gain
+  const evaluatedEmitters = WORLD_SPATIAL_SOUND_EMITTERS.map((em) =>
+    computeSpatialAudioGainAndPanPure(x, y, z, yaw, em)
+  )
+    .filter((e) => e.isAudible)
+    .sort((a, b) => b.gain01 - a.gain01);
+
+  const nearestEmitter = evaluatedEmitters[0] || null;
+
+  // Determine Acoustic Zone based on 3D altitude, biome coordinates, and realm
+  let acousticZone: AcousticZoneType = 'meadow_breeze';
+  let zoneLabel = '宁静草原 · 微风与远林鸟鸣';
+  let reverbWetMix01 = 0.2;
+  let reverbDecaySec = 1.1;
+  let echoDelayMs = 120;
+  let windLayerPresence01 = 0.35;
+  let waterLayerPresence01 = 0.2;
+  let birdsongPresence01 = 0.65;
+  let distantChimePresence01 = 0.35;
+
+  const isInsideCavern =
+    realmId === 'vault' ||
+    (x < -38 && z < -6 && y < 12) ||
+    (Math.abs(x) < 25 && z < -55 && y < 6);
+  const isHighCloudSea =
+    !grounded && (y > 16.5 || inCloudBank || Boolean(params.inWindTunnel));
+  const isNearWaterShore =
+    y < 1.6 && Math.hypot(x + 14, z - 10) < 12;
+  const isForestCanopy =
+    realmId === 'forest' || (x < -20 && z > 12 && y < 14);
+  const isMountainValley =
+    realmId === 'valley' || y > 9.5 || z < -36;
+
+  if (isInsideCavern) {
+    acousticZone = 'cavern_crystal_echo';
+    zoneLabel = '幽暗晶洞 · 钟乳水滴与深邃空间混响';
+    reverbWetMix01 = 0.62;
+    reverbDecaySec = 2.8;
+    echoDelayMs = 245;
+    windLayerPresence01 = 0.18;
+    waterLayerPresence01 = 0.55;
+    birdsongPresence01 = 0.05;
+    distantChimePresence01 = 0.72;
+  } else if (isHighCloudSea) {
+    acousticZone = 'cloud_sea_aether';
+    zoneLabel = '高空云海 · 暖流风吟与天际遥鲲共鸣';
+    reverbWetMix01 = 0.36;
+    reverbDecaySec = 1.9;
+    echoDelayMs = 185;
+    windLayerPresence01 = 0.78;
+    waterLayerPresence01 = 0.05;
+    birdsongPresence01 = 0.15;
+    distantChimePresence01 = 0.65;
+  } else if (isForestCanopy) {
+    acousticZone = 'forest_rain_canopy';
+    zoneLabel = '静谧林冠 · 细雨叶落与林间生灵清啼';
+    reverbWetMix01 = 0.34;
+    reverbDecaySec = 1.65;
+    echoDelayMs = 155;
+    windLayerPresence01 = 0.42;
+    waterLayerPresence01 = 0.68;
+    birdsongPresence01 = 0.75;
+    distantChimePresence01 = 0.4;
+  } else if (isMountainValley) {
+    acousticZone = 'valley_glacial_wind';
+    zoneLabel = '云崖山谷 · 峡谷回风与远方圣殿钟鸣';
+    reverbWetMix01 = 0.45;
+    reverbDecaySec = 2.15;
+    echoDelayMs = 210;
+    windLayerPresence01 = 0.64;
+    waterLayerPresence01 = 0.22;
+    birdsongPresence01 = 0.32;
+    distantChimePresence01 = 0.68;
+  } else if (isNearWaterShore) {
+    acousticZone = 'sanctuary_water_shore';
+    zoneLabel = '镜湖浅滩 · 柔波拍岸与浅溪水韵';
+    reverbWetMix01 = 0.26;
+    reverbDecaySec = 1.35;
+    echoDelayMs = 135;
+    windLayerPresence01 = 0.3;
+    waterLayerPresence01 = 0.82;
+    birdsongPresence01 = 0.58;
+    distantChimePresence01 = 0.42;
+  }
+
+  // Determine Dynamic Music Mood & Original Theme Title
+  const realmRootFreq = REALMS[realmId]?.ambientNoteBase || 293.66;
+  let musicMood: DynamicMusicMood = 'calm_explore';
+  let musicThemeTitle = '《晨露与微风的序曲 · Whisper of Meadow Light》';
+  let rootFreqHz = realmRootFreq;
+
+  if (params.krillAlertLevel > 0.15 || realmId === 'eden') {
+    musicMood = 'hazard_tension';
+    musicThemeTitle = '《逆风星火 · Ember in the Storm》';
+    rootFreqHz = 220.0;
+  } else if (params.activeVistaId || y > 22.0) {
+    musicMood = 'scenic_leitmotif';
+    musicThemeTitle = '《苍穹星轨的回响 · Echoes of the Astral Spire》';
+    rootFreqHz = realmRootFreq * 1.125; // Uplifting major second modulation
+  } else if (isInsideCavern) {
+    musicMood = 'mystic_cavern';
+    musicThemeTitle = '《幽谷晶簇的夜曲 · Nocturne of Crystal Vaults》';
+    rootFreqHz = realmRootFreq * 0.833; // Warm minor-sixth contemplative shift
+  } else if (!grounded && (params.horizSpeed > 6.5 || isHighCloudSea)) {
+    musicMood = 'soaring_flight';
+    musicThemeTitle = '《乘风越过云海 · Wings Above the Cloud Sea》';
+    rootFreqHz = realmRootFreq;
+  }
+
+  return {
+    acousticZone,
+    zoneLabel,
+    reverbWetMix01: Number(reverbWetMix01.toFixed(2)),
+    reverbDecaySec: Number(reverbDecaySec.toFixed(2)),
+    echoDelayMs,
+    windLayerPresence01: Number(windLayerPresence01.toFixed(2)),
+    waterLayerPresence01: Number(waterLayerPresence01.toFixed(2)),
+    birdsongPresence01: Number(birdsongPresence01.toFixed(2)),
+    distantChimePresence01: Number(distantChimePresence01.toFixed(2)),
+    musicMood,
+    musicThemeTitle,
+    rootFreqHz: Number(rootFreqHz.toFixed(2)),
+    nearestEmitter,
+    audibleEmitters: evaluatedEmitters,
+  };
+}
+
+export interface DynamicAudioMixEvaluation {
+  effectiveBgmGain: number;
+  effectiveAmbientGain: number;
+  effectiveSfxGain: number;
+  effectiveInstrumentGain: number;
+  flightWindGain01: number;
+  flightWindFilterHz: number;
+  isWindCapped: boolean;
+}
+
+/**
+ * Pure audio mixer & anti-masking ducking balancer.
+ * Ensures flight wind rises naturally with airspeed and diving, while strictly
+ * capping wind volume (<= 0.24 * master * ambient) so it NEVER drowns out
+ * background music, bird/water ambience, or interaction chimes.
+ */
+export function computeDynamicAudioMixBalancePure(params: {
+  masterVolume: number;
+  bgmVolume: number;
+  ambientVolume: number;
+  sfxVolume: number;
+  instrumentVolume: number;
+  grounded: boolean;
+  horizSpeed: number;
+  vy: number;
+  isDiving: boolean;
+  inCloudBank: boolean;
+  isPlayingInstrument: boolean;
+  recentImportantSfxTimerSec: number;
+}): DynamicAudioMixEvaluation {
+  const master = Math.max(0, Math.min(1, params.masterVolume));
+  const bgm = Math.max(0, Math.min(1, params.bgmVolume));
+  const amb = Math.max(0, Math.min(1, params.ambientVolume));
+  const sfx = Math.max(0, Math.min(1, params.sfxVolume));
+  const inst = Math.max(0, Math.min(1, params.instrumentVolume));
+
+  // Sidechain ducking: when player plays an instrument or triggers a ceremony/collection chime,
+  // gently duck BGM and ambient wind so notes and chimes shine clearly.
+  const instDuck = params.isPlayingInstrument ? 0.42 : 1.0;
+  const sfxDuck = params.recentImportantSfxTimerSec > 0 ? 0.72 : 1.0;
+
+  const effectiveBgmGain = Number((master * bgm * instDuck * sfxDuck).toFixed(3));
+  const effectiveAmbientGain = Number(
+    (master * amb * (params.isPlayingInstrument ? 0.65 : 1.0) * sfxDuck).toFixed(3)
+  );
+  const effectiveSfxGain = Number((master * sfx).toFixed(3));
+  const effectiveInstrumentGain = Number((master * inst).toFixed(3));
+
+  // Calculate dynamic flight/glide wind intensity from airspeed
+  const totalSpeed = Math.hypot(params.horizSpeed, params.vy);
+  const rawWindRatio = params.grounded
+    ? Math.min(0.22, totalSpeed / 32.0)
+    : Math.min(
+        1.0,
+        0.18 +
+          totalSpeed / 24.0 +
+          (params.isDiving ? 0.22 : 0) +
+          (params.inCloudBank ? 0.12 : 0)
+      );
+
+  // Strict anti-masking ceiling: flight wind can NEVER exceed 0.24 of effective ambient bus
+  const maxAllowedWindGain = Number((0.24 * effectiveAmbientGain).toFixed(3));
+  const unclampedWindGain = rawWindRatio * 0.32 * effectiveAmbientGain;
+  const flightWindGain01 = Number(
+    Math.min(maxAllowedWindGain, unclampedWindGain).toFixed(3)
+  );
+  const isWindCapped = unclampedWindGain >= maxAllowedWindGain && maxAllowedWindGain > 0;
+
+  const flightWindFilterHz = Math.round(
+    params.grounded
+      ? 360 + totalSpeed * 28
+      : 480 + Math.min(1400, totalSpeed * 75 + (params.isDiving ? 380 : 0))
+  );
+
+  return {
+    effectiveBgmGain,
+    effectiveAmbientGain,
+    effectiveSfxGain,
+    effectiveInstrumentGain,
+    flightWindGain01,
+    flightWindFilterHz,
+    isWindCapped,
+  };
+}
+
+export interface GenerativeMusicPhraseStep {
+  stepIndex: number;
+  isRest: boolean;
+  harpFreqHz: number;
+  fluteFreqHz: number | null;
+  padChordFreqsHz: number[];
+  stepDurationMs: number;
+  harmonicDegreeLabel: string;
+}
+
+/**
+ * Pure non-repeating generative music phrase engine.
+ * Uses golden-ratio / prime-modulo phase stepping across 5 warm harmonic degrees
+ * (Imaj9, IVmaj7, V6, vi11, Iadd9) and inserts natural breathing rests so the
+ * soundtrack feels alive, healing, and never fatiguing.
+ */
+export function computeGenerativeMusicStepPure(
+  stepIndex: number,
+  rootFreqHz: number,
+  mood: DynamicMusicMood,
+  tempoMultiplier = 1.0
+): GenerativeMusicPhraseStep {
+  const safeStep = Math.max(0, Math.floor(stepIndex));
+  const safeRoot = Math.max(110, Math.min(880, rootFreqHz || 293.66));
+
+  // 5-chord progression cycle (changes every 6 steps)
+  const chordProgressions: {
+    label: string;
+    chordRatios: number[];
+    melodyPool: number[];
+  }[] = [
+    {
+      label: 'Imaj9 (星海主音)',
+      chordRatios: [1.0, 1.25, 1.5, 1.875],
+      melodyPool: [1.0, 1.125, 1.25, 1.5, 1.667, 2.0, 2.25],
+    },
+    {
+      label: 'IVmaj7 (暖云下属)',
+      chordRatios: [1.333, 1.667, 2.0, 2.5],
+      melodyPool: [1.333, 1.5, 1.667, 2.0, 2.25, 2.667],
+    },
+    {
+      label: 'vi9 (幽谷柔和关系小调)',
+      chordRatios: [0.833, 1.0, 1.25, 1.5],
+      melodyPool: [0.833, 1.0, 1.125, 1.25, 1.5, 1.667],
+    },
+    {
+      label: 'V6 (乘风属音悬留)',
+      chordRatios: [0.75, 1.125, 1.25, 1.5],
+      melodyPool: [1.125, 1.25, 1.5, 1.667, 2.0, 2.25],
+    },
+    {
+      label: 'Iadd9 (晨曦归航)',
+      chordRatios: [1.0, 1.125, 1.25, 1.5],
+      melodyPool: [1.0, 1.25, 1.5, 2.0, 2.25, 2.5],
+    },
+  ];
+
+  const chordIdx =
+    (Math.floor(safeStep / 5) + Math.floor(safeStep / 17)) %
+    chordProgressions.length;
+  const activeHarmony = chordProgressions[chordIdx];
+
+  // Anti-fatigue breathing rest rule: every phrase naturally pauses on quasi-periodic beats
+  const restSlot = (safeStep * 7 + 3) % 11;
+  const isRest =
+    mood === 'soaring_flight'
+      ? restSlot === 0
+      : mood === 'scenic_leitmotif'
+        ? restSlot === 0
+        : restSlot === 0 || restSlot === 5;
+
+  // Non-repeating note index using prime stride + golden-ratio offset
+  const noteIdx =
+    (safeStep * 3 + Math.floor(safeStep / 4) * 5 + chordIdx * 2) %
+    activeHarmony.melodyPool.length;
+  const harpRatio = activeHarmony.melodyPool[noteIdx];
+  const harpFreqHz = Number((safeRoot * harpRatio).toFixed(2));
+
+  // Counter-melody flute or celesta chime plays on lyrical beats
+  const playFlute =
+    !isRest &&
+    (mood === 'scenic_leitmotif' ||
+      mood === 'soaring_flight' ||
+      safeStep % 3 === 0);
+  const fluteIdx =
+    (safeStep * 5 + 1) % activeHarmony.melodyPool.length;
+  const fluteFreqHz = playFlute
+    ? Number((safeRoot * activeHarmony.melodyPool[fluteIdx] * 1.5).toFixed(2))
+    : null;
+
+  const padChordFreqsHz = activeHarmony.chordRatios.map((r) =>
+    Number((safeRoot * r * 0.5).toFixed(2))
+  );
+
+  // Organic tempo rubato so intervals never feel robotic
+  const rubatoFactor =
+    1.0 + Math.sin(safeStep * 0.92) * 0.08 + (isRest ? 0.18 : 0);
+  const moodTempo =
+    mood === 'soaring_flight'
+      ? 1.16
+      : mood === 'scenic_leitmotif'
+        ? 1.05
+        : mood === 'mystic_cavern'
+          ? 0.86
+          : 0.98;
+  const effectiveTempo = Math.max(0.65, Math.min(1.45, tempoMultiplier * moodTempo));
+  const stepDurationMs = Math.round((940 / effectiveTempo) * rubatoFactor);
+
+  return {
+    stepIndex: safeStep,
+    isRest,
+    harpFreqHz,
+    fluteFreqHz,
+    padChordFreqsHz,
+    stepDurationMs,
+    harmonicDegreeLabel: activeHarmony.label,
+  };
+}
+
+// ============================================================================
+// Module 11: Immersion & Micro-Detail Polish Pure Helpers (沉浸感与细节表现升级)
+// ============================================================================
+
+export interface OrganicFlickerSample {
+  /** Normalized non-mechanical flicker value in [-1, 1] */
+  wave: number;
+  /** Positive intensity multiplier in [0.78, 1.24] for warm candle/shrine lights */
+  intensityMultiplier: number;
+  /** 3D curl-like drift offsets for organic particles & foliage gusts */
+  driftX: number;
+  driftY: number;
+  driftZ: number;
+}
+
+/**
+ * Pure non-mechanical multi-harmonic wave generator (Perlin-like 3-prime-frequency superposition).
+ * Ensures candle lights, shrine braziers, firefly particles, and wind gusts never oscillate mechanically.
+ */
+export function computeOrganicFlickerPure(
+  elapsed: number,
+  seed = 0
+): OrganicFlickerSample {
+  const t = Math.max(0, elapsed);
+  const phaseA = seed * 1.6180339;
+  const phaseB = seed * 2.7182818 + 1.13;
+  const phaseC = seed * 3.1415926 + 2.47;
+
+  // Superposition of 3 incommensurate frequencies (1.73Hz, 4.19Hz, 8.93Hz)
+  const w1 = Math.sin(t * 1.73 + phaseA) * 0.56;
+  const w2 = Math.sin(t * 4.19 + phaseB) * 0.31;
+  const w3 = Math.cos(t * 8.93 + phaseC) * 0.13;
+  const wave = Math.max(-1, Math.min(1, Number((w1 + w2 + w3).toFixed(4))));
+
+  const intensityMultiplier = Number((1.0 + wave * 0.22).toFixed(4));
+
+  const driftX = Number(
+    (
+      Math.sin(t * 0.83 + phaseA) * 0.65 +
+      Math.cos(t * 2.17 + phaseB) * 0.35
+    ).toFixed(4)
+  );
+  const driftY = Number(
+    (
+      Math.sin(t * 1.29 + phaseB) * 0.6 +
+      Math.sin(t * 3.07 + phaseC) * 0.4
+    ).toFixed(4)
+  );
+  const driftZ = Number(
+    (
+      Math.cos(t * 0.97 + phaseC) * 0.65 +
+      Math.sin(t * 2.41 + phaseA) * 0.35
+    ).toFixed(4)
+  );
+
+  return {
+    wave,
+    intensityMultiplier,
+    driftX,
+    driftY,
+    driftZ,
+  };
+}
+
+export interface IdleMicroBehaviorPose {
+  /** Curious head glance yaw in radians */
+  headGlanceYaw: number;
+  /** Curious head glance pitch in radians (positive = looking slightly skyward) */
+  headGlancePitch: number;
+  /** Subtle head tilt roll in radians */
+  headGlanceRoll: number;
+  /** Subtle torso weight-shift roll in radians */
+  weightShiftRoll: number;
+  /** Calibrated hips Y height >= 0.858 so feet NEVER clip below ground */
+  safeHipsY: number;
+  /** Left/right knee relaxation angles matched to safeHipsY */
+  kneeRelaxL: number;
+  kneeRelaxR: number;
+  /** Active micro-behavior phase label for telemetry/tests */
+  microBehaviorPhase: 'calm_breath' | 'skyward_gaze' | 'horizon_glance' | 'weight_shift';
+}
+
+/**
+ * Pure idle micro-behavior generator for the Sky Child when standing still.
+ * Produces natural, non-robotic curious head glances, skyward gazes, and soft weight shifts
+ * while guaranteeing `safeHipsY >= 0.858` so the character's feet never clip into the ground.
+ */
+export function computeIdleMicroBehaviorPure(
+  elapsed: number
+): IdleMicroBehaviorPose {
+  const t = Math.max(0, elapsed);
+  // 14-second organic behavioral cycle
+  const cyclePos = t % 14.0;
+
+  let headGlanceYaw = 0;
+  let headGlancePitch = 0;
+  let headGlanceRoll = 0;
+  let microBehaviorPhase: IdleMicroBehaviorPose['microBehaviorPhase'] = 'calm_breath';
+
+  if (cyclePos >= 2.2 && cyclePos < 5.6) {
+    // Phase 1: Curious horizon glance to the left/right
+    microBehaviorPhase = 'horizon_glance';
+    const localT = (cyclePos - 2.2) / 3.4;
+    const envelope = Math.sin(localT * Math.PI);
+    const dir = Math.floor(t / 14.0) % 2 === 0 ? 1 : -1;
+    headGlanceYaw = dir * 0.22 * envelope;
+    headGlancePitch = -0.04 * envelope;
+    headGlanceRoll = dir * 0.05 * envelope;
+  } else if (cyclePos >= 7.0 && cyclePos < 10.6) {
+    // Phase 2: Gentle skyward gaze toward the floating islands / mantas overhead
+    microBehaviorPhase = 'skyward_gaze';
+    const localT = (cyclePos - 7.0) / 3.6;
+    const envelope = Math.sin(localT * Math.PI);
+    headGlanceYaw = Math.sin(t * 0.6) * 0.08 * envelope;
+    headGlancePitch = -0.18 * envelope; // Negative X rotation tilts head upward in our rig
+    headGlanceRoll = 0.04 * envelope;
+  } else if (cyclePos >= 11.2 && cyclePos < 13.6) {
+    // Phase 3: Soft weight shift between feet
+    microBehaviorPhase = 'weight_shift';
+    const localT = (cyclePos - 11.2) / 2.4;
+    const envelope = Math.sin(localT * Math.PI);
+    headGlanceYaw = -0.08 * envelope;
+    headGlancePitch = 0.03 * envelope;
+    headGlanceRoll = -0.04 * envelope;
+  } else {
+    // Calm breathing baseline with subtle organic drift
+    headGlanceYaw = Math.sin(t * 0.55) * 0.035;
+    headGlancePitch = Math.cos(t * 0.42) * 0.025;
+    headGlanceRoll = Math.sin(t * 0.38) * 0.018;
+  }
+
+  // Slow weight transfer wave across ~6.8 seconds
+  const weightWave = Math.sin(t * 0.92);
+  const weightShiftRoll = Number((weightWave * 0.026).toFixed(4));
+
+  // Alternating soft knee relaxation (only one knee relaxes slightly while the other supports weight)
+  const kneeRelaxL = Number((Math.max(0, weightWave) * 0.045).toFixed(4));
+  const kneeRelaxR = Number((Math.max(0, -weightWave) * 0.045).toFixed(4));
+
+  // Strict anti-ground-clipping guarantee: hipsY stays >= 0.858 at all times during idle
+  const breathLift = (Math.sin(t * 2.1) * 0.5 + 0.5) * 0.018;
+  const safeHipsY = Number((0.86 + breathLift).toFixed(4));
+
+  return {
+    headGlanceYaw: Number(headGlanceYaw.toFixed(4)),
+    headGlancePitch: Number(headGlancePitch.toFixed(4)),
+    headGlanceRoll: Number(headGlanceRoll.toFixed(4)),
+    weightShiftRoll,
+    safeHipsY,
+    kneeRelaxL,
+    kneeRelaxR,
+    microBehaviorPhase,
+  };
+}
+
+export interface ImmersionSceneFeedbackSnapshot {
+  /** Normalized high-altitude expansion factor [0..1] for y in [10m..34m] */
+  highAltitudeRatio01: number;
+  /** Extra camera FOV degrees at high altitude [0..4.2] */
+  altitudeFovBonusDeg: number;
+  /** Extra camera follow distance at high altitude [0..1.8] */
+  altitudeDistBonus: number;
+  /** Fog far-plane clarity multiplier [1.0..1.35] so high vistas see further */
+  horizonClarityMultiplier: number;
+  /** Subtle item-approach harmonic shimmer [0..1] when within 9.5m of special items */
+  itemApproachShimmer01: number;
+  /** Whether player is skimming low over water and should emit wake ripples */
+  shouldEmitWaterWake: boolean;
+}
+
+/**
+ * Pure evaluator for Scene Feedback (Module 11):
+ * - High-altitude spatial expansion (wider FOV, clearer horizon fog, aerial openness when climbing above y = 10m..34m)
+ * - Subtle harmonic shimmer when approaching special items or Lumina Shards (<= 9.5m)
+ * - Low-altitude water wake detection when wading or gliding within 2.4m above water basins
+ */
+export function evaluateImmersionSceneFeedbackPure(params: {
+  x: number;
+  y: number;
+  z: number;
+  grounded: boolean;
+  isInShallowWater: boolean;
+  nearestInteractableDist: number | null;
+  nearestShardDist: number | null;
+}): ImmersionSceneFeedbackSnapshot {
+  const rawAlt = (params.y - 10.0) / 24.0;
+  const clampedAlt = Math.max(0, Math.min(1, rawAlt));
+  // Smoothstep curve for natural spatial expansion
+  const highAltitudeRatio01 = Number(
+    (clampedAlt * clampedAlt * (3 - 2 * clampedAlt)).toFixed(3)
+  );
+
+  const altitudeFovBonusDeg = Number((highAltitudeRatio01 * 4.2).toFixed(2));
+  const altitudeDistBonus = Number((highAltitudeRatio01 * 1.8).toFixed(2));
+  const horizonClarityMultiplier = Number(
+    (1.0 + highAltitudeRatio01 * 0.35).toFixed(3)
+  );
+
+  const bestItemDist = Math.min(
+    params.nearestInteractableDist ?? Infinity,
+    params.nearestShardDist ?? Infinity
+  );
+  const rawApproach =
+    bestItemDist < 9.5 ? Math.max(0, Math.min(1, (9.5 - bestItemDist) / 7.5)) : 0;
+  const itemApproachShimmer01 = Number(
+    (rawApproach * rawApproach * (3 - 2 * rawApproach)).toFixed(3)
+  );
+
+  const overWaterBasin =
+    params.isInShallowWater ||
+    (params.y <= 2.4 && isInShallowWaterAt(params.x, params.z));
+
+  return {
+    highAltitudeRatio01,
+    altitudeFovBonusDeg,
+    altitudeDistBonus,
+    horizonClarityMultiplier,
+    itemApproachShimmer01,
+    shouldEmitWaterWake: overWaterBasin,
+  };
+}
+
+
 

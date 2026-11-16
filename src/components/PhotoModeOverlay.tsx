@@ -103,10 +103,10 @@ export const PhotoModeOverlay: React.FC<PhotoModeOverlayProps> = ({
       )}
 
       {/* Top Viewfinder Bar */}
-      <div className="relative z-10 flex flex-wrap items-center justify-between gap-2 pointer-events-auto">
-        <div className="px-3.5 py-1.5 rounded-2xl bg-slate-950/88 border border-amber-300/35 text-xs text-amber-100 font-semibold flex items-center gap-2.5">
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-2 pointer-events-auto sky-panel-enter">
+        <div className="sky-glass-pill px-3.5 py-1.5 rounded-full text-xs text-amber-100 font-semibold flex items-center gap-2.5">
           <span>
-            📷 阶段10 自由云海摄影工作台 ·{' '}
+            📷 云海摄影工作台 ·{' '}
             {selfieMode ? '🤳 自拍特写机位' : '🏞️ 远景环绕机位'}
           </span>
           <span className="text-amber-300 font-mono">
@@ -119,7 +119,7 @@ export const PhotoModeOverlay: React.FC<PhotoModeOverlayProps> = ({
             type="button"
             data-testid="toggle-photo-grid-btn"
             onClick={() => setShowGrid((prev) => !prev)}
-            className={`px-3 py-1.5 rounded-2xl border text-xs font-semibold cursor-pointer ${
+            className={`sky-btn px-3 py-1.5 rounded-full border text-xs font-semibold cursor-pointer ${
               showGrid
                 ? 'bg-amber-400/20 border-amber-300/60 text-amber-200'
                 : 'bg-slate-950/85 border-slate-700 text-slate-300'
@@ -132,7 +132,7 @@ export const PhotoModeOverlay: React.FC<PhotoModeOverlayProps> = ({
             type="button"
             data-testid="toggle-photo-album-btn"
             onClick={() => setAlbumOpen((prev) => !prev)}
-            className="px-3.5 py-1.5 rounded-2xl bg-slate-950/90 hover:bg-slate-900 border border-sky-400/40 text-xs text-sky-200 font-semibold cursor-pointer"
+            className="sky-btn sky-glass-pill px-3.5 py-1.5 rounded-full text-xs text-sky-200 font-semibold cursor-pointer"
           >
             🖼️ 云海相册 ({savedPhotos.length})
           </button>
@@ -141,7 +141,7 @@ export const PhotoModeOverlay: React.FC<PhotoModeOverlayProps> = ({
             type="button"
             data-testid="exit-photo-mode-btn"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-2xl bg-slate-950/90 hover:bg-slate-900 border border-slate-700 text-xs text-amber-200 font-semibold cursor-pointer"
+            className="sky-btn sky-glass-pill px-4 py-1.5 rounded-full text-xs text-amber-200 font-semibold cursor-pointer"
           >
             退出相机 [Esc]
           </button>
@@ -152,7 +152,7 @@ export const PhotoModeOverlay: React.FC<PhotoModeOverlayProps> = ({
       {albumOpen && (
         <div
           data-testid="photo-album-drawer"
-          className="relative z-10 mx-auto my-auto w-full max-w-2xl rounded-3xl bg-slate-950/95 border border-sky-400/40 p-5 pointer-events-auto shadow-2xl space-y-3"
+          className="sky-panel-enter relative z-10 mx-auto my-auto w-full max-w-2xl rounded-3xl bg-slate-950/95 border border-sky-400/40 p-5 pointer-events-auto shadow-2xl space-y-3"
         >
           <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
             <div>

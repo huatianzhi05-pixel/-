@@ -58,15 +58,15 @@ export const WardrobeModal: React.FC<WardrobeModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-center justify-center p-4 md:p-8 pointer-events-auto"
-      style={{ backgroundColor: 'rgba(9, 13, 24, 0.78)' }}
+      className="fixed inset-0 z-40 flex items-center justify-center p-4 md:p-8 pointer-events-auto sky-modal-backdrop"
+      style={{ backgroundColor: 'rgba(9, 13, 24, 0.72)' }}
       role="dialog"
       aria-modal="true"
       aria-label="星盘全皮肤换装衣橱"
     >
       <div
-        className="w-full max-w-5xl rounded-2xl border border-amber-300/35 text-slate-100 flex flex-col max-h-[88vh] overflow-hidden shadow-2xl"
-        style={{ backgroundColor: 'rgba(15, 23, 42, 0.96)' }}
+        className="w-full max-w-5xl rounded-3xl border border-amber-300/35 text-slate-100 flex flex-col max-h-[88vh] overflow-hidden shadow-2xl sky-panel-enter"
+        style={{ backgroundColor: 'var(--sky-glass-bg-elevated)' }}
       >
         {/* Modal Header */}
         <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-slate-800">

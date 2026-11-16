@@ -3,6 +3,7 @@ import {
   BotAiMode,
   NETWORK_CFG,
   SKY_15_NOTES,
+  deduplicateNetworkEventPure,
   groundHeightAt,
   interpolateAndExtrapolatePeerPure,
   stepBotTravelerAiPure,
@@ -28,6 +29,7 @@ export interface RemoteTravelerState {
   grounded: boolean;
   flightMode: 'hover' | 'glide';
   locomotionMode: string;
+  sitMode?: string;
   activeEmote: string | null;
   activeEmoteLevel: number;
   activeEmoteTimer: number;
@@ -47,6 +49,10 @@ export interface NetworkStatusSnapshot {
   roomId: string;
   latencyMs: number;
   onlineCount: number;
+  realOnlineCount: number;
+  localBotCount: number;
+  localBotsEnabled: boolean;
+  followLeaderId: string | null;
   maxRoomSize: number;
   reconnectCount: number;
   botAiMode: BotAiMode;
@@ -120,12 +126,41 @@ class NetworkManager {
   private seq = 0;
   private botAiMode: BotAiMode = 'patrol';
   private pendingReliableQueue: Record<string, any>[] = [];
+  private seenEventIds: string[] = [];
 
   public remoteTravelers = new Map<string, RemoteTravelerState>();
   public dualActionPartnerId: string | null = null;
   public dualActionMode: 'none' | 'hand_hold' | 'carry' | 'bench_sit' = 'none';
+  public localBotsEnabled = true;
+  public followLeaderId: string | null = null;
+  public coopSummonTarget: { x: number; z: number; timer: number } | null = null;
+  public inWorld = false;
+
+  public setInWorld(inWorld: boolean) {
+    if (this.inWorld === inWorld) return;
+    this.inWorld = inWorld;
+    if (this.ws && this.ws.readyState === WebSocket.OPEN && this.localPlayerId) {
+      this.ws.send(
+        JSON.stringify({
+          v: NETWORK_CFG?.protocolVersion || '1.0',
+          type: 'join_realm',
+          playerId: this.localPlayerId,
+          playerName: this.localPlayerName,
+          realmId: this.currentRealmId,
+          loadout: this.currentLoadout,
+          inWorld: this.inWorld,
+        })
+      );
+    }
+  }
 
   public initBots() {
+    if (!this.localBotsEnabled) {
+      for (const [k, v] of this.remoteTravelers.entries()) {
+        if (v.isBot) this.remoteTravelers.delete(k);
+      }
+      return;
+    }
     const botConfigs = NETWORK_CFG?.botTravelers || [
       {
         playerId: 'bot_traveller_1',
@@ -280,6 +315,7 @@ class NetworkManager {
             playerName: this.localPlayerName,
             realmId: this.currentRealmId,
             loadout: this.currentLoadout,
+            inWorld: this.inWorld,
             forceNewRoom,
           })
         );
@@ -426,6 +462,89 @@ class NetworkManager {
   }
 
   /**
+   * Module 8 Honesty Control: Toggles whether single-player local AI companions (`isBot: true`)
+   * are active in the scene or hidden so the player only sees real connected online players.
+   */
+  public toggleLocalBotsEnabled(forceValue?: boolean): boolean {
+    this.localBotsEnabled =
+      forceValue !== undefined ? forceValue : !this.localBotsEnabled;
+    if (!this.localBotsEnabled) {
+      for (const [k, v] of this.remoteTravelers.entries()) {
+        if (v.isBot) {
+          if (this.dualActionPartnerId === k) {
+            this.dualActionPartnerId = null;
+            this.dualActionMode = 'none';
+          }
+          if (this.followLeaderId === k) {
+            this.followLeaderId = null;
+          }
+          this.remoteTravelers.delete(k);
+        }
+      }
+    } else {
+      this.initBots();
+    }
+    this.emitStatus();
+    return this.localBotsEnabled;
+  }
+
+  /**
+   * Module 8 Partner Follow Mode: Sets or clears the target traveler (`peerId`) that
+   * the local player smoothly auto-follows during exploration.
+   */
+  public setFollowLeader(peerId: string | null) {
+    if (peerId && !this.remoteTravelers.has(peerId)) {
+      this.followLeaderId = null;
+    } else {
+      this.followLeaderId = peerId;
+      if (peerId) {
+        // Release leader hand-hold if switching to follower mode
+        this.dualActionPartnerId = null;
+        this.dualActionMode = 'none';
+      }
+    }
+    this.emitStatus();
+  }
+
+  /**
+   * Module 8 Co-op Mechanism Summon: Calls nearby local AI companions (and broadcasts a co-op
+   * beacon to real online players in the room) to gather at `(targetX, targetZ)` to co-activate a 2-player door.
+   */
+  public summonCompanionsToCoopPoint(targetX: number, targetZ: number) {
+    this.coopSummonTarget = { x: targetX, z: targetZ, timer: 20.0 };
+    if (!this.localBotsEnabled) {
+      this.localBotsEnabled = true;
+      this.initBots();
+    }
+    const bot1 = this.remoteTravelers.get('bot_traveller_1');
+    const bot2 = this.remoteTravelers.get('bot_traveller_2');
+    if (bot1) {
+      bot1.x = targetX - 1.25;
+      bot1.z = targetZ + 0.45;
+      bot1.y = groundHeightAt(bot1.x, bot1.z);
+      bot1.callRingTimer = 1.4;
+      bot1.callWaveRadius = 0.5;
+      bot1.activeEmote = 'emote_pray_light';
+      bot1.activeEmoteLevel = 4;
+      bot1.activeEmoteTimer = 4.0;
+      bot1.chatBubbleText = '🕯️ 我已就位左侧星芒基座！现在按 [E] 一起开启机关吧 ✦';
+      bot1.chatBubbleTimer = 5.5;
+    }
+    if (bot2) {
+      bot2.x = targetX + 1.25;
+      bot2.z = targetZ + 0.45;
+      bot2.y = groundHeightAt(bot2.x, bot2.z);
+      bot2.callRingTimer = 1.4;
+      bot2.callWaveRadius = 0.5;
+      bot2.activeEmote = 'emote_cheer_jump';
+      bot2.activeEmoteLevel = 4;
+      bot2.activeEmoteTimer = 3.8;
+    }
+    this.broadcastEvent('coop:summon', { x: targetX, z: targetZ });
+    this.emitStatus();
+  }
+
+  /**
    * Stage 6 Bot Traveler Ensemble & Resonance Trigger: All 3 Bot Travelers wave/spin,
    * emit call rings, and play a pentatonic harmony chord together!
    */
@@ -528,6 +647,14 @@ class NetworkManager {
   private handleMessage(msg: any) {
     const nowMs = typeof performance !== 'undefined' ? performance.now() : Date.now();
 
+    if (msg.eventId) {
+      const dedup = deduplicateNetworkEventPure(msg.eventId, this.seenEventIds);
+      this.seenEventIds = dedup.nextSeenEventIds;
+      if (dedup.isDuplicate) {
+        return;
+      }
+    }
+
     if (msg.type === 'pong') {
       this.latencyMs = Math.max(1, Math.round(nowMs - Number(msg.clientTs)));
       this.emitStatus();
@@ -564,11 +691,27 @@ class NetworkManager {
         this.dualActionPartnerId = null;
         this.dualActionMode = 'none';
       }
+      if (this.followLeaderId === msg.playerId) {
+        this.followLeaderId = null;
+      }
       this.emitStatus();
       return;
     }
 
     if (msg.type === 'peer:transform' && msg.playerId) {
+      if (
+        msg.playerId === this.localPlayerId ||
+        String(msg.playerId).startsWith('bot_')
+      ) {
+        return;
+      }
+      if (msg.inWorld === false) {
+        if (this.remoteTravelers.has(msg.playerId)) {
+          this.remoteTravelers.delete(msg.playerId);
+          this.emitStatus();
+        }
+        return;
+      }
       const existing = this.remoteTravelers.get(msg.playerId);
       if (existing) {
         existing.targetX = Number(msg.x) || 0;
@@ -581,6 +724,9 @@ class NetworkManager {
         existing.grounded = Boolean(msg.grounded);
         existing.flightMode = msg.flightMode === 'glide' ? 'glide' : 'hover';
         existing.locomotionMode = String(msg.locomotionMode || 'idle');
+        if (msg.sitMode !== undefined) {
+          existing.sitMode = String(msg.sitMode || 'none');
+        }
         existing.lastPacketMs = nowMs;
         if (msg.activeEmote !== undefined) {
           existing.activeEmote = msg.activeEmote;
@@ -590,6 +736,7 @@ class NetworkManager {
         if (msg.loadout) existing.loadout = msg.loadout;
       } else {
         this.upsertRemotePeer(msg, nowMs);
+        this.emitStatus();
       }
       return;
     }
@@ -624,6 +771,14 @@ class NetworkManager {
         senderName: msg.senderName || '旅人',
         text: String(msg.text || ''),
       });
+    } else if (msg.type === 'coop:summon' && msg.senderId) {
+      const peer = this.remoteTravelers.get(msg.senderId);
+      if (peer) {
+        peer.callRingTimer = 1.6;
+        peer.callWaveRadius = 0.5;
+        peer.chatBubbleText = '🔔 正在双人星芒石门等候协力点亮！';
+        peer.chatBubbleTimer = 5.5;
+      }
     } else if (msg.type === 'music:note' && msg.senderId) {
       const noteIdx = Math.max(0, Math.min(14, Number(msg.noteIndex) || 0));
       const note = SKY_15_NOTES[noteIdx];
@@ -643,24 +798,46 @@ class NetworkManager {
   }
 
   private upsertRemotePeer(p: any, nowMs: number) {
-    this.remoteTravelers.set(p.playerId, {
-      playerId: p.playerId,
+    if (!p || !p.playerId || p.playerId === this.localPlayerId) return;
+    const pid = String(p.playerId);
+    if (pid.startsWith('bot_')) return;
+    if (p.inWorld === false) {
+      this.remoteTravelers.delete(pid);
+      return;
+    }
+
+    let px = Number(p.x) || 0;
+    let pz = p.z !== undefined ? Number(p.z) : 4;
+    if (Math.hypot(px - 0, pz - 6) < 0.35) {
+      let hash = 0;
+      for (let i = 0; i < pid.length; i++) {
+        hash = (hash * 31 + pid.charCodeAt(i)) | 0;
+      }
+      const angle = ((Math.abs(hash) % 360) * Math.PI) / 180;
+      px = Number((Math.cos(angle) * 2.4).toFixed(2));
+      pz = Number((6 + Math.sin(angle) * 2.4).toFixed(2));
+    }
+    const py = Number(p.y) || groundHeightAt(px, pz);
+
+    this.remoteTravelers.set(pid, {
+      playerId: pid,
       playerName: p.playerName || '远方旅人',
       isBot: false,
-      x: Number(p.x) || 0,
-      y: Number(p.y) || 1.2,
-      z: Number(p.z) || 4,
+      x: px,
+      y: py,
+      z: pz,
       vx: Number(p.vx) || 0,
       vy: Number(p.vy) || 0,
       vz: Number(p.vz) || 0,
-      targetX: Number(p.x) || 0,
-      targetY: Number(p.y) || 1.2,
-      targetZ: Number(p.z) || 4,
+      targetX: px,
+      targetY: py,
+      targetZ: pz,
       yaw: Number(p.yaw) || 0,
       targetYaw: Number(p.yaw) || 0,
       grounded: Boolean(p.grounded ?? true),
       flightMode: p.flightMode === 'glide' ? 'glide' : 'hover',
       locomotionMode: String(p.locomotionMode || 'idle'),
+      sitMode: String(p.sitMode || 'none'),
       activeEmote: p.activeEmote || null,
       activeEmoteLevel: Number(p.activeEmoteLevel) || 1,
       activeEmoteTimer: p.activeEmote ? 3.0 : 0,
@@ -692,6 +869,7 @@ class NetworkManager {
           playerName: this.localPlayerName,
           realmId,
           loadout,
+          inWorld: this.inWorld,
         })
       );
     }
@@ -709,10 +887,12 @@ class NetworkManager {
     grounded: boolean;
     flightMode: 'hover' | 'glide';
     locomotionMode?: string;
+    sitMode?: string;
     activeEmote: string | null;
     activeEmoteLevel?: number;
     loadout: EquippedLoadout;
   }) {
+    if (!this.inWorld) return;
     const now = performance.now();
     // 15Hz network transform rate (every 66ms)
     if (now - this.lastTransformSentMs < 66) return;
@@ -725,6 +905,8 @@ class NetworkManager {
           v: NETWORK_CFG?.protocolVersion || '1.0',
           seq: this.seq,
           type: 'player:transform',
+          inWorld: this.inWorld,
+          dualActionMode: this.dualActionMode,
           ...state,
         })
       );
@@ -736,6 +918,8 @@ class NetworkManager {
           senderId: this.localPlayerId,
           playerId: this.localPlayerId,
           playerName: this.localPlayerName,
+          inWorld: this.inWorld,
+          dualActionMode: this.dualActionMode,
           ...state,
         });
       } catch {
@@ -745,9 +929,12 @@ class NetworkManager {
   }
 
   public broadcastEvent(type: string, payload: Record<string, any> = {}) {
+    const nextSeq = ++this.seq;
+    const eventId = `${this.localPlayerId || 'local'}_${nextSeq}_${Date.now()}`;
     const packet = {
       v: NETWORK_CFG?.protocolVersion || '1.0',
-      seq: ++this.seq,
+      seq: nextSeq,
+      eventId,
       type,
       ...payload,
     };
@@ -838,7 +1025,28 @@ class NetworkManager {
   ) {
     const nowMs = typeof performance !== 'undefined' ? performance.now() : Date.now();
 
-    for (const peer of this.remoteTravelers.values()) {
+    if (this.coopSummonTarget) {
+      this.coopSummonTarget.timer = Math.max(0, this.coopSummonTarget.timer - dt);
+      if (this.coopSummonTarget.timer <= 0) {
+        this.coopSummonTarget = null;
+      }
+    }
+
+    let prunedStalePeer = false;
+    for (const [pid, peer] of this.remoteTravelers.entries()) {
+      if (!peer.isBot && nowMs - peer.lastPacketMs > 15000) {
+        this.remoteTravelers.delete(pid);
+        if (this.dualActionPartnerId === pid) {
+          this.dualActionPartnerId = null;
+          this.dualActionMode = 'none';
+        }
+        if (this.followLeaderId === pid) {
+          this.followLeaderId = null;
+        }
+        prunedStalePeer = true;
+        continue;
+      }
+
       if (peer.callRingTimer > 0) {
         peer.callRingTimer = Math.max(0, peer.callRingTimer - dt);
         peer.callWaveRadius += 16 * dt;
@@ -886,7 +1094,8 @@ class NetworkManager {
           localPlayer,
           this.botAiMode,
           elapsed,
-          dt
+          dt,
+          this.coopSummonTarget
         );
         peer.x = botNext.x;
         peer.y = botNext.y;
@@ -915,14 +1124,28 @@ class NetworkManager {
         peer.yaw = stepped.yaw;
       }
     }
+    if (prunedStalePeer) {
+      this.emitStatus();
+    }
   }
 
   public getStatusSnapshot(): NetworkStatusSnapshot {
+    let remoteHumanCount = 0;
+    let botCount = 0;
+    for (const p of this.remoteTravelers.values()) {
+      if (p.isBot) botCount += 1;
+      else remoteHumanCount += 1;
+    }
+    const realOnlineCount = remoteHumanCount + 1;
     return {
       connected: this.connected,
       roomId: this.roomId,
       latencyMs: this.latencyMs,
       onlineCount: this.remoteTravelers.size + 1,
+      realOnlineCount,
+      localBotCount: botCount,
+      localBotsEnabled: this.localBotsEnabled,
+      followLeaderId: this.followLeaderId,
       maxRoomSize: this.maxRoomSize,
       reconnectCount: this.reconnectCount,
       botAiMode: this.botAiMode,

@@ -1,5 +1,11 @@
 import gameConfigRaw from '../config/gameConfig.json';
 import { DEFAULT_LOADOUT, EquippedLoadout } from '../game/cosmetics';
+import {
+  LUMINA_SHARD_CATALOG,
+  SECRET_EXPLORATION_LANDMARKS,
+  LightShardSpec,
+  SecretLandmarkCompendiumEntry,
+} from '../game/rules';
 import { gameEventBus } from './EventBus';
 
 export const GAME_CONFIG = gameConfigRaw;
@@ -100,6 +106,10 @@ export interface PersistentSaveData {
   highContrastMode?: boolean;
   reducedMotionShake?: boolean;
   discoveredEasterEggIds?: string[];
+  collectedLuminaShardIds?: string[];
+  discoveredSecretZoneIds?: string[];
+  luminaResonancePts?: number;
+  explorerRank?: number;
   bestRaceTimeMs?: number | null;
   bestRaceMedal?: 'gold' | 'silver' | 'bronze' | null;
   completedRaceCount?: number;
@@ -329,6 +339,10 @@ export function buildDefaultSaveData(now = new Date()): PersistentSaveData {
     highContrastMode: false,
     reducedMotionShake: false,
     discoveredEasterEggIds: [],
+    collectedLuminaShardIds: [],
+    discoveredSecretZoneIds: [],
+    luminaResonancePts: 0,
+    explorerRank: 1,
     bestRaceTimeMs: null,
     bestRaceMedal: null,
     completedRaceCount: 0,
@@ -2337,6 +2351,520 @@ export function recordSunsetRaceCompletionPure(
   };
 }
 
+// ============================================================================
+// MODULE 6: ORIGINAL LUMINA SHARD COLLECTION, SECRET LANDMARK COMPENDIUM,
+// EXPLORATION-DRIVEN GROWTH SYSTEM & SAVE DATA INTEGRITY SANITIZATION
+// ============================================================================
+
+export interface ExplorerGrowthRankSpec {
+  rank: number;
+  title: string;
+  badgeIcon: string;
+  requiredResonancePts: number;
+  rewardSummary: string;
+  unlockCosmeticIds: string[];
+  unlockEmoteUpgrades: Record<string, number>;
+  unlockFurnitureIds: string[];
+  bonusCandles: number;
+  bonusHearts: number;
+  bonusWingedLights: number;
+}
+
+export const EXPLORER_GROWTH_RANKS: ExplorerGrowthRankSpec[] = [
+  {
+    rank: 1,
+    title: 'Lv.1 · 初醒寻光者',
+    badgeIcon: '🌱',
+    requiredResonancePts: 0,
+    rewardSummary: '初始探索阶位 · 开启微光碎片共鸣感知',
+    unlockCosmeticIds: [],
+    unlockEmoteUpgrades: {},
+    unlockFurnitureIds: [],
+    bonusCandles: 0,
+    bonusHearts: 0,
+    bonusWingedLights: 0,
+  },
+  {
+    rank: 2,
+    title: 'Lv.2 · 晨露拾光客',
+    badgeIcon: '💧',
+    requiredResonancePts: 45,
+    rewardSummary: '解锁「星辰耳坠」「金边颈环」装饰 & +3 白蜡烛',
+    unlockCosmeticIds: ['face_star_earrings', 'neck_gold_choker'],
+    unlockEmoteUpgrades: { emote_butterfly: 2 },
+    unlockFurnitureIds: [],
+    bonusCandles: 3,
+    bonusHearts: 0,
+    bonusWingedLights: 0,
+  },
+  {
+    rank: 3,
+    title: 'Lv.3 · 幽谷聆风使',
+    badgeIcon: '💎',
+    requiredResonancePts: 110,
+    rewardSummary: '解锁「樱花花瓣斗篷」「黄金竖琴」乐器 & 抚胸鞠躬礼 Lv.4',
+    unlockCosmeticIds: ['cape_sakura_bloom', 'prop_golden_harp'],
+    unlockEmoteUpgrades: { emote_bow_respect: 4 },
+    unlockFurnitureIds: ['furn_sakura_canopy'],
+    bonusCandles: 4,
+    bonusHearts: 1,
+    bonusWingedLights: 0,
+  },
+  {
+    rank: 4,
+    title: 'Lv.4 · 云海巡航家',
+    badgeIcon: '🔮',
+    requiredResonancePts: 200,
+    rewardSummary: '解锁「矮人面具」「兔耳探头巫师帽」& 小屋悬浮星灯',
+    unlockCosmeticIds: ['mask_chibi', 'hair_bunny_peeking'],
+    unlockEmoteUpgrades: { emote_cheer_jump: 3 },
+    unlockFurnitureIds: ['furn_floating_lantern'],
+    bonusCandles: 5,
+    bonusHearts: 2,
+    bonusWingedLights: 0,
+  },
+  {
+    rank: 5,
+    title: 'Lv.5 · 星河守望者',
+    badgeIcon: '🌌',
+    requiredResonancePts: 320,
+    rewardSummary: '解锁「遥鲲王圣翼斗篷」「预言火盆背饰」& 音韵旋转舞 Lv.5',
+    unlockCosmeticIds: ['cape_manta_king', 'prop_fire_brazier'],
+    unlockEmoteUpgrades: { emote_spin_dance: 5 },
+    unlockFurnitureIds: ['furn_manta_plush_rug'],
+    bonusCandles: 6,
+    bonusHearts: 2,
+    bonusWingedLights: 1,
+  },
+  {
+    rank: 6,
+    title: 'Lv.6 · 苍穹圣辉行者',
+    badgeIcon: '👑',
+    requiredResonancePts: 460,
+    rewardSummary: '解锁终极「欧若拉透明流光翼」「欧若拉星冕头饰」& +2 永久光之翼',
+    unlockCosmeticIds: ['cape_aurora_wings', 'hair_aurora_tiara', 'pants_aurora_gold'],
+    unlockEmoteUpgrades: { emote_pray_star: 5 },
+    unlockFurnitureIds: ['furn_wind_chime_arch'],
+    bonusCandles: 8,
+    bonusHearts: 3,
+    bonusWingedLights: 2,
+  },
+];
+
+export interface ExplorerGrowthEvaluation {
+  currentRankSpec: ExplorerGrowthRankSpec;
+  nextRankSpec: ExplorerGrowthRankSpec | null;
+  progressPercent: number;
+  ptsIntoCurrentRank: number;
+  ptsNeededForNextRank: number;
+}
+
+export function evaluateExplorerGrowthRankPure(
+  luminaResonancePtsRaw = 0
+): ExplorerGrowthEvaluation {
+  const pts = Math.max(0, Math.floor(Number(luminaResonancePtsRaw) || 0));
+  let currentRankSpec = EXPLORER_GROWTH_RANKS[0];
+  let nextRankSpec: ExplorerGrowthRankSpec | null = null;
+
+  for (let i = 0; i < EXPLORER_GROWTH_RANKS.length; i++) {
+    if (pts >= EXPLORER_GROWTH_RANKS[i].requiredResonancePts) {
+      currentRankSpec = EXPLORER_GROWTH_RANKS[i];
+      nextRankSpec = EXPLORER_GROWTH_RANKS[i + 1] || null;
+    }
+  }
+
+  if (!nextRankSpec) {
+    return {
+      currentRankSpec,
+      nextRankSpec: null,
+      progressPercent: 100,
+      ptsIntoCurrentRank: pts - currentRankSpec.requiredResonancePts,
+      ptsNeededForNextRank: 0,
+    };
+  }
+
+  const span = Math.max(
+    1,
+    nextRankSpec.requiredResonancePts - currentRankSpec.requiredResonancePts
+  );
+  const into = Math.max(0, pts - currentRankSpec.requiredResonancePts);
+  return {
+    currentRankSpec,
+    nextRankSpec,
+    progressPercent: Math.min(100, Math.round((into / span) * 100)),
+    ptsIntoCurrentRank: into,
+    ptsNeededForNextRank: span,
+  };
+}
+
+/**
+ * Pure helper applying any newly reached Explorer Growth Rank rewards (cosmetics, emotes, furniture, and bonus currencies)
+ * without ever double-awarding ranks already achieved.
+ */
+export function applyExplorerRankMilestonesPure(
+  save: PersistentSaveData,
+  prevRankRaw?: number
+): {
+  nextSave: PersistentSaveData;
+  leveledUp: boolean;
+  newRankSpec: ExplorerGrowthRankSpec;
+  unlockedRewardsSummary: string[];
+} {
+  const prevRank = Math.max(1, prevRankRaw ?? save.explorerRank ?? 1);
+  const evalRes = evaluateExplorerGrowthRankPure(save.luminaResonancePts || 0);
+  const targetRank = evalRes.currentRankSpec.rank;
+
+  const unlockedCosmetics = new Set(save.unlockedCosmeticIds || []);
+  const unlockedFurniture = new Set(save.homeFurnitureInventory || []);
+  const nextEmoteLevels: Record<string, number> = { ...(save.emoteLevels || {}) };
+  let addCandles = 0;
+  let addHearts = 0;
+  let addWingedLights = 0;
+  const unlockedRewardsSummary: string[] = [];
+
+  for (const rSpec of EXPLORER_GROWTH_RANKS) {
+    if (rSpec.rank <= targetRank) {
+      for (const cId of rSpec.unlockCosmeticIds) {
+        unlockedCosmetics.add(cId);
+      }
+      for (const fId of rSpec.unlockFurnitureIds) {
+        unlockedFurniture.add(fId);
+      }
+      for (const [emoteId, minLv] of Object.entries(rSpec.unlockEmoteUpgrades)) {
+        nextEmoteLevels[emoteId] = Math.max(nextEmoteLevels[emoteId] || 1, minLv);
+      }
+      if (rSpec.rank > prevRank) {
+        addCandles += rSpec.bonusCandles;
+        addHearts += rSpec.bonusHearts;
+        addWingedLights += rSpec.bonusWingedLights;
+        unlockedRewardsSummary.push(`${rSpec.title}（${rSpec.rewardSummary}）`);
+      }
+    }
+  }
+
+  const nextSave: PersistentSaveData = {
+    ...save,
+    candles: save.candles + addCandles,
+    hearts: save.hearts + addHearts,
+    wingedLights: save.wingedLights + addWingedLights,
+    explorerRank: targetRank,
+    unlockedCosmeticIds: Array.from(unlockedCosmetics),
+    homeFurnitureInventory: Array.from(unlockedFurniture),
+    emoteLevels: nextEmoteLevels,
+  };
+
+  return {
+    nextSave,
+    leveledUp: targetRank > prevRank,
+    newRankSpec: evalRes.currentRankSpec,
+    unlockedRewardsSummary,
+  };
+}
+
+export interface LuminaShardCollectResult {
+  shard: LightShardSpec | null;
+  newlyCollected: boolean;
+  isEchoResonance: boolean;
+  alreadyEchoedThisSession: boolean;
+  leveledUpRank: boolean;
+  newRankTitle: string;
+  resonanceAdded: number;
+  nextSave: PersistentSaveData;
+  nextSessionEchoedIds: string[];
+  ceremonyTitle: string | null;
+  ceremonySubtitle: string | null;
+  message: string;
+}
+
+/**
+ * Module 6 Pure Function: Collects or Echo-Resonates a Lumina Shard (`shardId`).
+ * - First-time collection: records `shardId` in `collectedLuminaShardIds`, grants full `resonancePts`, `waxValue`,
+ *   first-time bonus currencies (`firstCandlesBonus`, `firstHeartsBonus`, `firstAscendedBonus`, `firstWingedLightBonus`),
+ *   and evaluates Explorer Rank Level-Up.
+ * - Repeat collection in a later session: triggers gentle Echo Resonance (+`echoWaxValue` wax & full wing energy)
+ *   once per session (`sessionEchoedShardIds`) so players are rewarded for revisiting without infinite exploit loops.
+ */
+export function collectLuminaShardPure(
+  save: PersistentSaveData,
+  shardId: string,
+  sessionEchoedShardIds: string[] = []
+): LuminaShardCollectResult {
+  const shard = LUMINA_SHARD_CATALOG.find((s) => s.id === shardId) || null;
+  if (!shard) {
+    return {
+      shard: null,
+      newlyCollected: false,
+      isEchoResonance: false,
+      alreadyEchoedThisSession: false,
+      leveledUpRank: false,
+      newRankTitle: '',
+      resonanceAdded: 0,
+      nextSave: save,
+      nextSessionEchoedIds: sessionEchoedShardIds,
+      ceremonyTitle: null,
+      ceremonySubtitle: null,
+      message: '未找到该微光碎片记录',
+    };
+  }
+
+  const collectedIds = Array.from(new Set(save.collectedLuminaShardIds || []));
+  const isAlreadyCollected = collectedIds.includes(shard.id);
+
+  if (isAlreadyCollected) {
+    if (sessionEchoedShardIds.includes(shard.id)) {
+      const rankEval = evaluateExplorerGrowthRankPure(save.luminaResonancePts || 0);
+      return {
+        shard,
+        newlyCollected: false,
+        isEchoResonance: false,
+        alreadyEchoedThisSession: true,
+        leveledUpRank: false,
+        newRankTitle: rankEval.currentRankSpec.title,
+        resonanceAdded: 0,
+        nextSave: save,
+        nextSessionEchoedIds: sessionEchoedShardIds,
+        ceremonyTitle: null,
+        ceremonySubtitle: null,
+        message: `${shard.icon} 「${shard.name}」本轮旅途已共鸣回响，斗篷光翼能量已回满！`,
+      };
+    }
+
+    // Gentle Echo Resonance on revisit
+    const forgeEcho = forgeCandlesFromWaxPure(save, shard.echoWaxValue);
+    const nextEchoed = [...sessionEchoedShardIds, shard.id];
+    const rankEval = evaluateExplorerGrowthRankPure(forgeEcho.nextSave.luminaResonancePts || 0);
+    return {
+      shard,
+      newlyCollected: false,
+      isEchoResonance: true,
+      alreadyEchoedThisSession: false,
+      leveledUpRank: false,
+      newRankTitle: rankEval.currentRankSpec.title,
+      resonanceAdded: 0,
+      nextSave: forgeEcho.nextSave,
+      nextSessionEchoedIds: nextEchoed,
+      ceremonyTitle: null,
+      ceremonySubtitle: null,
+      message: `${shard.icon} 微光回响「${shard.name}」· 获得 +${shard.echoWaxValue} 滴温润回响烛火，飞行能量已瞬间充满！`,
+    };
+  }
+
+  // First-time discovery!
+  const prevRank = save.explorerRank || 1;
+  const forgeRes = forgeCandlesFromWaxPure(save, shard.waxValue);
+  const nextCollected = [...collectedIds, shard.id];
+  const nextResonancePts = (save.luminaResonancePts || 0) + shard.resonancePts;
+
+  const preRankSave: PersistentSaveData = {
+    ...forgeRes.nextSave,
+    candles: forgeRes.nextSave.candles + shard.firstCandlesBonus,
+    hearts: forgeRes.nextSave.hearts + shard.firstHeartsBonus,
+    ascendedCandles: forgeRes.nextSave.ascendedCandles + shard.firstAscendedBonus,
+    wingedLights: forgeRes.nextSave.wingedLights + shard.firstWingedLightBonus,
+    collectedLuminaShardIds: nextCollected,
+    luminaResonancePts: nextResonancePts,
+  };
+
+  const rankMilestone = applyExplorerRankMilestonesPure(preRankSave, prevRank);
+  const finalSave = rankMilestone.nextSave;
+
+  const rewardParts: string[] = [`+${shard.resonancePts} 光能共鸣`];
+  if (shard.firstWingedLightBonus > 0) {
+    rewardParts.push(`+${shard.firstWingedLightBonus} 永久光之翼`);
+  }
+  if (shard.firstCandlesBonus > 0) {
+    rewardParts.push(`+${shard.firstCandlesBonus} 白蜡烛`);
+  }
+  if (shard.firstHeartsBonus > 0) {
+    rewardParts.push(`+${shard.firstHeartsBonus} 爱心`);
+  }
+  if (shard.firstAscendedBonus > 0) {
+    rewardParts.push(`+${shard.firstAscendedBonus} 升华红蜡烛`);
+  }
+  rewardParts.push(`+${shard.waxValue} 滴烛火`);
+
+  const ceremonyTitle = rankMilestone.leveledUp
+    ? `🌟 探索成长晋升：${rankMilestone.newRankSpec.title}`
+    : shard.tier === 'aether_crown' || shard.tier === 'nebula_core'
+      ? `${shard.icon} 首次共鸣高阶光能：${shard.name}`
+      : null;
+  const ceremonySubtitle = rankMilestone.leveledUp
+    ? rankMilestone.newRankSpec.rewardSummary
+    : ceremonyTitle
+      ? `${rewardParts.join(' · ')} — ${shard.loreHint}`
+      : null;
+
+  const msg = rankMilestone.leveledUp
+    ? `🌟 收集「${shard.name}」(${nextCollected.length}/${LUMINA_SHARD_CATALOG.length})！晋升至【${rankMilestone.newRankSpec.title}】并解锁：${rankMilestone.newRankSpec.rewardSummary}！`
+    : `${shard.icon} 首次收集「${shard.name}」(${nextCollected.length}/${LUMINA_SHARD_CATALOG.length}) · 获得 ${rewardParts.join('、')}！`;
+
+  return {
+    shard,
+    newlyCollected: true,
+    isEchoResonance: false,
+    alreadyEchoedThisSession: false,
+    leveledUpRank: rankMilestone.leveledUp,
+    newRankTitle: rankMilestone.newRankSpec.title,
+    resonanceAdded: shard.resonancePts,
+    nextSave: finalSave,
+    nextSessionEchoedIds: [...sessionEchoedShardIds, shard.id],
+    ceremonyTitle,
+    ceremonySubtitle,
+    message: msg,
+  };
+}
+
+/**
+ * Module 6 Pure Function: Records first-time discovery of one of the 8 Secret Landmarks / Storytelling Murals,
+ * granting +25/30 Lumina Resonance Pts + 1 White Candle and evaluating Explorer Growth Rank level-up.
+ */
+export function discoverSecretLandmarkPure(
+  save: PersistentSaveData,
+  landmarkId: string
+): {
+  newlyDiscovered: boolean;
+  landmark: SecretLandmarkCompendiumEntry | null;
+  leveledUpRank: boolean;
+  newRankTitle: string;
+  nextSave: PersistentSaveData;
+  ceremonyTitle: string | null;
+  ceremonySubtitle: string | null;
+  message: string;
+} {
+  const landmark =
+    SECRET_EXPLORATION_LANDMARKS.find((l) => l.id === landmarkId) || null;
+  if (!landmark) {
+    return {
+      newlyDiscovered: false,
+      landmark: null,
+      leveledUpRank: false,
+      newRankTitle: '',
+      nextSave: save,
+      ceremonyTitle: null,
+      ceremonySubtitle: null,
+      message: '未找到该隐秘地标记录',
+    };
+  }
+
+  const discovered = Array.from(new Set(save.discoveredSecretZoneIds || []));
+  if (discovered.includes(landmark.id)) {
+    const rankEval = evaluateExplorerGrowthRankPure(save.luminaResonancePts || 0);
+    return {
+      newlyDiscovered: false,
+      landmark,
+      leveledUpRank: false,
+      newRankTitle: rankEval.currentRankSpec.title,
+      nextSave: save,
+      ceremonyTitle: null,
+      ceremonySubtitle: null,
+      message: `🗺️ 重访隐秘地标「${landmark.name}」· ${landmark.subtitle}`,
+    };
+  }
+
+  const prevRank = save.explorerRank || 1;
+  const nextDiscovered = [...discovered, landmark.id];
+  const nextPts = (save.luminaResonancePts || 0) + landmark.resonanceRewardPts;
+
+  const preRankSave: PersistentSaveData = {
+    ...save,
+    candles: save.candles + 1,
+    discoveredSecretZoneIds: nextDiscovered,
+    luminaResonancePts: nextPts,
+  };
+
+  const rankMilestone = applyExplorerRankMilestonesPure(preRankSave, prevRank);
+
+  return {
+    newlyDiscovered: true,
+    landmark,
+    leveledUpRank: rankMilestone.leveledUp,
+    newRankTitle: rankMilestone.newRankSpec.title,
+    nextSave: rankMilestone.nextSave,
+    ceremonyTitle: rankMilestone.leveledUp
+      ? `🌟 探索成长晋升：${rankMilestone.newRankSpec.title}`
+      : `🗺️ 发现隐秘地标 (${nextDiscovered.length}/${SECRET_EXPLORATION_LANDMARKS.length})：${landmark.name}`,
+    ceremonySubtitle: rankMilestone.leveledUp
+      ? rankMilestone.newRankSpec.rewardSummary
+      : `+${landmark.resonanceRewardPts} 光能共鸣 · +1 白蜡烛 · ${landmark.subtitle}`,
+    message: `🗺️ 首次发现隐秘胜景「${landmark.name}」(${nextDiscovered.length}/${SECRET_EXPLORATION_LANDMARKS.length})！获得 +${landmark.resonanceRewardPts} 光能共鸣 & +1 白蜡烛！`,
+  };
+}
+
+/**
+ * Module 6 Pure Function: Sanitizes, deduplicates, and validates a `PersistentSaveData` object
+ * so corrupted numbers (`NaN`, `Infinity`, negative values) or duplicate collection IDs can never
+ * break the save file or cause duplicate reward exploits.
+ */
+export function sanitizeAndValidateSaveDataPure(
+  raw: Partial<PersistentSaveData>,
+  fallbackNow = new Date()
+): PersistentSaveData {
+  const def = buildDefaultSaveData(fallbackNow);
+  const safeInt = (val: unknown, fallback: number, min = 0, max = 999999): number => {
+    const num = Number(val);
+    if (!Number.isFinite(num)) return fallback;
+    return Math.max(min, Math.min(max, Math.floor(num)));
+  };
+  const uniqueStrings = (arr: unknown, fallback: string[] = []): string[] => {
+    if (!Array.isArray(arr)) return [...fallback];
+    return Array.from(
+      new Set(arr.filter((item): item is string => typeof item === 'string' && item.trim().length > 0))
+    );
+  };
+
+  const merged: PersistentSaveData = {
+    ...def,
+    ...raw,
+    playerId:
+      typeof raw.playerId === 'string' && raw.playerId.trim().length > 0
+        ? raw.playerId
+        : def.playerId,
+    playerName:
+      typeof raw.playerName === 'string' && raw.playerName.trim().length > 0
+        ? raw.playerName
+        : def.playerName,
+    candles: safeInt(raw.candles, def.candles, 0, 999999),
+    candleWax: safeInt(raw.candleWax, def.candleWax, 0, 99),
+    dailyCandlesForged: safeInt(raw.dailyCandlesForged, def.dailyCandlesForged, 0, 100),
+    hearts: safeInt(raw.hearts, def.hearts, 0, 999999),
+    dailyHeartsReceived: safeInt(raw.dailyHeartsReceived, def.dailyHeartsReceived, 0, 100),
+    seasonCandles: safeInt(raw.seasonCandles, def.seasonCandles, 0, 999999),
+    ascendedCandles: safeInt(raw.ascendedCandles, def.ascendedCandles, 0, 999999),
+    wingedLights: safeInt(raw.wingedLights, def.wingedLights, 1, 500),
+    collectedWingedLightIds: uniqueStrings(raw.collectedWingedLightIds, def.collectedWingedLightIds),
+    relivedSpiritIds: uniqueStrings(raw.relivedSpiritIds, def.relivedSpiritIds),
+    unlockedConstellationNodes: uniqueStrings([
+      ...def.unlockedConstellationNodes,
+      ...(Array.isArray(raw.unlockedConstellationNodes) ? raw.unlockedConstellationNodes : []),
+    ]),
+    unlockedCosmeticIds: uniqueStrings([
+      ...def.unlockedCosmeticIds,
+      ...(Array.isArray(raw.unlockedCosmeticIds) ? raw.unlockedCosmeticIds : []),
+    ]),
+    unlockedMusicSheetIds: uniqueStrings(raw.unlockedMusicSheetIds, def.unlockedMusicSheetIds),
+    unlockedCallSoundIds: uniqueStrings(raw.unlockedCallSoundIds, def.unlockedCallSoundIds),
+    discoveredEasterEggIds: uniqueStrings(raw.discoveredEasterEggIds, []),
+    collectedLuminaShardIds: uniqueStrings(raw.collectedLuminaShardIds, []),
+    discoveredSecretZoneIds: uniqueStrings(raw.discoveredSecretZoneIds, []),
+    luminaResonancePts: safeInt(raw.luminaResonancePts, 0, 0, 999999),
+    explorerRank: safeInt(raw.explorerRank, 1, 1, EXPLORER_GROWTH_RANKS.length),
+    blockedPeerIds: uniqueStrings(raw.blockedPeerIds, []),
+    homeFurnitureInventory: uniqueStrings([
+      ...def.homeFurnitureInventory,
+      ...(Array.isArray(raw.homeFurnitureInventory) ? raw.homeFurnitureInventory : []),
+    ]),
+    friends: {
+      ...def.friends,
+      ...(raw.friends && typeof raw.friends === 'object' ? raw.friends : {}),
+    },
+    tutorialStep: safeInt(raw.tutorialStep, def.tutorialStep, 0, 3),
+    completedRaceCount: safeInt(raw.completedRaceCount, 0, 0, 999999),
+  };
+
+  // Ensure Explorer Rank & milestone rewards are consistent with luminaResonancePts
+  return applyExplorerRankMilestonesPure(merged, merged.explorerRank).nextSave;
+}
+
 /**
  * Stage 4: Asynchronous IndexedDB mirror helper for dual-layer single-player persistence.
  */
@@ -2373,31 +2901,9 @@ class StorageManager {
         this.save(fresh);
         return fresh;
       }
-      const parsed = JSON.parse(raw) as PersistentSaveData;
-      const def = buildDefaultSaveData();
-      const merged: PersistentSaveData = {
-        ...def,
-        ...parsed,
-        friends: {
-          ...def.friends,
-          ...(parsed.friends || {}),
-        },
-        blockedPeerIds: parsed.blockedPeerIds || [],
-        reportedPeers: parsed.reportedPeers || [],
-        unlockedConstellationNodes: Array.from(
-          new Set([
-            ...def.unlockedConstellationNodes,
-            ...(parsed.unlockedConstellationNodes || []),
-          ])
-        ),
-        unlockedCosmeticIds: Array.from(
-          new Set([
-            ...def.unlockedCosmeticIds,
-            ...(parsed.unlockedCosmeticIds || []),
-          ])
-        ),
-      };
-      const { save: afterReset, didReset } = checkAndApplyDailyReset(merged);
+      const parsed = JSON.parse(raw) as Partial<PersistentSaveData>;
+      const sanitized = sanitizeAndValidateSaveDataPure(parsed);
+      const { save: afterReset, didReset } = checkAndApplyDailyReset(sanitized);
       if (didReset) {
         this.save(afterReset);
       }
@@ -2411,14 +2917,15 @@ class StorageManager {
   public save(data: PersistentSaveData): void {
     if (typeof window === 'undefined') return;
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      writeToIndexedDb(data);
+      const cleanData = sanitizeAndValidateSaveDataPure(data);
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanData));
+      writeToIndexedDb(cleanData);
       gameEventBus.emit('save:updated', { timestamp: Date.now() });
       // Also sync asynchronously to backend SQLite/JSON archive if server is running
       fetch('/api/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(cleanData),
       }).catch(() => {
         // Offline single-player fallback is expected when running standalone
       });
@@ -2439,17 +2946,19 @@ class StorageManager {
   } {
     try {
       const parsed = JSON.parse(rawJson) as Partial<PersistentSaveData>;
-      if (!parsed || typeof parsed !== 'object' || typeof parsed.candles !== 'number') {
+      if (
+        !parsed ||
+        typeof parsed !== 'object' ||
+        typeof parsed.candles !== 'number' ||
+        !Number.isFinite(parsed.candles)
+      ) {
         return {
           save: null,
           success: false,
           message: '存档格式校验失败：缺少核心货币或角色字段',
         };
       }
-      const merged: PersistentSaveData = {
-        ...buildDefaultSaveData(),
-        ...parsed,
-      };
+      const merged = sanitizeAndValidateSaveDataPure(parsed);
       this.save(merged);
       return {
         save: merged,
@@ -2474,3 +2983,4 @@ class StorageManager {
 }
 
 export const storageService = new StorageManager();
+

@@ -21,6 +21,7 @@ interface ConnectedPeer {
   playerName: string;
   realmId: string;
   roomId: string;
+  inWorld: boolean;
   x: number;
   y: number;
   z: number;
@@ -32,6 +33,8 @@ interface ConnectedPeer {
   grounded: boolean;
   flightMode: 'hover' | 'glide';
   locomotionMode: string;
+  sitMode: string;
+  dualActionMode: string;
   activeEmote: string | null;
   activeEmoteLevel: number;
   loadout: Record<string, string>;
@@ -213,6 +216,17 @@ async function startServer() {
     }
   }
 
+  // Periodic stale peer eviction (cleans up abnormal disconnects where TCP close was delayed)
+  setInterval(() => {
+    const now = Date.now();
+    for (const [pid, peer] of peers.entries()) {
+      if (now - peer.lastUpdateMs > 18000 || peer.ws.readyState > WebSocket.OPEN) {
+        removePeerFromRoom(peer);
+        peers.delete(pid);
+      }
+    }
+  }, 8000);
+
   // WebSocket Server mounted at /ws
   const wss = new WebSocketServer({ noServer: true });
 
@@ -233,6 +247,10 @@ async function startServer() {
         const msg = JSON.parse(String(data));
         const now = Date.now();
 
+        if (currentPeer) {
+          currentPeer.lastUpdateMs = now;
+        }
+
         if (msg.type === 'ping') {
           ws.send(
             JSON.stringify({
@@ -248,9 +266,20 @@ async function startServer() {
         if (msg.type === 'join_realm') {
           const playerId = String(msg.playerId || `p_${Math.random().toString(36).slice(2, 8)}`);
           const realmId = String(msg.realmId || 'home');
+          const inWorld = msg.inWorld !== false;
 
           if (currentPeer) {
             removePeerFromRoom(currentPeer);
+          }
+          const existingSameId = peers.get(playerId);
+          if (existingSameId && existingSameId.ws !== ws) {
+            removePeerFromRoom(existingSameId);
+            try {
+              existingSameId.ws.close();
+            } catch {
+              // ignore close error
+            }
+            peers.delete(playerId);
           }
 
           const roomId = assignRoomForRealm(
@@ -259,15 +288,30 @@ async function startServer() {
             Boolean(msg.forceNewRoom)
           );
           const maxCap = realmId === 'home' ? MAX_HOME_ROOM_SIZE : MAX_ROOM_SIZE;
+
+          // Compute a deterministic 2.4m social plaza offset if peer joins at the exact default (0, 6) spawn point
+          let rawX = Number(msg.x) || 0;
+          let rawZ = msg.z !== undefined ? Number(msg.z) : 6;
+          if (Math.hypot(rawX - 0, rawZ - 6) < 0.35) {
+            let hash = 0;
+            for (let i = 0; i < playerId.length; i++) {
+              hash = (hash * 31 + playerId.charCodeAt(i)) | 0;
+            }
+            const angle = ((Math.abs(hash) % 360) * Math.PI) / 180;
+            rawX = Number((Math.cos(angle) * 2.4).toFixed(2));
+            rawZ = Number((6 + Math.sin(angle) * 2.4).toFixed(2));
+          }
+
           currentPeer = {
             ws,
             playerId,
             playerName: String(msg.playerName || '星海旅人'),
             realmId,
             roomId,
-            x: Number(msg.x) || 0,
+            inWorld,
+            x: rawX,
             y: Number(msg.y) || 1.2,
-            z: Number(msg.z) || 6,
+            z: rawZ,
             vx: Number(msg.vx) || 0,
             vy: Number(msg.vy) || 0,
             vz: Number(msg.vz) || 0,
@@ -276,6 +320,8 @@ async function startServer() {
             grounded: true,
             flightMode: 'hover',
             locomotionMode: String(msg.locomotionMode || 'idle'),
+            sitMode: String(msg.sitMode || 'none'),
+            dualActionMode: String(msg.dualActionMode || 'none'),
             activeEmote: null,
             activeEmoteLevel: 1,
             loadout: msg.loadout || {},
@@ -288,29 +334,31 @@ async function startServer() {
           if (!rooms.has(roomId)) rooms.set(roomId, new Set());
           rooms.get(roomId)!.add(playerId);
 
-          // Send existing peers in the room to the newly joined player
+          // Send existing active in-world peers in the room to the newly joined player
           const roomMembers = Array.from(rooms.get(roomId)!)
             .filter((id) => id !== playerId)
-            .map((id) => {
-              const mp = peers.get(id)!;
-              return {
-                playerId: mp.playerId,
-                playerName: mp.playerName,
-                x: mp.x,
-                y: mp.y,
-                z: mp.z,
-                vx: mp.vx,
-                vy: mp.vy,
-                vz: mp.vz,
-                yaw: mp.yaw,
-                grounded: mp.grounded,
-                flightMode: mp.flightMode,
-                locomotionMode: mp.locomotionMode,
-                activeEmote: mp.activeEmote,
-                activeEmoteLevel: mp.activeEmoteLevel,
-                loadout: mp.loadout,
-              };
-            });
+            .map((id) => peers.get(id))
+            .filter((mp): mp is ConnectedPeer => Boolean(mp && mp.inWorld))
+            .map((mp) => ({
+              playerId: mp.playerId,
+              playerName: mp.playerName,
+              inWorld: mp.inWorld,
+              x: mp.x,
+              y: mp.y,
+              z: mp.z,
+              vx: mp.vx,
+              vy: mp.vy,
+              vz: mp.vz,
+              yaw: mp.yaw,
+              grounded: mp.grounded,
+              flightMode: mp.flightMode,
+              locomotionMode: mp.locomotionMode,
+              sitMode: mp.sitMode,
+              dualActionMode: mp.dualActionMode,
+              activeEmote: mp.activeEmote,
+              activeEmoteLevel: mp.activeEmoteLevel,
+              loadout: mp.loadout,
+            }));
 
           ws.send(
             JSON.stringify({
@@ -319,36 +367,41 @@ async function startServer() {
               roomId,
               realmId,
               maxCapacity: maxCap,
-              onlineCount: rooms.get(roomId)!.size,
+              onlineCount: roomMembers.length + 1,
               peers: roomMembers,
             })
           );
 
-          broadcastToRoom(
-            roomId,
-            {
-              v: PROTOCOL_VERSION,
-              type: 'peer:joined',
-              peer: {
-                playerId: currentPeer.playerId,
-                playerName: currentPeer.playerName,
-                x: currentPeer.x,
-                y: currentPeer.y,
-                z: currentPeer.z,
-                vx: currentPeer.vx,
-                vy: currentPeer.vy,
-                vz: currentPeer.vz,
-                yaw: currentPeer.yaw,
-                grounded: currentPeer.grounded,
-                flightMode: currentPeer.flightMode,
-                locomotionMode: currentPeer.locomotionMode,
-                activeEmote: currentPeer.activeEmote,
-                activeEmoteLevel: currentPeer.activeEmoteLevel,
-                loadout: currentPeer.loadout,
+          if (inWorld) {
+            broadcastToRoom(
+              roomId,
+              {
+                v: PROTOCOL_VERSION,
+                type: 'peer:joined',
+                peer: {
+                  playerId: currentPeer.playerId,
+                  playerName: currentPeer.playerName,
+                  inWorld: currentPeer.inWorld,
+                  x: currentPeer.x,
+                  y: currentPeer.y,
+                  z: currentPeer.z,
+                  vx: currentPeer.vx,
+                  vy: currentPeer.vy,
+                  vz: currentPeer.vz,
+                  yaw: currentPeer.yaw,
+                  grounded: currentPeer.grounded,
+                  flightMode: currentPeer.flightMode,
+                  locomotionMode: currentPeer.locomotionMode,
+                  sitMode: currentPeer.sitMode,
+                  dualActionMode: currentPeer.dualActionMode,
+                  activeEmote: currentPeer.activeEmote,
+                  activeEmoteLevel: currentPeer.activeEmoteLevel,
+                  loadout: currentPeer.loadout,
+                },
               },
-            },
-            playerId
-          );
+              playerId
+            );
+          }
           return;
         }
 
@@ -363,6 +416,7 @@ async function startServer() {
         if (currentPeer.msgCountWindow > 45) return;
 
         if (msg.type === 'player:transform') {
+          currentPeer.inWorld = msg.inWorld !== false;
           const dtSec = Math.max(0.01, (now - currentPeer.lastUpdateMs) / 1000);
           const nx = Number(msg.x) || 0;
           const ny = Number(msg.y) || 0;
@@ -397,35 +451,42 @@ async function startServer() {
           currentPeer.grounded = Boolean(msg.grounded);
           currentPeer.flightMode = msg.flightMode === 'glide' ? 'glide' : 'hover';
           currentPeer.locomotionMode = String(msg.locomotionMode || 'idle');
+          currentPeer.sitMode = String(msg.sitMode || 'none');
+          currentPeer.dualActionMode = String(msg.dualActionMode || 'none');
           currentPeer.activeEmote = msg.activeEmote || null;
           currentPeer.activeEmoteLevel = Number(msg.activeEmoteLevel) || 1;
           if (msg.loadout) currentPeer.loadout = msg.loadout;
           currentPeer.lastUpdateMs = now;
 
-          broadcastToRoom(
-            currentPeer.roomId,
-            {
-              v: PROTOCOL_VERSION,
-              type: 'peer:transform',
-              playerId: currentPeer.playerId,
-              x: currentPeer.x,
-              y: currentPeer.y,
-              z: currentPeer.z,
-              vx: currentPeer.vx,
-              vy: currentPeer.vy,
-              vz: currentPeer.vz,
-              yaw: currentPeer.yaw,
-              pitch: currentPeer.pitch,
-              grounded: currentPeer.grounded,
-              flightMode: currentPeer.flightMode,
-              locomotionMode: currentPeer.locomotionMode,
-              activeEmote: currentPeer.activeEmote,
-              activeEmoteLevel: currentPeer.activeEmoteLevel,
-              loadout: currentPeer.loadout,
-              serverTs: now,
-            },
-            currentPeer.playerId
-          );
+          if (currentPeer.inWorld) {
+            broadcastToRoom(
+              currentPeer.roomId,
+              {
+                v: PROTOCOL_VERSION,
+                type: 'peer:transform',
+                playerId: currentPeer.playerId,
+                inWorld: currentPeer.inWorld,
+                x: currentPeer.x,
+                y: currentPeer.y,
+                z: currentPeer.z,
+                vx: currentPeer.vx,
+                vy: currentPeer.vy,
+                vz: currentPeer.vz,
+                yaw: currentPeer.yaw,
+                pitch: currentPeer.pitch,
+                grounded: currentPeer.grounded,
+                flightMode: currentPeer.flightMode,
+                locomotionMode: currentPeer.locomotionMode,
+                sitMode: currentPeer.sitMode,
+                dualActionMode: currentPeer.dualActionMode,
+                activeEmote: currentPeer.activeEmote,
+                activeEmoteLevel: currentPeer.activeEmoteLevel,
+                loadout: currentPeer.loadout,
+                serverTs: now,
+              },
+              currentPeer.playerId
+            );
+          }
         } else if (
           msg.type === 'player:call' ||
           msg.type === 'player:emote' ||
@@ -435,6 +496,8 @@ async function startServer() {
           msg.type === 'social:dual_action' ||
           msg.type === 'social:chat' ||
           msg.type === 'social:report' ||
+          msg.type === 'coop:activate' ||
+          msg.type === 'coop:summon' ||
           msg.type === 'music:note'
         ) {
           if (msg.type === 'player:emote' && msg.emoteId) {

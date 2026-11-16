@@ -25,15 +25,15 @@ export const StatusModal: React.FC<StatusModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-center justify-center p-6 pointer-events-auto"
-      style={{ backgroundColor: 'rgba(9, 13, 24, 0.78)' }}
+      className="fixed inset-0 z-40 flex items-center justify-center p-6 pointer-events-auto sky-modal-backdrop"
+      style={{ backgroundColor: 'rgba(9, 13, 24, 0.72)' }}
       role="dialog"
       aria-modal="true"
       aria-label={isVictory ? '神庙祈福升华达成' : '星盘暂停菜单'}
     >
       <div
-        className="w-full max-w-md rounded-2xl border border-amber-300/40 p-7 text-center text-slate-100 shadow-2xl"
-        style={{ backgroundColor: 'rgba(15, 23, 42, 0.96)' }}
+        className="w-full max-w-md rounded-3xl border border-amber-300/35 p-7 text-center text-slate-100 shadow-2xl sky-panel-enter"
+        style={{ backgroundColor: 'var(--sky-glass-bg-elevated)' }}
       >
         {/* Top Starlight Crest */}
         <svg viewBox="0 0 64 40" className="w-16 h-10 mx-auto mb-2" aria-hidden="true">

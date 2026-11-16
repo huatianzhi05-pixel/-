@@ -17,10 +17,25 @@ import {
   computeEmoteLevelSpec,
   getDayNightAtmosphere,
   getSubZoneNameAt,
+  LUMINA_SHARD_CATALOG,
+  SECRET_EXPLORATION_LANDMARKS,
+  NearbyLuminaShardEvaluation,
+  NearbySocialPeerEvaluation,
+  CoopMechanismEvaluation,
+  SharedEmotionalMomentEvaluation,
+  ActiveInputDeviceType,
+  evaluateContextualControlHintPure,
+  resolveResponsiveUiProfilePure,
+  evaluateHudAutoHideStatePure,
+  AcousticSoundscapeProfile,
 } from '../game/rules';
 import { EquippedLoadout, getCosmeticById } from '../game/cosmetics';
-import { CallVoiceType } from '../game/audio';
-import { SpiritMemoryQuestState } from '../core/StorageService';
+import { CallVoiceType, AudioMixerSettings } from '../game/audio';
+import {
+  SpiritMemoryQuestState,
+  EXPLORER_GROWTH_RANKS,
+  evaluateExplorerGrowthRankPure,
+} from '../core/StorageService';
 
 interface GameHudProps {
   progress: GameProgressState;
@@ -36,6 +51,10 @@ interface GameHudProps {
     roomId: string;
     latencyMs: number;
     onlineCount: number;
+    realOnlineCount?: number;
+    localBotCount?: number;
+    localBotsEnabled?: boolean;
+    followLeaderId?: string | null;
     maxRoomSize?: number;
     reconnectCount?: number;
     botAiMode?: string;
@@ -113,6 +132,21 @@ interface GameHudProps {
   ) => void;
   discoveredEasterEggIds?: string[];
   onDiscoverAndWarpEasterEgg?: (eggId: string) => void;
+  collectedLuminaShardIds?: string[];
+  sessionEchoedShardIds?: string[];
+  discoveredSecretZoneIds?: string[];
+  luminaResonancePts?: number;
+  explorerRank?: number;
+  nearbyLuminaShardEval?: NearbyLuminaShardEvaluation | null;
+  nearbySocialPeerEval?: NearbySocialPeerEvaluation | null;
+  coopEval?: CoopMechanismEvaluation | null;
+  sharedEmotionalEval?: SharedEmotionalMomentEvaluation | null;
+  ceremonyTitle?: string | null;
+  onCollectAndWarpLuminaShard?: (shardId: string) => void;
+  onDiscoverAndWarpSecretLandmark?: (landmarkId: string) => void;
+  onFollowPartner?: (peerId: string | null) => void;
+  onSummonCoopCompanions?: () => void;
+  onToggleLocalBotsEnabled?: () => void;
   activeSpellId?: SkySpellId | null;
   activeSpellRemainingSec?: number;
   onActivateSkySpell?: (spellId: SkySpellId | null) => void;
@@ -131,6 +165,10 @@ interface GameHudProps {
   onPause: () => void;
   onResetPosition: () => void;
   onTouchJoystickChange?: (moveX: number, moveZ: number, sprint: boolean) => void;
+  activeInputDevice?: ActiveInputDeviceType;
+  soundscapeProfile?: AcousticSoundscapeProfile | null;
+  audioMixer?: AudioMixerSettings;
+  onChangeAudioMixer?: (partial: Partial<AudioMixerSettings>) => void;
 }
 
 function formatEnergySourceLabel(physics: PlayerPhysicsState): {
@@ -273,6 +311,21 @@ export const GameHud: React.FC<GameHudProps> = ({
   onAdvanceOnboardingTutorial,
   discoveredEasterEggIds = [],
   onDiscoverAndWarpEasterEgg,
+  collectedLuminaShardIds = [],
+  sessionEchoedShardIds = [],
+  discoveredSecretZoneIds = [],
+  luminaResonancePts = 0,
+  explorerRank = 1,
+  nearbyLuminaShardEval = null,
+  nearbySocialPeerEval = null,
+  coopEval = null,
+  sharedEmotionalEval = null,
+  ceremonyTitle = null,
+  onCollectAndWarpLuminaShard,
+  onDiscoverAndWarpSecretLandmark,
+  onFollowPartner,
+  onSummonCoopCompanions,
+  onToggleLocalBotsEnabled,
   activeSpellId = null,
   activeSpellRemainingSec = 0,
   onActivateSkySpell,
@@ -289,8 +342,26 @@ export const GameHud: React.FC<GameHudProps> = ({
   onPause,
   onResetPosition,
   onTouchJoystickChange,
+  activeInputDevice,
+  soundscapeProfile,
+  audioMixer,
+  onChangeAudioMixer,
 }) => {
   const [dockCollapsed, setDockCollapsed] = useState(false);
+  const [immersiveModeManual, setImmersiveModeManual] = useState(false);
+  const [audioMixerOpen, setAudioMixerOpen] = useState(false);
+  const [currencyPinnedExpanded, setCurrencyPinnedExpanded] = useState(false);
+  const [isHoveringHud, setIsHoveringHud] = useState(false);
+  const [secondsSinceCurrencyChange, setSecondsSinceCurrencyChange] = useState(0);
+  const [stateAgeSec, setStateAgeSec] = useState(0);
+  const [viewportDims, setViewportDims] = useState(() => ({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1440,
+    height: typeof window !== 'undefined' ? window.innerHeight : 900,
+    hasTouch:
+      typeof window !== 'undefined' &&
+      ('ontouchstart' in window || navigator.maxTouchPoints > 0),
+    gamepadConnected: false,
+  }));
   const [dockTab, setDockTab] = useState<'actions' | 'emotes' | 'realms'>('actions');
   const [meditationDrawerOpen, setMeditationDrawerOpen] = useState(false);
   const [easterEggDrawerOpen, setEasterEggDrawerOpen] = useState(false);
@@ -300,6 +371,58 @@ export const GameHud: React.FC<GameHudProps> = ({
   const callPressStartRef = useRef<number>(0);
   const [joyKnob, setJoyKnob] = useState({ x: 0, y: 0, active: false });
   const joyBaseRef = useRef<HTMLDivElement | null>(null);
+
+  // Track viewport resize & gamepad connection for multi-device UI adaptation
+  useEffect(() => {
+    const updateDeviceProfile = () => {
+      const pads =
+        typeof navigator !== 'undefined' && navigator.getGamepads
+          ? Array.from(navigator.getGamepads()).filter(Boolean)
+          : [];
+      setViewportDims({
+        width: window.innerWidth,
+        height: window.innerHeight,
+        hasTouch: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+        gamepadConnected: pads.length > 0,
+      });
+    };
+    window.addEventListener('resize', updateDeviceProfile);
+    window.addEventListener('gamepadconnected', updateDeviceProfile);
+    window.addEventListener('gamepaddisconnected', updateDeviceProfile);
+    return () => {
+      window.removeEventListener('resize', updateDeviceProfile);
+      window.removeEventListener('gamepadconnected', updateDeviceProfile);
+      window.removeEventListener('gamepaddisconnected', updateDeviceProfile);
+    };
+  }, []);
+
+  // Reset currency timer whenever player gains/spends candles, wax, hearts, or ascended candles
+  useEffect(() => {
+    setSecondsSinceCurrencyChange(0);
+  }, [
+    progress.candles,
+    progress.wax,
+    progress.hearts,
+    progress.ascendedCandles,
+    progress.wingedLights,
+  ]);
+
+  // Reset contextual state age timer whenever primary locomotion/flight/sit/interact/collect context changes
+  const contextStateSignature = `${physics.grounded ? 'g' : 'a'}:${physics.locomotionMode}:${physics.flightMode}:${physics.isDiving ? 'd' : 'n'}:${physics.sitMode}:${nearestInteractable?.id || ''}:${nearbyLuminaShardEval?.nearestShard?.id || ''}:${nearbySocialPeerEval?.nearestPeer?.playerId || ''}:${coopEval?.mechanismId || ''}:${coopEval?.canActivate ? '1' : '0'}`;
+  useEffect(() => {
+    setStateAgeSec(0);
+  }, [contextStateSignature]);
+
+  // 250ms tick for ephemeral hint auto-fade & HUD breathing auto-collapse
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setStateAgeSec((prev) => Math.min(30, Number((prev + 0.25).toFixed(2))));
+      setSecondsSinceCurrencyChange((prev) =>
+        Math.min(30, Number((prev + 0.25).toFixed(2)))
+      );
+    }, 250);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -311,8 +434,9 @@ export const GameHud: React.FC<GameHudProps> = ({
       ) {
         return;
       }
-      if (e.code === 'KeyH' && !document.querySelector('[aria-label="光遇15键云端乐器演奏台"]')) {
+      if (e.code === 'KeyH' && !document.querySelector('[aria-label="光遇15键云端乐器演奏与自动合奏台"]')) {
         setDockCollapsed((prev) => !prev);
+        setImmersiveModeManual((prev) => !prev);
       }
     };
     window.addEventListener('keydown', onKey);
@@ -324,6 +448,42 @@ export const GameHud: React.FC<GameHudProps> = ({
   const equippedCape = getCosmeticById(loadout.cape);
   const fullWedges = Math.min(physics.maxWingWedges, Math.floor(physics.wingEnergy));
   const partialWedge = Math.max(0, physics.wingEnergy - fullWedges);
+
+  const responsiveProfile = resolveResponsiveUiProfilePure(
+    viewportDims.width,
+    viewportDims.height,
+    viewportDims.hasTouch,
+    viewportDims.gamepadConnected || activeInputDevice === 'gamepad'
+  );
+  const resolvedInputDevice: ActiveInputDeviceType =
+    activeInputDevice || responsiveProfile.primaryInput;
+
+  const hudBreathing = evaluateHudAutoHideStatePure({
+    immersiveModeManual,
+    isHoveringHud: isHoveringHud || currencyPinnedExpanded,
+    secondsSinceCurrencyChange,
+    secondsSinceInteraction: stateAgeSec,
+    isCompactViewport: responsiveProfile.isCompactViewport,
+    hasActiveEmergencyAlert:
+      physics.krillAlertLevel > 0.1 || physics.tempLostWedges > 0.05,
+  });
+
+  const contextualHint = evaluateContextualControlHintPure({
+    grounded: physics.grounded,
+    locomotionMode: physics.locomotionMode,
+    flightMode: physics.flightMode,
+    isDiving: physics.isDiving,
+    sitMode: physics.sitMode,
+    wingEnergy: physics.wingEnergy,
+    inWindTunnel: physics.inWindTunnel,
+    nearestInteractable: null,
+    nearbyLuminaShard: null,
+    nearbySocialPeer: null,
+    coopEval: null,
+    stateAgeSec,
+    inputDevice: resolvedInputDevice,
+    maxDisplaySec: 4.2,
+  });
 
   const handleJoyPointer = (clientX: number, clientY: number) => {
     if (!joyBaseRef.current || !onTouchJoystickChange) return;
@@ -353,11 +513,20 @@ export const GameHud: React.FC<GameHudProps> = ({
 
   return (
     <div className="fixed inset-0 z-20 pointer-events-none select-none flex flex-col justify-between p-2.5 sm:p-3.5">
-      {/* ================= TOP PERIMETER: ULTRA-SLIM TRANSLUCENT GLASS RIBBON ================= */}
-      <div className="flex items-center justify-between gap-1.5 w-full">
-        {/* Top-Left Capsule: White Candles, Hearts, Ascended Red Candles & Current Realm */}
+      {/* ================= TOP PERIMETER WRAPPER (RIBBON + TOP TOASTS) ================= */}
+      <div className="flex flex-col items-center w-full gap-1.5 pointer-events-none">
+        {/* ================= TOP PERIMETER: ULTRA-SLIM TRANSLUCENT GLASS RIBBON ================= */}
         <div
-          className="h-9 px-2.5 sm:px-3 rounded-full border border-white/15 bg-slate-950/65 text-slate-100 pointer-events-auto shadow-sm flex items-center gap-2 whitespace-nowrap shrink-0"
+          onPointerEnter={() => setIsHoveringHud(true)}
+          onPointerLeave={() => setIsHoveringHud(false)}
+          className={`flex items-center justify-between gap-1.5 w-full transition-opacity duration-300 ${hudBreathing.topBarOpacityClass}`}
+        >
+        {/* Top-Left Capsule: Featherlight Auto-Collapsing Currencies & Current Realm */}
+        <div
+          data-testid="hud-currency-capsule"
+          onClick={() => setCurrencyPinnedExpanded((prev) => !prev)}
+          title="点击固定展开或收起次要货币与子区域详情"
+          className="sky-glass-pill h-9 px-2.5 sm:px-3 rounded-full text-slate-100 pointer-events-auto shadow-sm flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer"
         >
           {/* White Candles + Inline Wax Progress */}
           <div className="flex items-center gap-1" title="白蜡烛与烛火合成进度">
@@ -369,12 +538,14 @@ export const GameHud: React.FC<GameHudProps> = ({
             <span className="text-xs font-bold font-mono tabular-nums text-white">
               {Math.round(progress.candles)}
             </span>
-            <span
-              className="text-[10px] font-mono tabular-nums text-amber-300/90"
-              title={`烛火进度 ${Math.round(progress.wax)}/100`}
-            >
-              ({Math.round(progress.wax)}%)
-            </span>
+            {hudBreathing.showExpandedCurrencies && (
+              <span
+                className="text-[10px] font-mono tabular-nums text-amber-300/90"
+                title={`烛火进度 ${Math.round(progress.wax)}/100`}
+              >
+                ({Math.round(progress.wax)}%)
+              </span>
+            )}
           </div>
 
           <span aria-hidden="true" className="text-white/20 text-xs">·</span>
@@ -393,33 +564,42 @@ export const GameHud: React.FC<GameHudProps> = ({
             </span>
           </div>
 
-          <span aria-hidden="true" className="text-white/20 text-xs">·</span>
+          {hudBreathing.showExpandedCurrencies && (
+            <>
+              <span aria-hidden="true" className="text-white/20 text-xs">·</span>
 
-          {/* Ascended Red Candles */}
-          <div className="flex items-center gap-1" title="伊甸升华红蜡烛">
-            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 shrink-0" aria-hidden="true">
-              <polygon points="12,1 16,8 12,11 8,8" fill="#FDE047" />
-              <rect x="8.5" y="10" width="7" height="12" rx="1.5" fill="#EF4444" />
-            </svg>
-            <span className="hidden lg:inline text-[11px] text-slate-300">红烛</span>
-            <span className="text-xs font-bold font-mono tabular-nums text-amber-300">
-              {Math.round(progress.ascendedCandles)}
-            </span>
-          </div>
+              {/* Ascended Red Candles */}
+              <div className="flex items-center gap-1" title="伊甸升华红蜡烛">
+                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 shrink-0" aria-hidden="true">
+                  <polygon points="12,1 16,8 12,11 8,8" fill="#FDE047" />
+                  <rect x="8.5" y="10" width="7" height="12" rx="1.5" fill="#EF4444" />
+                </svg>
+                <span className="hidden lg:inline text-[11px] text-slate-300">红烛</span>
+                <span className="text-xs font-bold font-mono tabular-nums text-amber-300">
+                  {Math.round(progress.ascendedCandles)}
+                </span>
+              </div>
+            </>
+          )}
 
           <div className="flex items-center gap-1.5 pl-1.5 border-l border-white/15">
-            <span
-              data-testid="hud-subzone-label"
-              className="hidden xl:inline text-[11px] text-amber-100/90 max-w-[135px] truncate"
-            >
-              {realm.name.split(' · ')[0]} · {subZoneName}
-            </span>
+            {hudBreathing.showSubZoneLabel && (
+              <span
+                data-testid="hud-subzone-label"
+                className="hidden xl:inline text-[11px] text-amber-100/90 max-w-[135px] truncate"
+              >
+                {realm.name.split(' · ')[0]} · {subZoneName}
+              </span>
+            )}
             <button
               type="button"
               data-testid="cycle-daynight-btn"
-              onClick={onCycleDayNightPhase}
+              onClick={(e) => {
+                e.stopPropagation();
+                onCycleDayNightPhase();
+              }}
               title={`当前：${realm.name.split(' · ')[0]} · ${subZoneName} — 点击或按 [T] 切换昼夜氛围`}
-              className="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-[10px] font-medium text-sky-100 cursor-pointer whitespace-nowrap shrink-0 transition-colors"
+              className="sky-btn px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-[10px] font-medium text-sky-100 cursor-pointer whitespace-nowrap shrink-0"
             >
               {dayNightPhase === 'morning'
                 ? '🌅 晨曦'
@@ -434,7 +614,7 @@ export const GameHud: React.FC<GameHudProps> = ({
 
         {/* Top-Center Crest: Compact Sky Wing Energy Ring + Inline Wedge Diamonds */}
         <div
-          className="h-9 px-3 rounded-full border border-amber-200/30 bg-slate-950/65 flex items-center gap-2 pointer-events-auto shadow-sm whitespace-nowrap shrink-0"
+          className="sky-glass-pill h-9 px-3 rounded-full flex items-center gap-2 pointer-events-auto shadow-sm whitespace-nowrap shrink-0"
         >
           {/* Compact Segmented Circular Wing Energy Ring */}
           <div
@@ -592,14 +772,14 @@ export const GameHud: React.FC<GameHudProps> = ({
 
         {/* Top-Right Capsule: Constellation, Friends, Photo, Compass & System Controls */}
         <div
-          className="h-9 px-2 rounded-full border border-white/15 bg-slate-950/65 flex items-center gap-1 pointer-events-auto shadow-sm whitespace-nowrap shrink-0"
+          className="sky-glass-pill h-9 px-2 rounded-full flex items-center gap-1 pointer-events-auto shadow-sm whitespace-nowrap shrink-0"
         >
           <button
             type="button"
             data-testid="open-constellation-hub-btn"
             onClick={() => onOpenConstellationHub('constellation')}
             title="先祖星盘解锁树 [K]"
-            className="h-7 px-2.5 rounded-full hover:bg-white/15 flex items-center gap-1 text-xs font-medium text-amber-100 cursor-pointer whitespace-nowrap shrink-0 transition-colors"
+            className="sky-btn h-7 px-2.5 rounded-full hover:bg-white/15 flex items-center gap-1 text-xs font-medium text-amber-100 cursor-pointer whitespace-nowrap shrink-0"
           >
             <span>✦ 星盘</span>
           </button>
@@ -609,7 +789,7 @@ export const GameHud: React.FC<GameHudProps> = ({
             data-testid="open-social-hub-btn"
             onClick={() => onOpenConstellationHub('social')}
             title="好友星盘与联机互动 [G]"
-            className="h-7 px-2.5 rounded-full hover:bg-white/15 flex items-center gap-1 text-xs font-medium text-sky-100 cursor-pointer whitespace-nowrap shrink-0 transition-colors"
+            className="sky-btn h-7 px-2.5 rounded-full hover:bg-white/15 flex items-center gap-1 text-xs font-medium text-sky-100 cursor-pointer whitespace-nowrap shrink-0"
           >
             <span>🤝 好友</span>
           </button>
@@ -619,7 +799,7 @@ export const GameHud: React.FC<GameHudProps> = ({
             data-testid="open-photo-mode-btn"
             onClick={onOpenPhotoMode}
             title="自由相机与自拍留影 [O/P]"
-            className="h-7 px-2.5 rounded-full hover:bg-white/15 flex items-center gap-1 text-xs font-medium text-rose-100 cursor-pointer whitespace-nowrap shrink-0 transition-colors"
+            className="sky-btn h-7 px-2.5 rounded-full hover:bg-white/15 flex items-center gap-1 text-xs font-medium text-rose-100 cursor-pointer whitespace-nowrap shrink-0"
           >
             <span>📷 拍照</span>
           </button>
@@ -628,12 +808,18 @@ export const GameHud: React.FC<GameHudProps> = ({
             type="button"
             data-testid="open-easter-egg-compass-btn"
             onClick={() => setEasterEggDrawerOpen((prev) => !prev)}
-            className="h-7 px-2.5 rounded-full bg-amber-400/15 hover:bg-amber-400/25 border border-amber-300/35 flex items-center gap-1 text-xs font-medium text-amber-200 cursor-pointer whitespace-nowrap shrink-0 transition-colors"
-            title="打开广域秘境罗盘与 12 大《光·遇》致敬彩蛋图鉴"
+            className="sky-btn h-7 px-2.5 rounded-full bg-amber-400/15 hover:bg-amber-400/25 border border-amber-300/35 flex items-center gap-1 text-xs font-medium text-amber-200 cursor-pointer whitespace-nowrap shrink-0"
+            title="打开光能探索成长阶位、16 枚四阶光能碎片、8 处隐秘地标与 12 大致敬彩蛋图鉴"
           >
             <span>🗺️ 秘境</span>
+            <span
+              data-testid="hud-explorer-rank-badge"
+              className="px-1 rounded bg-amber-400/25 text-[10px] font-bold text-amber-200"
+            >
+              Lv.{explorerRank}
+            </span>
             <span className="font-mono text-[10px] text-amber-300">
-              {discoveredEasterEggIds.length}/12
+              {collectedLuminaShardIds.length}/16
             </span>
           </button>
 
@@ -641,10 +827,45 @@ export const GameHud: React.FC<GameHudProps> = ({
 
           <button
             type="button"
+            data-testid="hud-immersive-mode-btn"
+            aria-label={immersiveModeManual ? '恢复标准界面 [H]' : '纯净沉浸视野 [H]'}
+            title={immersiveModeManual ? '恢复标准界面 [H]' : '开启纯净沉浸视野（自动隐藏次要信息与底部坞） [H]'}
+            onClick={() => {
+              const next = !immersiveModeManual;
+              setImmersiveModeManual(next);
+              setDockCollapsed(next);
+            }}
+            className={`sky-btn w-7 h-7 rounded-full flex items-center justify-center text-xs cursor-pointer shrink-0 ${
+              immersiveModeManual
+                ? 'bg-amber-300 text-slate-950 font-bold'
+                : 'hover:bg-white/15 text-amber-100'
+            }`}
+          >
+            👁️
+          </button>
+
+          <button
+            type="button"
+            data-testid="hud-audio-mixer-btn"
+            aria-label="打开混音台与空间声景面板"
+            title="打开 5 通道混音台与 3D 空间声景面板"
+            onClick={() => setAudioMixerOpen((prev) => !prev)}
+            className={`sky-btn w-7 h-7 rounded-full flex items-center justify-center text-xs cursor-pointer shrink-0 ${
+              audioMixerOpen
+                ? 'bg-amber-300 text-slate-950 font-bold'
+                : 'hover:bg-white/15 text-amber-100'
+            }`}
+          >
+            🎵
+          </button>
+
+          <button
+            type="button"
+            data-testid="hud-mute-btn"
             aria-label={muted ? '取消静音 [M]' : '静音 [M]'}
             title={muted ? '取消静音 [M]' : '静音 [M]'}
             onClick={onToggleMute}
-            className="w-7 h-7 rounded-full hover:bg-white/15 flex items-center justify-center text-amber-100 cursor-pointer shrink-0 transition-colors"
+            className="sky-btn w-7 h-7 rounded-full hover:bg-white/15 flex items-center justify-center text-amber-100 cursor-pointer shrink-0"
           >
             <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2">
               {muted ? (
@@ -660,7 +881,7 @@ export const GameHud: React.FC<GameHudProps> = ({
             aria-label="重置回遇境星盘 [R]"
             title="重置回遇境星盘 [R]"
             onClick={onResetPosition}
-            className="w-7 h-7 rounded-full hover:bg-white/15 flex items-center justify-center text-amber-100 cursor-pointer shrink-0 transition-colors"
+            className="sky-btn w-7 h-7 rounded-full hover:bg-white/15 flex items-center justify-center text-amber-100 cursor-pointer shrink-0"
           >
             <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8" />
@@ -673,7 +894,7 @@ export const GameHud: React.FC<GameHudProps> = ({
             aria-label="暂停游戏 [Esc]"
             title="暂停游戏 [Esc]"
             onClick={onPause}
-            className="w-7 h-7 rounded-full hover:bg-white/15 flex items-center justify-center text-amber-100 cursor-pointer shrink-0 transition-colors"
+            className="sky-btn w-7 h-7 rounded-full hover:bg-white/15 flex items-center justify-center text-amber-100 cursor-pointer shrink-0"
           >
             <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="6" y="4" width="4" height="16" rx="1" />
@@ -683,11 +904,140 @@ export const GameHud: React.FC<GameHudProps> = ({
         </div>
       </div>
 
+      {/* ================= MODULE 10: 5-BUS AUDIO MIXER & 3D SPATIAL SOUNDSCAPE POPOVER ================= */}
+      {audioMixerOpen && (
+        <div
+          data-testid="hud-audio-mixer-panel"
+          className="fixed top-14 right-3.5 z-40 sky-panel-enter sky-glass-pill p-3.5 rounded-2xl text-xs text-slate-100 pointer-events-auto shadow-2xl w-80 sm:w-96 space-y-2.5"
+        >
+          <div className="flex items-center justify-between border-b border-white/15 pb-2">
+            <div className="font-bold text-amber-200 flex items-center gap-1.5">
+              <span>🎵 空间声景与五通道混音台</span>
+            </div>
+            <button
+              type="button"
+              data-testid="close-audio-mixer-btn"
+              onClick={() => setAudioMixerOpen(false)}
+              className="sky-btn px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-[11px] text-slate-300 hover:text-white cursor-pointer"
+            >
+              ✕ 关闭
+            </button>
+          </div>
+
+          {/* Live 3D Acoustic Zone, Reverb & Generative Music Status */}
+          {soundscapeProfile && (
+            <div className="p-2.5 rounded-xl bg-slate-950/65 border border-amber-200/20 space-y-1 text-[11px]">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-slate-400">自适应乐章：</span>
+                <span
+                  data-testid="mixer-music-theme-title"
+                  className="font-semibold text-amber-200 truncate"
+                >
+                  {soundscapeProfile.musicThemeTitle}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-slate-400">声学环境：</span>
+                <span
+                  data-testid="mixer-acoustic-zone-badge"
+                  className="text-sky-200 font-medium"
+                >
+                  {soundscapeProfile.zoneLabel} (混响 {Math.round(soundscapeProfile.reverbWetMix01 * 100)}%)
+                </span>
+              </div>
+              {soundscapeProfile.nearestEmitter && (
+                <div
+                  data-testid="mixer-nearest-emitter-info"
+                  className="flex items-center justify-between gap-2 text-[10px] text-emerald-200/90 pt-0.5 border-t border-white/10"
+                >
+                  <span>
+                    🔊 3D声源：{soundscapeProfile.nearestEmitter.emitterName} (
+                    {soundscapeProfile.nearestEmitter.distance3d}m)
+                  </span>
+                  <span className="font-mono">
+                    音量 {Math.round(soundscapeProfile.nearestEmitter.gain01 * 100)}% ·{' '}
+                    {soundscapeProfile.nearestEmitter.panStereo < -0.15
+                      ? '偏左'
+                      : soundscapeProfile.nearestEmitter.panStereo > 0.15
+                        ? '偏右'
+                        : '正前'}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 5-Channel Volume Sliders */}
+          {audioMixer && onChangeAudioMixer && (
+            <div className="space-y-2">
+              {(
+                [
+                  {
+                    key: 'masterVolume',
+                    label: '🔊 主音量 (Master)',
+                    testId: 'mixer-slider-master',
+                  },
+                  {
+                    key: 'bgmVolume',
+                    label: '🎼 治愈配乐 (BGM)',
+                    testId: 'mixer-slider-bgm',
+                  },
+                  {
+                    key: 'ambientVolume',
+                    label: '🍃 环境与飞行风声 (Ambient)',
+                    testId: 'mixer-slider-ambient',
+                  },
+                  {
+                    key: 'sfxVolume',
+                    label: '👣 角色与收集音效 (SFX)',
+                    testId: 'mixer-slider-sfx',
+                  },
+                  {
+                    key: 'instrumentVolume',
+                    label: '🎹 乐器演奏音量 (Instrument)',
+                    testId: 'mixer-slider-instrument',
+                  },
+                ] as const
+              ).map((bus) => {
+                const val = audioMixer[bus.key];
+                return (
+                  <div key={bus.key} className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] text-slate-200 w-44 truncate">
+                      {bus.label}
+                    </span>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={Math.round(val * 100)}
+                      data-testid={bus.testId}
+                      onChange={(e) =>
+                        onChangeAudioMixer({
+                          [bus.key]: Number(e.target.value) / 100,
+                        })
+                      }
+                      className="w-28 accent-amber-300 cursor-pointer"
+                    />
+                    <span className="text-[10px] font-mono text-amber-200 w-9 text-right">
+                      {Math.round(val * 100)}%
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="text-[10px] text-slate-400 pt-1 border-t border-white/10 leading-relaxed">
+            ✦ 智能防掩蔽混音已启用：高速滑翔/俯冲时风声自动限幅（≤24%），收集碎片或弹奏乐器时自动轻柔闪避背景音。
+          </div>
+        </div>
+      )}
+
       {/* ================= BUILT-IN DEBUG OVERLAY (?debug=1) ================= */}
       {debugMode && (
         <div
           data-testid="debug-telemetry-panel"
-          className="self-start mt-1.5 px-3 py-2 rounded-xl border border-emerald-400/40 bg-slate-950/92 text-[10px] font-mono text-emerald-300 pointer-events-auto space-y-0.5 shadow-xl max-w-3xl max-h-[48vh] overflow-y-auto"
+          className="fixed top-14 left-3.5 z-40 px-3 py-2 rounded-xl border border-emerald-400/40 bg-slate-950/92 text-[10px] font-mono text-emerald-300 pointer-events-auto space-y-0.5 shadow-xl max-w-3xl max-h-[48vh] overflow-y-auto"
         >
           <div className="flex items-center justify-between gap-4">
             <span className="font-bold text-emerald-200">
@@ -1554,7 +1904,7 @@ export const GameHud: React.FC<GameHudProps> = ({
       )}
 
       {/* ================= DISCREET FLOATING TOASTS & DRAWERS ================= */}
-      <div className="mt-1.5 flex flex-col items-center gap-1.5 pointer-events-none mb-auto">
+      <div className="flex flex-col items-center gap-1.5 pointer-events-none">
         {tutorialStep < 3 && onAdvanceOnboardingTutorial && (
           <div
             data-testid="onboarding-tutorial-banner"
@@ -1669,6 +2019,54 @@ export const GameHud: React.FC<GameHudProps> = ({
           </div>
         )}
 
+        {ceremonyTitle && (
+          <div
+            data-testid="hud-ceremony-banner"
+            className="px-4 py-1.5 rounded-full border border-amber-300/70 bg-gradient-to-r from-amber-950/90 via-indigo-950/90 to-amber-950/90 text-xs font-bold text-amber-200 shadow-xl flex items-center gap-2 pointer-events-none"
+          >
+            <span className="text-sm">✨</span>
+            <span>{ceremonyTitle}</span>
+            <span className="text-sm">✨</span>
+          </div>
+        )}
+
+        {nearbyLuminaShardEval?.isWithinVisualHintRadius &&
+          nearbyLuminaShardEval.nearestShard && (
+            <div
+              data-testid="hud-lumina-proximity-hint"
+              className="px-3.5 py-1 rounded-full border border-cyan-300/55 bg-slate-950/80 text-[11px] text-cyan-100 shadow-lg flex items-center gap-2 pointer-events-auto whitespace-nowrap"
+            >
+              <span>
+                {nearbyLuminaShardEval.nearestShard.icon}{' '}
+                <strong className="text-amber-200">
+                  {nearbyLuminaShardEval.nearestShard.name}
+                </strong>{' '}
+                <span className="font-mono text-cyan-300">
+                  ({nearbyLuminaShardEval.distance3d.toFixed(1)}m)
+                </span>
+              </span>
+              <span className="text-[10px] text-slate-300">
+                {nearbyLuminaShardEval.isAlreadyCollected
+                  ? `🌊 可回响共鸣 (+${nearbyLuminaShardEval.nearestShard.echoWaxValue}烛火)`
+                  : `✦ 靠近收集 (+${nearbyLuminaShardEval.nearestShard.resonancePts}光能)`}
+              </span>
+              {onCollectAndWarpLuminaShard && (
+                <button
+                  type="button"
+                  data-testid="hud-absorb-nearby-shard-btn"
+                  onClick={() =>
+                    onCollectAndWarpLuminaShard(
+                      nearbyLuminaShardEval.nearestShard!.id
+                    )
+                  }
+                  className="px-2 py-0.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 text-[10px] font-bold cursor-pointer"
+                >
+                  ✨ 吸收共鸣 [E]
+                </button>
+              )}
+            </div>
+          )}
+
         {bannerMessage && (
           <div
             className="px-4 py-1 rounded-full border border-amber-200/35 bg-slate-950/75 text-xs font-medium text-amber-100 shadow-md max-w-xl truncate"
@@ -1681,6 +2079,37 @@ export const GameHud: React.FC<GameHudProps> = ({
         {dualActionStatusText && (
           <div className="px-3.5 py-1 rounded-full bg-emerald-950/80 border border-emerald-400/40 text-xs text-emerald-200 font-medium">
             {dualActionStatusText}
+          </div>
+        )}
+
+        {netStatus.followLeaderId && (
+          <div
+            data-testid="hud-follow-leader-pill"
+            className="px-3.5 py-1 rounded-full bg-cyan-950/85 border border-cyan-400/50 text-xs text-cyan-100 font-medium flex items-center gap-2 pointer-events-auto shadow-md"
+          >
+            <span>
+              🧭 正在自动跟随伙伴探索 ({netStatus.followLeaderId}) · 按任意方向键或点击可随时脱离
+            </span>
+            {onFollowPartner && (
+              <button
+                type="button"
+                data-testid="hud-stop-follow-btn"
+                onClick={() => onFollowPartner(null)}
+                className="px-2 py-0.5 rounded-full bg-cyan-400 hover:bg-cyan-300 text-slate-950 text-[10px] font-bold cursor-pointer"
+              >
+                停止跟随
+              </button>
+            )}
+          </div>
+        )}
+
+        {sharedEmotionalEval?.active && (
+          <div
+            data-testid="hud-shared-emotional-banner"
+            className="px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-950/85 via-rose-950/85 to-amber-950/85 border border-amber-300/55 text-[11px] text-amber-100 shadow-lg flex items-center gap-2 pointer-events-none"
+          >
+            <span className="font-bold text-amber-200">{sharedEmotionalEval.title}</span>
+            <span className="text-slate-200">{sharedEmotionalEval.subtitle}</span>
           </div>
         )}
 
@@ -1758,10 +2187,12 @@ export const GameHud: React.FC<GameHudProps> = ({
             <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-800">
               <div>
                 <div className="text-xs sm:text-sm font-bold text-amber-200">
-                  🗺️ 阶段 12–13 · 11 倍超广域大陆罗盘、8 大地面建筑群落与 12 大《光·遇》传奇彩蛋图鉴 ({discoveredEasterEggIds.length}/12 已收集)
+                  🗺️ 光能探索成长阶位、16 枚四阶光能碎片、8 处隐秘地标与 12 大致敬彩蛋图鉴
                 </div>
                 <div className="text-[11px] text-slate-400">
-                  探索半径已扩建至 220m，包含 8 座地面建筑群落与互动玩法区、8 座外围高空秘境与 12 处可交互致敬彩蛋
+                  已收集光能碎片 {collectedLuminaShardIds.length}/16 · 已踏足隐秘地标{' '}
+                  {discoveredSecretZoneIds.length}/8 · 已收录致敬彩蛋{' '}
+                  {discoveredEasterEggIds.length}/12
                 </div>
               </div>
               <button
@@ -1772,6 +2203,193 @@ export const GameHud: React.FC<GameHudProps> = ({
               >
                 关闭 [✕]
               </button>
+            </div>
+
+            {/* Module 6: Explorer Growth Rank & Lumina Resonance Progress Card */}
+            {(() => {
+              const rankEval = evaluateExplorerGrowthRankPure(luminaResonancePts);
+              return (
+                <div
+                  data-testid="compendium-explorer-rank-card"
+                  className="mb-3 p-3 rounded-xl border border-amber-300/45 bg-gradient-to-r from-slate-900/95 via-indigo-950/70 to-slate-900/95"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-xs font-extrabold">
+                        {rankEval.currentRankSpec.badgeIcon} {rankEval.currentRankSpec.title}
+                      </span>
+                      <span className="text-xs text-amber-100 font-medium">
+                        {rankEval.currentRankSpec.rewardSummary}
+                      </span>
+                    </div>
+                    <span
+                      data-testid="compendium-resonance-pts"
+                      className="font-mono text-xs font-bold text-cyan-300"
+                    >
+                      ✨ 光能共鸣：{luminaResonancePts} pt
+                      {rankEval.nextRankSpec
+                        ? ` / 下一阶 ${rankEval.nextRankSpec.title} 需 ${rankEval.nextRankSpec.requiredResonancePts} pt`
+                        : ' (已达最高阶位 MAX)'}
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden mb-2">
+                    <div
+                      className="h-full bg-gradient-to-r from-amber-300 via-cyan-300 to-fuchsia-400 transition-all duration-300"
+                      style={{
+                        width: `${rankEval.progressPercent}%`,
+                      }}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[10px]">
+                    {EXPLORER_GROWTH_RANKS.map((rk) => {
+                      const unlocked = rankEval.currentRankSpec.rank >= rk.rank;
+                      return (
+                        <div
+                          key={rk.rank}
+                          className={`px-2 py-1 rounded-lg border ${
+                            unlocked
+                              ? 'border-amber-300/50 bg-amber-950/35 text-amber-100'
+                              : 'border-slate-800 bg-slate-950/60 text-slate-400'
+                          }`}
+                        >
+                          <div className="font-bold flex items-center justify-between">
+                            <span>
+                              {rk.badgeIcon} {rk.title}
+                            </span>
+                            <span>{unlocked ? '✓ 已解锁' : `${rk.requiredResonancePts}pt`}</span>
+                          </div>
+                          <div className="truncate opacity-85">{rk.rewardSummary}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Module 6: 16 Original 4-Tier Lumina Shards Catalog */}
+            <div className="mb-3" data-testid="compendium-lumina-shards-grid">
+              <div className="text-[11px] font-semibold text-cyan-300 mb-1.5">
+                💎 四阶原创光能碎片图鉴（{collectedLuminaShardIds.length}/16 已收集 · 晨露微光 +15pt / 星棱晶簇 +30pt / 云海星核 +50pt / 苍穹圣辉 +85pt，已收集碎片重访可触发「星光回响」获温和烛火）：
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {LUMINA_SHARD_CATALOG.map((shard) => {
+                  const isCollected = collectedLuminaShardIds.includes(shard.id);
+                  const isEchoed = sessionEchoedShardIds.includes(shard.id);
+                  return (
+                    <div
+                      key={shard.id}
+                      data-testid={`compendium-shard-card-${shard.id}`}
+                      className={`p-2.5 rounded-xl border flex flex-col justify-between gap-1.5 ${
+                        isCollected
+                          ? 'border-cyan-300/55 bg-cyan-950/25'
+                          : 'border-slate-800 bg-slate-900/90'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="text-xs font-bold text-amber-100 truncate">
+                            {shard.icon} {shard.name}
+                          </span>
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ${
+                              isCollected
+                                ? isEchoed
+                                  ? 'bg-sky-500/20 text-sky-300 border border-sky-400/40'
+                                  : 'bg-emerald-500/25 text-emerald-300 border border-emerald-400/40'
+                                : 'bg-slate-800 text-amber-300'
+                            }`}
+                          >
+                            {isCollected
+                              ? isEchoed
+                                ? '✓ 本局已回响'
+                                : '✓ 已收集 · 可回响'
+                              : `+${shard.resonancePts}pt · ${shard.tierLabel}`}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-cyan-200/85 mt-0.5">
+                          📍 {shard.zoneName} ({shard.x}, {Math.round(shard.y)}m, {shard.z})
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">
+                          {shard.loreHint}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-800/80">
+                        <span className="text-[10px] text-amber-200/90 font-mono">
+                          {isCollected
+                            ? `回响奖励: +${shard.echoWaxValue} 滴烛火`
+                            : `首收: +${shard.resonancePts}pt / +${shard.waxValue}烛火 / +${shard.firstCandlesBonus}白蜡`}
+                        </span>
+                        <button
+                          type="button"
+                          data-testid={`collect-lumina-shard-btn-${shard.id}`}
+                          onClick={() => {
+                            onCollectAndWarpLuminaShard?.(shard.id);
+                            setEasterEggDrawerOpen(false);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-cyan-400 hover:bg-cyan-300 text-slate-950 text-[11px] font-bold cursor-pointer shrink-0"
+                        >
+                          {isCollected ? '🌊 跃迁回响' : '✨ 寻光收集'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Module 6: 8 Secret Landmarks & Ancient Story Murals Compendium */}
+            <div className="mb-3" data-testid="compendium-secret-landmarks-grid">
+              <div className="text-[11px] font-semibold text-fuchsia-300 mb-1.5">
+                🏛️ 八大隐秘浮岛与远古无字壁画胜景图鉴（{discoveredSecretZoneIds.length}/8 已发现 · 踏足区域自动收录并获 +25~30pt 光能共鸣 & +1 白蜡烛）：
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {SECRET_EXPLORATION_LANDMARKS.map((lm) => {
+                  const discovered = discoveredSecretZoneIds.includes(lm.id);
+                  return (
+                    <div
+                      key={lm.id}
+                      data-testid={`compendium-landmark-card-${lm.id}`}
+                      className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 ${
+                        discovered
+                          ? 'border-fuchsia-300/55 bg-fuchsia-950/25'
+                          : 'border-slate-800 bg-slate-900/90'
+                      }`}
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-fuchsia-200 truncate">
+                            {lm.category === 'floating_island' ? '🏝️' : '🪨'} {lm.name}
+                          </span>
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ${
+                              discovered
+                                ? 'bg-emerald-500/25 text-emerald-300'
+                                : 'bg-slate-800 text-slate-400'
+                            }`}
+                          >
+                            {discovered ? '✓ 已踏足' : `+${lm.resonanceRewardPts}pt`}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-slate-400 truncate mt-0.5">
+                          {lm.subtitle}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        data-testid={`discover-secret-landmark-btn-${lm.id}`}
+                        onClick={() => {
+                          onDiscoverAndWarpSecretLandmark?.(lm.id);
+                          setEasterEggDrawerOpen(false);
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-fuchsia-400/25 hover:bg-fuchsia-400/40 border border-fuchsia-300/50 text-[11px] font-bold text-fuchsia-100 shrink-0 cursor-pointer"
+                      >
+                        🧭 前往胜景
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Stage 14: Aviary Alchemy Spell Workshop & Sunset Speedrun Time-Trial */}
@@ -2051,10 +2669,11 @@ export const GameHud: React.FC<GameHudProps> = ({
           </div>
         )}
       </div>
+      </div>
 
       {/* ================= BOTTOM PERIMETER: FEATHERLIGHT TRANSLUCENT DOCK ================= */}
       <div className="relative flex items-end justify-center w-full">
-        {/* Left Discreet Translucent Touch Joystick */}
+        {/* Left Discreet Translucent Touch Joystick (Multi-Device Adaptive Sizing) */}
         <div
           ref={joyBaseRef}
           data-testid="touch-virtual-joystick"
@@ -2068,8 +2687,16 @@ export const GameHud: React.FC<GameHudProps> = ({
           }}
           onPointerUp={resetJoystick}
           onPointerCancel={resetJoystick}
+          style={{
+            width: `${responsiveProfile.joystickDiameterPx}px`,
+            height: `${responsiveProfile.joystickDiameterPx}px`,
+          }}
           title="虚拟摇杆：轻推漫步 (<68%)，推满奔跑 (>=68%)"
-          className="fixed bottom-3 left-3 flex w-14 h-14 rounded-full border border-white/20 bg-slate-950/55 items-center justify-center pointer-events-auto cursor-pointer touch-none opacity-65 hover:opacity-100 transition-opacity"
+          className={`fixed bottom-3 left-3 flex rounded-full sky-glass-pill items-center justify-center pointer-events-auto cursor-pointer touch-none transition-opacity ${
+            responsiveProfile.primaryInput === 'touch' || joyKnob.active
+              ? 'opacity-85 hover:opacity-100'
+              : 'opacity-45 hover:opacity-95'
+          }`}
         >
           <div className="w-8 h-8 rounded-full border border-dashed border-amber-200/20 pointer-events-none absolute" />
           <div
@@ -2082,14 +2709,215 @@ export const GameHud: React.FC<GameHudProps> = ({
 
         {/* Centered Compact Translucent Starlight Dock */}
         <div className="flex flex-col items-center max-w-4xl pointer-events-none">
+          {/* Module 8: 2-Player Co-op Mechanism Status & Companion Summon Capsule */}
+          {coopEval && (
+            <div
+              data-testid="hud-coop-status-pill"
+              className="mb-1.5 px-3.5 py-1.5 rounded-2xl border border-amber-300/60 bg-slate-950/90 text-xs text-amber-100 shadow-xl flex flex-wrap items-center justify-center gap-2 pointer-events-auto sky-hint-enter"
+            >
+              <span className="font-bold text-amber-300">
+                🚪 {coopEval.mechanismName} ({coopEval.participantCount}/
+                {coopEval.requiredParticipants} 人就位)
+              </span>
+              <span className="text-[11px] text-slate-300">
+                {coopEval.participantLabels.join(' · ') || '等待旅人靠近'}
+              </span>
+              {!coopEval.canActivate && onSummonCoopCompanions && (
+                <button
+                  type="button"
+                  data-testid="hud-summon-coop-btn"
+                  onClick={onSummonCoopCompanions}
+                  className="sky-btn px-2.5 py-1 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 text-[11px] font-bold cursor-pointer shadow-sm"
+                >
+                  🔔 呼唤旅伴协力就位
+                </button>
+              )}
+              {coopEval.canActivate && (
+                <button
+                  type="button"
+                  data-testid="hud-activate-coop-btn"
+                  onClick={onTriggerInteract}
+                  className="sky-btn px-3 py-1 rounded-full bg-emerald-400 hover:bg-emerald-300 text-slate-950 text-[11px] font-extrabold cursor-pointer shadow-sm"
+                >
+                  ✨ 双人共鸣已满 · 按 [E] 开启石门
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Module 8: Contextual Non-Intrusive Proximity Social Interaction Bar */}
+          {nearbySocialPeerEval?.isWithinPromptRadius &&
+            nearbySocialPeerEval.nearestPeer && (
+              <div
+                data-testid="hud-proximity-social-bar"
+                className="mb-1.5 px-3 py-1 rounded-full border border-sky-300/45 bg-slate-950/85 text-xs text-slate-100 shadow-lg flex flex-wrap items-center justify-center gap-1.5 pointer-events-auto sky-hint-enter"
+              >
+                <span
+                  data-testid="hud-proximity-peer-source-badge"
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    nearbySocialPeerEval.peerSourceType === 'local_ai_companion'
+                      ? 'bg-indigo-950/90 border-indigo-400/50 text-indigo-200'
+                      : 'bg-emerald-950/90 border-emerald-400/50 text-emerald-200'
+                  }`}
+                >
+                  {nearbySocialPeerEval.peerSourceBadge}
+                </span>
+                <span className="font-semibold text-amber-100 text-[11px]">
+                  {nearbySocialPeerEval.displayName}{' '}
+                  <span className="font-mono text-[10px] text-slate-400">
+                    ({nearbySocialPeerEval.distance3d}m)
+                  </span>
+                </span>
+
+                <div className="h-3 w-px bg-white/15 mx-0.5" />
+
+                {!nearbySocialPeerEval.ignited && onIgnitePeer && (
+                  <button
+                    type="button"
+                    data-testid="hud-prox-ignite-btn"
+                    onClick={() =>
+                      onIgnitePeer(nearbySocialPeerEval.nearestPeer!.playerId)
+                    }
+                    className="sky-btn px-2.5 py-0.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 text-[11px] font-bold cursor-pointer"
+                  >
+                    🕯️ 点亮心火
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  data-testid="hud-prox-wave-btn"
+                  onClick={() => onTriggerEmote('emote_bow_respect', 3)}
+                  className="sky-btn px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-[11px] text-sky-100 cursor-pointer"
+                >
+                  👋 挥手问候
+                </button>
+
+                <button
+                  type="button"
+                  data-testid="hud-prox-dance-btn"
+                  onClick={() => onTriggerEmote('emote_spin_dance', 4)}
+                  className="sky-btn px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-[11px] text-amber-100 cursor-pointer"
+                >
+                  💃 欢舞
+                </button>
+
+                {nearbySocialPeerEval.ignited &&
+                  !nearbySocialPeerEval.isFriend &&
+                  onSendFriendRequest && (
+                    <button
+                      type="button"
+                      data-testid="hud-prox-friend-btn"
+                      onClick={() =>
+                        onSendFriendRequest(
+                          nearbySocialPeerEval.nearestPeer!.playerId
+                        )
+                      }
+                      className="sky-btn px-2.5 py-0.5 rounded-full bg-amber-400/90 hover:bg-amber-300 text-slate-950 text-[11px] font-bold cursor-pointer"
+                    >
+                      🤝 赠烛结友
+                    </button>
+                  )}
+
+                {nearbySocialPeerEval.ignited && onFollowPartner && (
+                  <button
+                    type="button"
+                    data-testid="hud-prox-follow-btn"
+                    onClick={() =>
+                      onFollowPartner(
+                        netStatus.followLeaderId ===
+                          nearbySocialPeerEval.nearestPeer!.playerId
+                          ? null
+                          : nearbySocialPeerEval.nearestPeer!.playerId
+                      )
+                    }
+                    className={`sky-btn px-2 py-0.5 rounded-full text-[11px] font-semibold cursor-pointer ${
+                      netStatus.followLeaderId ===
+                      nearbySocialPeerEval.nearestPeer!.playerId
+                        ? 'bg-cyan-400 text-slate-950'
+                        : 'bg-cyan-500/20 hover:bg-cyan-500/35 border border-cyan-400/40 text-cyan-200'
+                    }`}
+                  >
+                    {netStatus.followLeaderId ===
+                    nearbySocialPeerEval.nearestPeer!.playerId
+                      ? '✓ 跟随中'
+                      : '🧭 跟随'}
+                  </button>
+                )}
+
+                {nearbySocialPeerEval.isFriend && onExecuteDualAction && (
+                  <>
+                    <button
+                      type="button"
+                      data-testid="hud-prox-handhold-btn"
+                      onClick={() =>
+                        onExecuteDualAction(
+                          nearbySocialPeerEval.nearestPeer!.playerId,
+                          'hand_hold'
+                        )
+                      }
+                      className="sky-btn px-2 py-0.5 rounded-full bg-emerald-500/25 hover:bg-emerald-500/40 border border-emerald-400/40 text-[11px] text-emerald-200 font-semibold cursor-pointer"
+                    >
+                      🤝 牵手共飞
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="hud-prox-highfive-btn"
+                      onClick={() =>
+                        onExecuteDualAction(
+                          nearbySocialPeerEval.nearestPeer!.playerId,
+                          'high_five'
+                        )
+                      }
+                      className="sky-btn px-2 py-0.5 rounded-full bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/40 text-[11px] text-amber-200 cursor-pointer"
+                    >
+                      🙌 击掌
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="hud-prox-hug-btn"
+                      onClick={() =>
+                        onExecuteDualAction(
+                          nearbySocialPeerEval.nearestPeer!.playerId,
+                          'hug'
+                        )
+                      }
+                      className="sky-btn px-2 py-0.5 rounded-full bg-rose-500/25 hover:bg-rose-500/40 border border-rose-400/40 text-[11px] text-rose-200 cursor-pointer"
+                    >
+                      🫂 拥抱
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+
           {nearestInteractable && (
             <button
               type="button"
+              data-testid="hud-nearest-interactable-btn"
               onClick={onTriggerInteract}
-              className="mb-1.5 px-4 py-1.5 rounded-full border border-amber-300 bg-amber-300/95 text-slate-950 font-bold text-xs shadow-lg flex items-center gap-1.5 hover:bg-amber-200 active:scale-95 transition-all pointer-events-auto cursor-pointer whitespace-nowrap"
+              className="sky-btn sky-hint-enter mb-1.5 px-4 py-1.5 rounded-full border border-amber-300 bg-amber-300/95 text-slate-950 font-bold text-xs shadow-lg flex items-center gap-1.5 hover:bg-amber-200 transition-all pointer-events-auto cursor-pointer whitespace-nowrap"
             >
               <span>🔥 [E / F] {nearestInteractable.name} — {nearestInteractable.subtitle}</span>
             </button>
+          )}
+
+          {/* Module 9: Dynamic Contextual Operation Hint Capsule (Auto-Fades after 4.2s in Steady State) */}
+          {contextualHint.visible && (
+            <div
+              data-testid="hud-contextual-control-hint"
+              data-hint-category={contextualHint.category}
+              style={{ opacity: contextualHint.opacity01 }}
+              className="sky-hint-enter mb-1.5 px-3.5 py-1 rounded-full sky-glass-pill text-[11px] text-slate-100 flex items-center gap-2 pointer-events-none transition-opacity duration-300"
+            >
+              <span>{contextualHint.icon}</span>
+              <span className="font-semibold text-amber-200">
+                {contextualHint.primaryText}
+              </span>
+              <span className="px-1.5 py-0.5 rounded bg-amber-300/20 border border-amber-300/40 text-amber-100 font-mono text-[10px]">
+                {contextualHint.keybindLabel}
+              </span>
+            </div>
           )}
 
           {dockCollapsed ? (
@@ -2101,13 +2929,13 @@ export const GameHud: React.FC<GameHudProps> = ({
                 e.currentTarget.blur();
                 setDockCollapsed(false);
               }}
-              className="px-3.5 py-1 rounded-full border border-white/15 bg-slate-950/65 text-[11px] font-medium text-amber-200 hover:text-white pointer-events-auto cursor-pointer shadow-sm whitespace-nowrap"
+              className="sky-btn sky-glass-pill px-3.5 py-1 rounded-full text-[11px] font-medium text-amber-200 hover:text-white pointer-events-auto cursor-pointer shadow-sm whitespace-nowrap"
             >
               ▴ 展开星盘动作坞 [H]
             </button>
           ) : (
             <div
-              className="rounded-full border border-white/15 bg-slate-950/68 px-2.5 py-1 text-slate-100 shadow-lg pointer-events-auto flex flex-col gap-1"
+              className="rounded-full sky-glass-pill px-2.5 py-1 text-slate-100 shadow-lg pointer-events-auto flex flex-col gap-1 transition-opacity duration-300"
             >
               {/* Single-Line Compact Mode & Action Strip */}
               <div className="flex items-center justify-center gap-1 flex-wrap sm:flex-nowrap">
@@ -2279,9 +3107,10 @@ export const GameHud: React.FC<GameHudProps> = ({
                 {/* Quiet Inline Room Status & Collapse Toggle */}
                 <span
                   data-testid="hud-dock-room-status"
-                  className="hidden 2xl:inline text-[10px] text-amber-100/75 whitespace-nowrap shrink-0"
+                  title="严格区分：🌐 真实联机玩家 vs 🤖 本地单机 AI 旅伴"
+                  className="hidden 2xl:inline text-[10px] text-amber-100/80 whitespace-nowrap shrink-0"
                 >
-                  {netStatus.roomId} ({netStatus.onlineCount}/{netStatus.maxRoomSize ?? 8}人)
+                  🌐 真人{netStatus.realOnlineCount ?? 1} · 🤖 AI旅伴{netStatus.localBotCount ?? 3}
                 </span>
 
                 <button

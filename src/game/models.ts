@@ -1,11 +1,16 @@
 import * as THREE from 'three';
 import { EquippedLoadout, getCosmeticById } from './cosmetics';
-import { JointPose, WingTrailConfig } from './characterAnimator';
+import {
+  JointPose,
+  WingTrailConfig,
+  computeSecondaryClothAndHairMotionPure,
+} from './characterAnimator';
+import type { LightShardSpec } from './rules';
 
-// Procedural tileable micro-relief canvas texture for stone, fabric, and gold runes
+// Procedural tileable micro-relief canvas texture for stone, fabric, foliage, water, and gold runes
 export function createMicroReliefTexture(
   renderer: THREE.WebGLRenderer,
-  type: 'stone' | 'fabric' | 'gold_runes'
+  type: 'stone' | 'fabric' | 'gold_runes' | 'foliage' | 'water'
 ): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 256;
@@ -15,20 +20,46 @@ export function createMicroReliefTexture(
   if (type === 'stone') {
     ctx.fillStyle = '#808080';
     ctx.fillRect(0, 0, 256, 256);
-    for (let i = 0; i < 900; i++) {
+    // Multi-scale painterly limestone & travertine grain
+    for (let i = 0; i < 1200; i++) {
       const x = (i * 73) % 256;
       const y = (i * 137) % 256;
-      const shade = 105 + ((i * 29) % 45);
+      const shade = 100 + ((i * 29) % 52);
       ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
-      ctx.fillRect(x, y, 4, 4);
+      ctx.fillRect(x, y, (i % 3) + 2, (i % 2) + 2);
     }
-    ctx.strokeStyle = '#606060';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(72, 72, 72, 0.55)';
+    ctx.lineWidth = 1.5;
     for (let y = 0; y < 256; y += 64) {
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(256, y);
       ctx.stroke();
+    }
+  } else if (type === 'foliage') {
+    ctx.fillStyle = '#808080';
+    ctx.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 1400; i++) {
+      const x = (i * 59) % 256;
+      const y = (i * 101) % 256;
+      const shade = 92 + ((i * 37) % 68);
+      ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
+      ctx.beginPath();
+      ctx.arc(x, y, 2 + (i % 3), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (type === 'water') {
+    ctx.fillStyle = '#808080';
+    ctx.fillRect(0, 0, 256, 256);
+    for (let y = 0; y < 256; y += 2) {
+      for (let x = 0; x < 256; x += 4) {
+        const wave =
+          Math.sin((x / 256) * Math.PI * 6 + (y / 256) * Math.PI * 4) * 0.5 +
+          Math.cos((x / 256) * Math.PI * 4 - (y / 256) * Math.PI * 8) * 0.5;
+        const shade = Math.round(128 + wave * 38);
+        ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
+        ctx.fillRect(x, y, 4, 2);
+      }
     }
   } else if (type === 'fabric') {
     ctx.fillStyle = '#909090';
@@ -68,6 +99,26 @@ export function createMicroReliefTexture(
   return tex;
 }
 
+let _cachedGlowTex: THREE.CanvasTexture | null = null;
+export function createEtherealGlowTexture(): THREE.CanvasTexture {
+  if (_cachedGlowTex) return _cachedGlowTex;
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d')!;
+  const grad = ctx.createRadialGradient(64, 64, 2, 64, 64, 62);
+  grad.addColorStop(0.0, 'rgba(255, 250, 230, 0.72)');
+  grad.addColorStop(0.28, 'rgba(254, 240, 180, 0.36)');
+  grad.addColorStop(0.62, 'rgba(253, 224, 130, 0.10)');
+  grad.addColorStop(1.0, 'rgba(253, 224, 130, 0.0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 128, 128);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  _cachedGlowTex = tex;
+  return tex;
+}
+
 export function createContactShadowTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 128;
@@ -104,13 +155,15 @@ function createCapePatternTexture(
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 256, 256);
 
-  // Crisp Sky geometric border line above the hem
+  // Crisp Sky double-gold constellation border lines above the hem
   ctx.fillStyle = '#ffffff';
-  ctx.globalAlpha = 0.45;
-  ctx.fillRect(0, 212, 256, 4);
+  ctx.globalAlpha = 0.48;
+  ctx.fillRect(0, 208, 256, 3);
+  ctx.globalAlpha = 0.28;
+  ctx.fillRect(0, 215, 256, 2);
   ctx.globalAlpha = 1.0;
 
-  // Decorative diamond motifs along the hem border
+  // Decorative diamond star motifs along the hem border
   ctx.fillStyle = primaryHex;
   for (let x = 16; x < 256; x += 32) {
     ctx.beginPath();
@@ -600,7 +653,9 @@ export function buildSkyChildRig(
 
   const clearGroup = (g: THREE.Group) => {
     while (g.children.length > 0) {
-      g.remove(g.children[0]);
+      const child = g.children[0];
+      g.remove(child);
+      disposeObject3DResources(child);
     }
   };
 
@@ -675,10 +730,16 @@ export function buildSkyChildRig(
 
     // Attach trouser cuffs directly onto leftThigh and rightThigh so legs move inside the pants!
     leftThigh.children.slice(1).forEach((c) => {
-      if (c.name === 'pant_cuff') leftThigh.remove(c);
+      if (c.name === 'pant_cuff') {
+        leftThigh.remove(c);
+        disposeObject3DResources(c);
+      }
     });
     rightThigh.children.slice(1).forEach((c) => {
-      if (c.name === 'pant_cuff') rightThigh.remove(c);
+      if (c.name === 'pant_cuff') {
+        rightThigh.remove(c);
+        disposeObject3DResources(c);
+      }
     });
 
     const isWideHakama = pantsItem.styleVariant === 'samurai';
@@ -1197,7 +1258,77 @@ export function buildSkyChildRig(
   };
 
   // ================= REAL-TIME SKELETAL POSE & ANTI-CLIPPING CLOTH DEFORMATION =================
-  const applyPose = (pose: JointPose, elapsed: number) => {
+  let smoothedPose: JointPose | null = null;
+  let lastPoseElapsed = 0;
+
+  const applyPose = (rawPose: JointPose, elapsed: number) => {
+    const dtPose = Math.min(0.05, Math.max(0.004, elapsed - lastPoseElapsed || 0.016));
+    lastPoseElapsed = elapsed;
+
+    if (!smoothedPose) {
+      smoothedPose = { ...rawPose };
+    } else {
+      const blend = 1 - Math.exp(-18.5 * dtPose);
+      const lerpVal = (a: number, b: number) => a + (b - a) * blend;
+      const lerpAngle = (a: number, b: number) => {
+        let d = b - a;
+        while (d > Math.PI) d -= Math.PI * 2;
+        while (d < -Math.PI) d += Math.PI * 2;
+        return a + d * blend;
+      };
+
+      smoothedPose.hipsY = lerpVal(smoothedPose.hipsY, rawPose.hipsY);
+      smoothedPose.hipsPitch = lerpAngle(smoothedPose.hipsPitch, rawPose.hipsPitch);
+      smoothedPose.hipsRoll = lerpVal(smoothedPose.hipsRoll, rawPose.hipsRoll);
+      smoothedPose.hipsYawOffset = lerpAngle(smoothedPose.hipsYawOffset, rawPose.hipsYawOffset);
+
+      smoothedPose.spinePitch = lerpVal(smoothedPose.spinePitch, rawPose.spinePitch);
+      smoothedPose.spineYaw = lerpVal(smoothedPose.spineYaw, rawPose.spineYaw);
+      smoothedPose.spineRoll = lerpVal(smoothedPose.spineRoll, rawPose.spineRoll);
+
+      smoothedPose.headPitch = lerpVal(smoothedPose.headPitch, rawPose.headPitch);
+      smoothedPose.headYaw = lerpVal(smoothedPose.headYaw, rawPose.headYaw);
+      smoothedPose.headRoll = lerpVal(smoothedPose.headRoll, rawPose.headRoll);
+
+      smoothedPose.leftThighPitch = lerpVal(smoothedPose.leftThighPitch, rawPose.leftThighPitch);
+      smoothedPose.leftThighRoll = lerpVal(smoothedPose.leftThighRoll, rawPose.leftThighRoll);
+      smoothedPose.leftKneePitch = lerpVal(smoothedPose.leftKneePitch, rawPose.leftKneePitch);
+      smoothedPose.leftAnklePitch = lerpVal(smoothedPose.leftAnklePitch, rawPose.leftAnklePitch);
+
+      smoothedPose.rightThighPitch = lerpVal(smoothedPose.rightThighPitch, rawPose.rightThighPitch);
+      smoothedPose.rightThighRoll = lerpVal(smoothedPose.rightThighRoll, rawPose.rightThighRoll);
+      smoothedPose.rightKneePitch = lerpVal(smoothedPose.rightKneePitch, rawPose.rightKneePitch);
+      smoothedPose.rightAnklePitch = lerpVal(smoothedPose.rightAnklePitch, rawPose.rightAnklePitch);
+
+      smoothedPose.leftShoulderPitch = lerpVal(
+        smoothedPose.leftShoulderPitch,
+        rawPose.leftShoulderPitch
+      );
+      smoothedPose.leftShoulderRoll = lerpVal(
+        smoothedPose.leftShoulderRoll,
+        rawPose.leftShoulderRoll
+      );
+      smoothedPose.leftElbowPitch = lerpVal(smoothedPose.leftElbowPitch, rawPose.leftElbowPitch);
+
+      smoothedPose.rightShoulderPitch = lerpVal(
+        smoothedPose.rightShoulderPitch,
+        rawPose.rightShoulderPitch
+      );
+      smoothedPose.rightShoulderRoll = lerpVal(
+        smoothedPose.rightShoulderRoll,
+        rawPose.rightShoulderRoll
+      );
+      smoothedPose.rightElbowPitch = lerpVal(smoothedPose.rightElbowPitch, rawPose.rightElbowPitch);
+
+      smoothedPose.wingFlare = lerpVal(smoothedPose.wingFlare, rawPose.wingFlare);
+      smoothedPose.wingStroke = lerpVal(smoothedPose.wingStroke, rawPose.wingStroke);
+      smoothedPose.capeBillow = lerpVal(smoothedPose.capeBillow, rawPose.capeBillow);
+      smoothedPose.capeSpinFlare = lerpVal(smoothedPose.capeSpinFlare, rawPose.capeSpinFlare);
+      smoothedPose.showButterflyProp = rawPose.showButterflyProp;
+    }
+
+    const pose = smoothedPose;
+
     // 1. Automatic Foot-to-Ground Anti-Sinking Clamp: ensure lowest foot sole never dips below y = 0.02
     const lThighWorldAngle = pose.hipsPitch + pose.leftThighPitch;
     const lShinWorldAngle = lThighWorldAngle + pose.leftKneePitch;
@@ -1269,6 +1400,28 @@ export function buildSkyChildRig(
       Math.abs(pose.rightShoulderPitch) * 0.25 + Math.abs(pose.rightShoulderRoll) * 0.32
     );
 
+    // Module 6 Secondary Hair & Neck-Accessory Wind Follow-Through + Multi-Harmonic Cape Cloth Deformation
+    const secMotion = computeSecondaryClothAndHairMotionPure({
+      elapsed,
+      capeBillow: pose.capeBillow,
+      wingFlare: pose.wingFlare,
+      wingStroke: pose.wingStroke,
+      hipsRoll: pose.hipsRoll,
+      spineYaw: pose.spineYaw,
+      spinePitch: pose.spinePitch,
+    });
+
+    hairGroup.rotation.set(
+      secMotion.hairSwayPitch * 0.45,
+      0,
+      secMotion.hairSwayRoll * 0.45
+    );
+    neckAccessoryGroup.rotation.set(
+      Math.max(0, -secMotion.hairSwayPitch * 0.65),
+      0,
+      secMotion.neckScarfFlutter * 0.35
+    );
+
     // Dynamic Flowing Poncho Cape Vertex Wave, Wing Unfurling & Body-Capsule Pushout
     if (dynamicCape) {
       const posAttr = dynamicCape.geometry.attributes.position as THREE.BufferAttribute;
@@ -1302,15 +1455,23 @@ export function buildSkyChildRig(
         const wingOutX =
           signX * sideFactor * v * (pose.wingFlare * 0.72 + armRaise * 0.48);
         const wingLiftY =
-          sideFactor * v * (pose.wingFlare * 0.42 + armRaise * 0.52);
+          sideFactor * v * (pose.wingFlare * 0.42 + armRaise * 0.52) +
+          signX * sideFactor * v * secMotion.asymmetricTurnTwist * 0.16;
 
         // 2. Wing Flap Stroke with realistic secondary tip phase lag
         const tipLag = Math.sin(elapsed * 14.0 - v * 2.2) * 0.08 * pose.wingFlare;
         const strokeY = sideFactor * Math.pow(v, 1.15) * (pose.wingStroke * 0.48 + tipLag);
 
-        // 3. Cloth Wind Billow + Leg Swing Envelope Clearance
-        const wave1 = Math.sin(elapsed * 5.2 - v * 4.5 + u * 6.28) * 0.042 * v;
-        const wave2 = Math.cos(elapsed * 7.8 - v * 6.0 - u * 9.42) * 0.026 * v * (1 + pose.capeBillow);
+        // 3. Multi-Harmonic Cloth Wind Billow + Leg Swing Envelope Clearance
+        const wave1 =
+          Math.sin(elapsed * secMotion.primaryWaveFreq - v * 4.5 + u * 6.28) *
+          secMotion.waveAmplitude *
+          v;
+        const wave2 =
+          Math.cos(elapsed * secMotion.secondaryFlutterFreq - v * 6.0 - u * 9.42) *
+          0.026 *
+          v *
+          (1 + pose.capeBillow);
         const legClearanceZ = maxBackLegSwing * Math.pow(v, 1.05) * backCenterFactor * 1.15;
         const backwardBillowZ =
           -Math.pow(v, 1.25) *
@@ -1324,7 +1485,7 @@ export function buildSkyChildRig(
           wingLiftY +
           strokeY +
           Math.abs(wave1) * 0.25 +
-          pose.capeBillow * v * 0.18 +
+          (pose.capeBillow * 0.18 + secMotion.hemLift * 0.14) * v +
           legClearanceZ * 0.25;
         let pz = rz * (1 + radialSpinFlare) + backwardBillowZ + wave1 + wave2;
 
@@ -1608,6 +1769,21 @@ export function buildCandleClusterMesh(shadowTex: THREE.CanvasTexture): THREE.Gr
     group.add(flame);
   });
 
+  // Soft warm optical bloom halo above the candle cluster (highlight-safe, zero blur)
+  const glowSprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: createEtherealGlowTexture(),
+      color: 0xfde68a,
+      transparent: true,
+      opacity: 0.52,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })
+  );
+  glowSprite.position.set(0, 1.35, 0);
+  glowSprite.scale.set(2.4, 2.4, 1);
+  group.add(glowSprite);
+
   return group;
 }
 
@@ -1625,9 +1801,9 @@ export function buildWingedLightMesh(shadowTex: THREE.CanvasTexture): THREE.Grou
   const goldMat = new THREE.MeshStandardMaterial({
     color: 0xfef08a,
     emissive: 0xf59e0b,
-    emissiveIntensity: 2.0,
-    roughness: 0.18,
-    metalness: 0.35,
+    emissiveIntensity: 1.15,
+    roughness: 0.24,
+    metalness: 0.28,
   });
 
   const ring = new THREE.Mesh(
@@ -1663,14 +1839,27 @@ export function buildWingedLightMesh(shadowTex: THREE.CanvasTexture): THREE.Grou
     new THREE.MeshBasicMaterial({
       color: 0xfef08a,
       transparent: true,
-      opacity: 0.2,
+      opacity: 0.18,
       side: THREE.DoubleSide,
       depthWrite: false,
     })
   );
   beaconBeam.position.y = 4.5;
 
-  group.add(torso, legL, legR, head, capeCone, beaconBeam);
+  const childBloomHalo = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: createEtherealGlowTexture(),
+      color: 0xfef08a,
+      transparent: true,
+      opacity: 0.65,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })
+  );
+  childBloomHalo.position.set(0, 1.15, 0);
+  childBloomHalo.scale.set(3.2, 3.2, 1);
+
+  group.add(torso, legL, legR, head, capeCone, beaconBeam, childBloomHalo);
   return group;
 }
 
@@ -1688,9 +1877,9 @@ export function buildAncestorSpiritMesh(shadowTex: THREE.CanvasTexture): THREE.G
   const spiritMat = new THREE.MeshStandardMaterial({
     color: 0x38bdf8,
     emissive: 0x0284c7,
-    emissiveIntensity: 1.15,
-    roughness: 0.28,
-    metalness: 0.2,
+    emissiveIntensity: 0.92,
+    roughness: 0.32,
+    metalness: 0.18,
     transparent: true,
     opacity: 0.88,
   });
@@ -1722,7 +1911,20 @@ export function buildAncestorSpiritMesh(shadowTex: THREE.CanvasTexture): THREE.G
   soulCore.position.set(0, 1.62, 0.42);
   soulCore.name = 'spirit_core';
 
-  group.add(stonePlinth, robe, head, maskHorn, soulCore);
+  const spiritBloomHalo = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: createEtherealGlowTexture(),
+      color: 0x7dd3fc,
+      transparent: true,
+      opacity: 0.48,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })
+  );
+  spiritBloomHalo.position.set(0, 1.55, 0.25);
+  spiritBloomHalo.scale.set(2.8, 2.8, 1);
+
+  group.add(stonePlinth, robe, head, maskHorn, soulCore, spiritBloomHalo);
   return group;
 }
 
@@ -2312,3 +2514,400 @@ export function buildWingCloudTrailSystem(scene: THREE.Scene): WingCloudTrailSys
   };
 }
 
+// ============================================================================
+// MODULE 6: 4-TIER LUMINA SHARD 3D MESHES & PROXIMITY VISUAL CUE ANIMATOR
+// ============================================================================
+export function buildLuminaShardMesh(
+  shard: LightShardSpec,
+  shadowTex: THREE.CanvasTexture
+): THREE.Group {
+  const group = new THREE.Group();
+  group.name = `lumina_shard_${shard.id}`;
+
+  const baseColor = new THREE.Color(shard.colorHex);
+  const shadow = new THREE.Mesh(
+    new THREE.CircleGeometry(1.15, 20).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({
+      map: shadowTex,
+      transparent: true,
+      depthWrite: false,
+      opacity: 0.48,
+    })
+  );
+  shadow.position.y = -0.95;
+  group.add(shadow);
+
+  // Soft Ground Proximity Resonance Ring (expands & brightens when player approaches within 14.5m)
+  const proximityRing = new THREE.Mesh(
+    new THREE.RingGeometry(0.75, 0.96, 32).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({
+      color: baseColor,
+      transparent: true,
+      opacity: 0.18,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })
+  );
+  proximityRing.position.y = -0.9;
+  proximityRing.name = 'proximity_ring';
+  group.add(proximityRing);
+
+  // Gentle Proximity Light-Tether Beam toward the player when within 14.5m
+  const tetherPositions = new Float32Array(24 * 3);
+  const tetherGeo = new THREE.BufferGeometry();
+  tetherGeo.setAttribute('position', new THREE.BufferAttribute(tetherPositions, 3));
+  const tetherMat = new THREE.LineBasicMaterial({
+    color: baseColor,
+    transparent: true,
+    opacity: 0,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const proximityTether = new THREE.Line(tetherGeo, tetherMat);
+  proximityTether.name = 'proximity_tether';
+  proximityTether.frustumCulled = false;
+  group.add(proximityTether);
+
+  // Core rotating assembly
+  const corePivot = new THREE.Group();
+  corePivot.name = 'shard_core_pivot';
+  group.add(corePivot);
+
+  const primaryMat = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    emissive: baseColor,
+    emissiveIntensity:
+      shard.tier === 'aether_crown'
+        ? 1.55
+        : shard.tier === 'nebula_core'
+          ? 1.35
+          : 1.15,
+    roughness: 0.16,
+    metalness: 0.25,
+    transparent: true,
+    opacity: 0.94,
+  });
+  primaryMat.name = 'shard_primary_mat';
+
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: baseColor,
+    transparent: true,
+    opacity: 0.72,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  if (shard.tier === 'dew_glimmer') {
+    // Tier 1: Morning Dew Glimmer (Sculpted teardrop sphere + 2 orbiting starlight motes)
+    const dropSphere = new THREE.Mesh(
+      new THREE.IcosahedronGeometry(0.32, 2),
+      primaryMat
+    );
+    const dropTip = new THREE.Mesh(
+      new THREE.ConeGeometry(0.26, 0.48, 12),
+      primaryMat
+    );
+    dropTip.position.y = 0.28;
+    corePivot.add(dropSphere, dropTip);
+
+    for (let i = 0; i < 2; i++) {
+      const mote = new THREE.Mesh(
+        new THREE.OctahedronGeometry(0.09, 0),
+        ringMat
+      );
+      const a = i * Math.PI;
+      mote.position.set(Math.cos(a) * 0.56, 0.08 * (i === 0 ? 1 : -1), Math.sin(a) * 0.56);
+      corePivot.add(mote);
+    }
+  } else if (shard.tier === 'prism_crystal') {
+    // Tier 2: Prism Crystal Cluster (Central tall octahedron + 3 angled side quartz shards + rune ring)
+    const mainPrism = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.42, 0),
+      primaryMat
+    );
+    mainPrism.scale.set(0.75, 1.45, 0.75);
+    corePivot.add(mainPrism);
+
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * Math.PI * 2;
+      const sideCrystal = new THREE.Mesh(
+        new THREE.OctahedronGeometry(0.24, 0),
+        primaryMat
+      );
+      sideCrystal.scale.set(0.65, 1.35, 0.65);
+      sideCrystal.position.set(Math.cos(a) * 0.34, -0.08, Math.sin(a) * 0.34);
+      sideCrystal.rotation.z = (i % 2 === 0 ? 1 : -1) * 0.42;
+      sideCrystal.rotation.y = a;
+      corePivot.add(sideCrystal);
+    }
+
+    const prismRing = new THREE.Mesh(
+      new THREE.TorusGeometry(0.68, 0.025, 8, 28).rotateX(Math.PI * 0.35),
+      ringMat
+    );
+    prismRing.name = 'gyro_ring_1';
+    corePivot.add(prismRing);
+  } else if (shard.tier === 'nebula_core') {
+    // Tier 3: Nebula Core (Radiant dodecahedron + dual intersecting gyroscopic rings + sky pillar)
+    const coreGem = new THREE.Mesh(
+      new THREE.DodecahedronGeometry(0.42, 0),
+      primaryMat
+    );
+    corePivot.add(coreGem);
+
+    const gyro1 = new THREE.Mesh(
+      new THREE.TorusGeometry(0.76, 0.03, 10, 32),
+      ringMat
+    );
+    gyro1.rotation.x = Math.PI * 0.32;
+    gyro1.name = 'gyro_ring_1';
+    const gyro2 = new THREE.Mesh(
+      new THREE.TorusGeometry(0.92, 0.024, 10, 32),
+      ringMat
+    );
+    gyro2.rotation.y = Math.PI * 0.4;
+    gyro2.name = 'gyro_ring_2';
+    corePivot.add(gyro1, gyro2);
+
+    const beam = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.08, 0.32, 6.5, 12, 1, true),
+      new THREE.MeshBasicMaterial({
+        color: baseColor,
+        transparent: true,
+        opacity: 0.16,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      })
+    );
+    beam.position.y = 2.8;
+    beam.name = 'shard_sky_beam';
+    group.add(beam);
+  } else {
+    // Tier 4: Aether Crown (Apex celestial gem + 6-point crown spires + dual astrolabe rings + tall zenith pillar)
+    const crownGem = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.48, 1),
+      primaryMat
+    );
+    corePivot.add(crownGem);
+
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      const spire = new THREE.Mesh(
+        new THREE.ConeGeometry(0.09, 0.42, 6),
+        primaryMat
+      );
+      spire.position.set(Math.cos(a) * 0.62, 0.26, Math.sin(a) * 0.62);
+      spire.rotation.z = -Math.cos(a) * 0.28;
+      spire.rotation.x = -Math.sin(a) * 0.28;
+      corePivot.add(spire);
+    }
+
+    const astro1 = new THREE.Mesh(
+      new THREE.TorusGeometry(0.88, 0.035, 10, 36),
+      ringMat
+    );
+    astro1.name = 'gyro_ring_1';
+    const astro2 = new THREE.Mesh(
+      new THREE.TorusGeometry(1.12, 0.028, 10, 36),
+      ringMat
+    );
+    astro2.name = 'gyro_ring_2';
+    corePivot.add(astro1, astro2);
+
+    const apexBeam = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.12, 0.48, 10.5, 14, 1, true),
+      new THREE.MeshBasicMaterial({
+        color: baseColor,
+        transparent: true,
+        opacity: 0.22,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      })
+    );
+    apexBeam.position.y = 4.6;
+    apexBeam.name = 'shard_sky_beam';
+    group.add(apexBeam);
+  }
+
+  // Optical bloom halo sprite
+  const haloSprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: createEtherealGlowTexture(),
+      color: baseColor,
+      transparent: true,
+      opacity: 0.68,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })
+  );
+  const haloScale =
+    shard.tier === 'aether_crown'
+      ? 3.8
+      : shard.tier === 'nebula_core'
+        ? 3.2
+        : shard.tier === 'prism_crystal'
+          ? 2.7
+          : 2.2;
+  haloSprite.scale.set(haloScale, haloScale, 1);
+  haloSprite.name = 'shard_halo_sprite';
+  group.add(haloSprite);
+
+  return group;
+}
+
+export function updateLuminaShardMesh(
+  group: THREE.Group,
+  elapsed: number,
+  shard: LightShardSpec,
+  isCollected: boolean,
+  isEchoedThisSession: boolean,
+  playerX: number,
+  playerY: number,
+  playerZ: number
+): void {
+  const dx = playerX - shard.x;
+  const dy = playerY + 1.05 - shard.y;
+  const dz = playerZ - shard.z;
+  const dist3d = Math.hypot(dx, dy, dz);
+
+  const corePivot = group.getObjectByName('shard_core_pivot');
+  const proxRing = group.getObjectByName('proximity_ring') as THREE.Mesh | undefined;
+  const proxTether = group.getObjectByName('proximity_tether') as THREE.Line | undefined;
+  const haloSprite = group.getObjectByName('shard_halo_sprite') as THREE.Sprite | undefined;
+  const skyBeam = group.getObjectByName('shard_sky_beam') as THREE.Mesh | undefined;
+
+  const isDormant = isCollected && isEchoedThisSession;
+  const isEchoAvailable = isCollected && !isEchoedThisSession;
+
+  // Gentle vertical bobbing & rotation (accelerates smoothly when player approaches within 14.5m)
+  const inHintRange = !isDormant && dist3d <= 14.5;
+  const proximityFactor = inHintRange
+    ? Math.max(0, Math.min(1, 1 - (dist3d - 2.4) / 12.1))
+    : 0;
+
+  const spinMult = 1.0 + proximityFactor * 1.65;
+  const bobOffset = Math.sin(elapsed * 2.4 + shard.x * 0.3) * 0.16;
+
+  if (corePivot) {
+    corePivot.position.y = bobOffset;
+    corePivot.rotation.y = elapsed * 1.35 * spinMult + shard.z * 0.2;
+    const targetScale = isDormant
+      ? 0.42
+      : isEchoAvailable
+        ? 0.76 + proximityFactor * 0.15
+        : 1.0 + proximityFactor * 0.22;
+    corePivot.scale.setScalar(targetScale);
+
+    const gyro1 = corePivot.getObjectByName('gyro_ring_1');
+    const gyro2 = corePivot.getObjectByName('gyro_ring_2');
+    if (gyro1) {
+      gyro1.rotation.x = elapsed * 1.8 * spinMult;
+      gyro1.rotation.z = elapsed * 1.1;
+    }
+    if (gyro2) {
+      gyro2.rotation.y = -elapsed * 1.5 * spinMult;
+      gyro2.rotation.x = Math.sin(elapsed * 1.4) * 0.6;
+    }
+  }
+
+  if (haloSprite) {
+    const baseScale =
+      shard.tier === 'aether_crown'
+        ? 3.8
+        : shard.tier === 'nebula_core'
+          ? 3.2
+          : shard.tier === 'prism_crystal'
+            ? 2.7
+            : 2.2;
+    const pulse = 1.0 + Math.sin(elapsed * (3.2 + proximityFactor * 3.0)) * 0.12;
+    const finalScale =
+      baseScale *
+      pulse *
+      (isDormant ? 0.32 : isEchoAvailable ? 0.65 : 1.0 + proximityFactor * 0.28);
+    haloSprite.scale.set(finalScale, finalScale, 1);
+    haloSprite.material.opacity = isDormant
+      ? 0.18
+      : isEchoAvailable
+        ? 0.42 + proximityFactor * 0.25
+        : 0.68 + proximityFactor * 0.26;
+  }
+
+  if (skyBeam) {
+    const beamMat = skyBeam.material as THREE.MeshBasicMaterial;
+    beamMat.opacity = isDormant
+      ? 0.03
+      : isEchoAvailable
+        ? 0.09
+        : (shard.tier === 'aether_crown' ? 0.22 : 0.16) + proximityFactor * 0.12;
+  }
+
+  // Update Ground Proximity Resonance Ring
+  if (proxRing) {
+    const ringMat = proxRing.material as THREE.MeshBasicMaterial;
+    if (inHintRange) {
+      const wave = (elapsed * (1.2 + proximityFactor * 1.1)) % 1.0;
+      const ringScale = 0.85 + wave * (1.6 + proximityFactor * 1.4);
+      proxRing.scale.setScalar(ringScale);
+      ringMat.opacity = (1.0 - wave) * (0.28 + proximityFactor * 0.48);
+    } else {
+      proxRing.scale.setScalar(1.0);
+      ringMat.opacity = isDormant ? 0.04 : 0.12;
+    }
+  }
+
+  // Update Soft Curving Light-Tether Ribbon toward the player when within 14.5m
+  if (proxTether) {
+    const tetherMat = proxTether.material as THREE.LineBasicMaterial;
+    if (inHintRange && proximityFactor > 0.05) {
+      tetherMat.opacity = proximityFactor * (isEchoAvailable ? 0.38 : 0.65);
+      const posAttr = proxTether.geometry.attributes.position as THREE.BufferAttribute;
+      const arr = posAttr.array as Float32Array;
+      const segs = 24;
+      for (let i = 0; i < segs; i++) {
+        const t = i / (segs - 1);
+        const arcLift = Math.sin(t * Math.PI) * (0.65 + (1 - proximityFactor) * 0.55);
+        const spiralWave = Math.sin(t * Math.PI * 3 - elapsed * 5.2) * 0.14 * Math.sin(t * Math.PI);
+        arr[i * 3] = dx * t + spiralWave;
+        arr[i * 3 + 1] = bobOffset * (1 - t) + dy * t + arcLift;
+        arr[i * 3 + 2] = dz * t - spiralWave;
+      }
+      posAttr.needsUpdate = true;
+    } else {
+      tetherMat.opacity = 0;
+    }
+  }
+}
+
+/**
+ * Safely disposes GPU BufferGeometry and non-shared Material instances within a detached Object3D subtree
+ * without disposing shared procedural textures (such as `shadowTex` or `fabricTex`).
+ */
+export function disposeObject3DResources(
+  root: THREE.Object3D,
+  sharedMaterials?: Set<THREE.Material>
+): void {
+  root.traverse((obj) => {
+    const anyObj = obj as THREE.Mesh | THREE.Line | THREE.Points | THREE.Sprite;
+    if (anyObj.geometry && typeof anyObj.geometry.dispose === 'function') {
+      if (!anyObj.geometry.userData?.shared) {
+        anyObj.geometry.dispose();
+      }
+    }
+    const mat = anyObj.material;
+    if (Array.isArray(mat)) {
+      for (const m of mat) {
+        if (m && !m.userData?.shared && (!sharedMaterials || !sharedMaterials.has(m))) {
+          m.dispose();
+        }
+      }
+    } else if (mat && typeof mat.dispose === 'function') {
+      if (!mat.userData?.shared && (!sharedMaterials || !sharedMaterials.has(mat))) {
+        mat.dispose();
+      }
+    }
+  });
+}

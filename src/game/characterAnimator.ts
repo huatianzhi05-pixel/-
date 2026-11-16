@@ -1,4 +1,10 @@
-import { FlightMode, LocomotionMode, SitMode } from './rules';
+import {
+  FlightMode,
+  LocomotionMode,
+  SitMode,
+  computeIdleMicroBehaviorPure,
+  computeOrganicFlickerPure,
+} from './rules';
 
 export interface JointPose {
   hipsY: number;
@@ -56,6 +62,13 @@ export interface AnimatorInput {
   locomotionMode?: LocomotionMode;
   sitMode?: SitMode;
   landingStiffTimer?: number;
+  landingCushionTimer?: number;
+  takeoffTimer?: number;
+  flightPitchPhase?: 'none' | 'climb' | 'level' | 'descent' | 'dive';
+  inCloudBank?: boolean;
+  inWindTunnel?: boolean;
+  /** Short timer (seconds) triggered when interacting with candles, shards, or shrines for warm reach feedback */
+  interactGestureTimer?: number;
 }
 
 function lerp(a: number, b: number, t: number): number {
@@ -77,105 +90,137 @@ export function computeSkyChildPose(input: AnimatorInput): JointPose {
     instrumentOpen,
   } = input;
 
-  // Base Idle Pose (Natural breathing, slight knee softness, gentle breeze)
+  // Base Idle Pose: Multi-phase organic idle micro-behaviors (curious horizon glances, skyward gazes, soft weight transfer)
   const breath = Math.sin(elapsed * 2.4);
-  const slowSway = Math.sin(elapsed * 1.3);
+  const idleMicro = computeIdleMicroBehaviorPure(elapsed);
+  const windGust = computeOrganicFlickerPure(elapsed, 1.37);
 
   const pose: JointPose = {
-    hipsY: 0.86 + breath * 0.014,
+    hipsY: idleMicro.safeHipsY,
     hipsPitch: 0,
-    hipsRoll: slowSway * 0.025,
-    hipsYawOffset: 0,
+    hipsRoll: idleMicro.weightShiftRoll,
+    hipsYawOffset: -idleMicro.weightShiftRoll * 0.6,
 
-    spinePitch: 0.03 + breath * 0.025,
-    spineYaw: -slowSway * 0.04,
-    spineRoll: -slowSway * 0.02,
+    spinePitch: 0.03 + breath * 0.022,
+    spineYaw: -idleMicro.headGlanceYaw * 0.22,
+    spineRoll: -idleMicro.weightShiftRoll * 0.75,
 
-    headPitch: -breath * 0.03,
-    headYaw: Math.sin(elapsed * 0.85) * 0.14,
-    headRoll: Math.cos(elapsed * 1.1) * 0.04,
+    headPitch: idleMicro.headGlancePitch - breath * 0.022,
+    headYaw: idleMicro.headGlanceYaw,
+    headRoll: idleMicro.headGlanceRoll,
 
-    leftThighPitch: -0.04,
+    leftThighPitch: -0.04 - idleMicro.kneeRelaxL * 0.45,
     leftThighRoll: 0.05,
-    leftKneePitch: 0.08,
-    leftAnklePitch: -0.04,
+    leftKneePitch: 0.07 + idleMicro.kneeRelaxL,
+    leftAnklePitch: -0.03 - idleMicro.kneeRelaxL * 0.5,
 
-    rightThighPitch: 0.04,
+    rightThighPitch: 0.04 - idleMicro.kneeRelaxR * 0.45,
     rightThighRoll: -0.05,
-    rightKneePitch: 0.08,
-    rightAnklePitch: -0.04,
+    rightKneePitch: 0.07 + idleMicro.kneeRelaxR,
+    rightAnklePitch: -0.03 - idleMicro.kneeRelaxR * 0.5,
 
-    leftShoulderPitch: 0.04,
-    leftShoulderRoll: 0.16 + breath * 0.02,
-    leftElbowPitch: -0.22,
+    leftShoulderPitch: 0.04 + windGust.wave * 0.025,
+    leftShoulderRoll: 0.16 + (breath * 0.5 + 0.5) * 0.03,
+    leftElbowPitch: -0.22 - (breath * 0.5 + 0.5) * 0.04,
 
-    rightShoulderPitch: -0.04,
-    rightShoulderRoll: -0.16 - breath * 0.02,
-    rightElbowPitch: -0.22,
+    rightShoulderPitch: -0.04 - windGust.wave * 0.025,
+    rightShoulderRoll: -0.16 - (breath * 0.5 + 0.5) * 0.03,
+    rightElbowPitch: -0.22 - (breath * 0.5 + 0.5) * 0.04,
 
-    wingFlare: 0.08 + (breath + 1) * 0.03,
+    wingFlare: 0.08 + (breath + 1) * 0.03 + Math.max(0, windGust.wave) * 0.04,
     wingStroke: breath * 0.04,
-    capeBillow: 0.08,
+    capeBillow: 0.09 + (windGust.wave * 0.5 + 0.5) * 0.08,
     capeSpinFlare: 0,
     showButterflyProp: false,
   };
 
-  // 1. Ground Walk / Run Multi-Joint Stride Kinematics
-  if (grounded && horizSpeed > 0.15) {
-    const runBlend = Math.min(1, horizSpeed / 7.5);
+
+  // 1. Ground Walk vs Run Two-Tier Multi-Joint Stride Kinematics
+  if (grounded && horizSpeed > 0.12) {
+    // Smooth fade-in from Idle to Walk (0.12 -> 1.8 m/s), and distinct transition from Walk to Run (4.2 -> 7.2 m/s)
+    const moveBlend = Math.min(1, (horizSpeed - 0.12) / 1.6);
+    const rawRunT = Math.max(0, Math.min(1, (horizSpeed - 4.2) / 2.8));
+    const runRatio = rawRunT * rawRunT * (3 - 2 * rawRunT); // Smoothstep 0 (Walk) -> 1 (Run)
+    const isWade = input.locomotionMode === 'wade';
+
     const s = Math.sin(gaitPhase);
     const c = Math.cos(gaitPhase);
     const doubleFreq = Math.cos(gaitPhase * 2);
 
-    // Vertical double-bounce per stride cycle + forward athletic lean
-    pose.hipsY = 0.86 + Math.abs(s) * 0.075 * runBlend - 0.02 * runBlend;
-    pose.hipsPitch = 0.16 * runBlend;
-    pose.hipsRoll = c * 0.07 * runBlend + turnRate * 0.15;
-    pose.hipsYawOffset = s * 0.11 * runBlend;
+    // Center-of-gravity vertical bounce: Walk has a soft serene wave (0.036m); Run has an energetic athletic double-bounce (0.082m)
+    const bounceAmp = lerp(0.036, 0.082, runRatio) * moveBlend;
+    const hipsBaseDip = lerp(0.006, 0.024, runRatio) * moveBlend;
+    pose.hipsY = 0.86 + Math.abs(s) * bounceAmp - hipsBaseDip;
 
-    // Spine counter-rotation & dynamic lean
-    pose.spinePitch = 0.18 * runBlend + doubleFreq * 0.03 * runBlend;
-    pose.spineYaw = -s * 0.16 * runBlend;
-    pose.spineRoll = -turnRate * 0.12;
+    // Forward posture lean: Walk stays upright & poised (0.05 rad); Run leans athletically forward (0.18 rad)
+    pose.hipsPitch = lerp(0.05, 0.18, runRatio) * moveBlend;
+    pose.hipsRoll =
+      c * lerp(0.042, 0.075, runRatio) * moveBlend + turnRate * 0.16 * moveBlend;
+    pose.hipsYawOffset = s * lerp(0.065, 0.12, runRatio) * moveBlend;
 
-    // Head stabilizes horizon and banks into turns
-    pose.headPitch = -0.14 * runBlend + doubleFreq * 0.025;
-    pose.headYaw = -turnRate * 0.35;
-    pose.headRoll = -turnRate * 0.18;
+    // Spine counter-rotation, breathing cadence & natural banking into turns
+    pose.spinePitch =
+      (lerp(0.06, 0.22, runRatio) + doubleFreq * lerp(0.015, 0.035, runRatio)) *
+      moveBlend;
+    pose.spineYaw = -s * lerp(0.09, 0.17, runRatio) * moveBlend;
+    pose.spineRoll = -turnRate * 0.14 * moveBlend - c * 0.025 * moveBlend;
 
-    // Articulated Thigh + Knee + Ankle cycle (Knee bends strongly during forward swing recovery!)
-    const strideAmp = 0.78 * runBlend;
+    // Head stabilizes horizon and glances naturally into the turn arc
+    pose.headPitch =
+      -lerp(0.04, 0.16, runRatio) * moveBlend + doubleFreq * 0.02 * moveBlend;
+    pose.headYaw = -turnRate * 0.36 * moveBlend;
+    pose.headRoll = -turnRate * 0.18 * moveBlend;
+
+    // Articulated Thigh + Knee + Ankle cycle (Wade lifts knees higher through shallow water)
+    const strideAmp =
+      (isWade ? 0.56 : lerp(0.46, 0.82, runRatio)) * moveBlend;
     pose.leftThighPitch = s * strideAmp;
     pose.rightThighPitch = -s * strideAmp;
 
-    // Knee bends when leg is passing from back to front (c > 0 for left leg, c < 0 for right leg)
     const leftSwing = Math.max(0, c);
     const rightSwing = Math.max(0, -c);
-    pose.leftKneePitch = (0.15 + leftSwing * 0.95 + Math.max(0, -s) * 0.25) * runBlend;
-    pose.rightKneePitch = (0.15 + rightSwing * 0.95 + Math.max(0, s) * 0.25) * runBlend;
+    const swingKneeLift = isWade ? 0.88 : lerp(0.52, 1.02, runRatio);
+    const stanceKneeSoftness = lerp(0.12, 0.26, runRatio);
+    pose.leftKneePitch =
+      (0.12 + leftSwing * swingKneeLift + Math.max(0, -s) * stanceKneeSoftness) *
+      moveBlend;
+    pose.rightKneePitch =
+      (0.12 + rightSwing * swingKneeLift + Math.max(0, s) * stanceKneeSoftness) *
+      moveBlend;
 
-    pose.leftAnklePitch = (-s * 0.35 - leftSwing * 0.25) * runBlend;
-    pose.rightAnklePitch = (s * 0.35 - rightSwing * 0.25) * runBlend;
+    const ankleAmp = lerp(0.22, 0.38, runRatio);
+    pose.leftAnklePitch = (-s * ankleAmp - leftSwing * 0.24) * moveBlend;
+    pose.rightAnklePitch = (s * ankleAmp - rightSwing * 0.24) * moveBlend;
 
-    // Opposite Arm Swing with natural Elbow Flexion
-    const armAmp = 0.68 * runBlend;
+    // Opposite Arm Swing: Walk has relaxed pendulum arms; Run has energetic bent-elbow pump
+    const armAmp = lerp(0.34, 0.72, runRatio) * moveBlend;
     pose.leftShoulderPitch = -s * armAmp;
     pose.rightShoulderPitch = s * armAmp;
-    pose.leftShoulderRoll = 0.18 + 0.12 * runBlend;
-    pose.rightShoulderRoll = -0.18 - 0.12 * runBlend;
-    pose.leftElbowPitch = -0.35 - Math.max(0, -s) * 0.52 * runBlend;
-    pose.rightElbowPitch = -0.35 - Math.max(0, s) * 0.52 * runBlend;
+    pose.leftShoulderRoll = 0.16 + lerp(0.05, 0.15, runRatio) * moveBlend;
+    pose.rightShoulderRoll = -0.16 - lerp(0.05, 0.15, runRatio) * moveBlend;
 
-    pose.wingFlare = 0.18 + 0.28 * runBlend;
-    pose.capeBillow = 0.45 * runBlend;
-    pose.wingStroke = doubleFreq * 0.08 * runBlend;
+    const baseElbow = lerp(-0.26, -0.42, runRatio);
+    const swingElbowFlex = lerp(0.24, 0.56, runRatio);
+    pose.leftElbowPitch =
+      baseElbow - Math.max(0, -s) * swingElbowFlex * moveBlend;
+    pose.rightElbowPitch =
+      baseElbow - Math.max(0, s) * swingElbowFlex * moveBlend;
+
+    pose.wingFlare = (0.14 + lerp(0.08, 0.32, runRatio)) * moveBlend;
+    pose.capeBillow = lerp(0.20, 0.52, runRatio) * moveBlend;
+    pose.wingStroke = doubleFreq * lerp(0.035, 0.09, runRatio) * moveBlend;
   }
 
-  // 2. Aerial Flight / Soaring / Dive / Wing Flap Kinematics
+  // 2. Aerial Takeoff, Gliding (Climb / Level / Descent), Hover & Delta-Wing Dive Kinematics
   if (!grounded) {
-    const isDiving = input.locomotionMode === 'dive';
+    const isDiving =
+      input.locomotionMode === 'dive' || input.flightPitchPhase === 'dive';
     const isGliding = flightMode === 'glide' || isDiving;
     const isFlapping = flapCooldown > 0;
+    const takeoffBlend = Math.max(
+      0,
+      Math.min(1, (input.takeoffTimer ?? 0) / 0.28)
+    );
     const flapWave = isFlapping
       ? Math.sin((0.22 - flapCooldown) * 28.0)
       : Math.sin(elapsed * 4.2);
@@ -184,11 +229,13 @@ export function computeSkyChildPose(input: AnimatorInput): JointPose {
       // Stage 2 Aerodynamic Delta-Wing Dive Pose (swept-back wings, streamlined legs, high speed)
       pose.hipsY = 0.90;
       pose.hipsPitch = 0.85;
-      pose.hipsRoll = turnRate * 0.45;
+      pose.hipsRoll = turnRate * 0.48;
       pose.spinePitch = 0.42;
       pose.spineYaw = -turnRate * 0.18;
+      pose.spineRoll = -turnRate * 0.25;
       pose.headPitch = -0.58;
-      pose.headYaw = -turnRate * 0.25;
+      pose.headYaw = -turnRate * 0.28;
+      pose.headRoll = -turnRate * 0.18;
 
       pose.leftThighPitch = 0.55;
       pose.leftKneePitch = 0.12;
@@ -197,55 +244,126 @@ export function computeSkyChildPose(input: AnimatorInput): JointPose {
       pose.rightKneePitch = 0.12;
       pose.rightAnklePitch = 0.65;
 
-      // Swept-back delta arrow wings
-      pose.leftShoulderRoll = 0.68;
-      pose.rightShoulderRoll = -0.68;
+      // Swept-back delta arrow wings with asymmetric turn banking
+      pose.leftShoulderRoll = 0.68 + turnRate * 0.18;
+      pose.rightShoulderRoll = -0.68 + turnRate * 0.18;
       pose.leftShoulderPitch = 0.62;
       pose.rightShoulderPitch = 0.62;
       pose.leftElbowPitch = -0.08;
       pose.rightElbowPitch = -0.08;
 
-      pose.wingFlare = 0.62;
+      pose.wingFlare = 0.64;
       pose.wingStroke = -0.18;
       pose.capeBillow = 1.0;
     } else {
-      // Body streamlines in Glide mode or hovers gracefully in Hover mode
-      pose.hipsY = 0.92;
-      pose.hipsPitch = isGliding ? 0.58 : 0.18;
-      pose.hipsRoll = turnRate * 0.35;
+      // Distinguish Climb (+vy), Weightless Level/Apex (|vy| <= 1.8), and Descent (-vy)
+      const ascentT = Math.max(0, Math.min(1, (vy - 1.2) / 5.5));
+      const fallT = Math.max(0, Math.min(1, (-vy - 1.2) / 7.5));
+      const airSway = Math.sin(elapsed * 3.2) * 0.07;
 
-      pose.spinePitch = isGliding ? 0.28 : 0.12;
-      pose.spineYaw = -turnRate * 0.15;
+      pose.hipsY =
+        0.92 + ascentT * 0.035 - fallT * 0.02 + takeoffBlend * 0.04;
 
-      pose.headPitch = isGliding ? -0.45 : -0.18;
-      pose.headYaw = -turnRate * 0.28;
+      if (isGliding) {
+        // Distinct Glide Climb vs Level Cruise vs Aerodynamic Glide Descent postures
+        pose.hipsPitch =
+          lerp(0.56, 0.30, ascentT) +
+          fallT * 0.24 -
+          takeoffBlend * 0.14;
+        pose.spinePitch =
+          lerp(0.26, 0.12, ascentT) +
+          fallT * 0.16 -
+          takeoffBlend * 0.12;
+        pose.headPitch =
+          lerp(-0.44, -0.58, ascentT) + fallT * 0.08;
+      } else {
+        pose.hipsPitch =
+          lerp(0.18, 0.06, ascentT) +
+          fallT * 0.06 -
+          takeoffBlend * 0.10;
+        pose.spinePitch =
+          lerp(0.12, 0.02, ascentT) +
+          fallT * 0.08 -
+          takeoffBlend * 0.12;
+        pose.headPitch = -0.18 - ascentT * 0.10 + fallT * 0.12;
+      }
 
-      // Iconic Sky Aerial Leg Pose: One leg gracefully bent at knee, other extended trailing in wind
-      const airSway = Math.sin(elapsed * 3.2) * 0.08;
-      pose.leftThighPitch = (isGliding ? 0.32 : 0.22) + airSway;
-      pose.leftKneePitch = isGliding ? 0.42 : 0.68;
-      pose.leftAnklePitch = 0.45;
+      // Expressive body, spine, and head banking into aerial turns
+      pose.hipsRoll = turnRate * (isGliding ? 0.42 : 0.32);
+      pose.spineYaw = -turnRate * 0.18;
+      pose.spineRoll = -turnRate * (isGliding ? 0.24 : 0.16);
+      pose.headYaw = -turnRate * 0.32;
+      pose.headRoll = -turnRate * 0.20;
 
-      pose.rightThighPitch = (isGliding ? 0.48 : 0.08) - airSway;
-      pose.rightKneePitch = isGliding ? 0.18 : 0.35;
-      pose.rightAnklePitch = 0.55;
+      // Iconic Sky Aerial & Glide Leg Pose:
+      // - Takeoff / Climb: front knee tucked higher in graceful leap, back leg trailing
+      // - Level Glide: streamlined floating trail with gentle knee asymmetry
+      // - Descent: both legs extending softly into aerodynamic slipstream
+      const glideLeftThigh = lerp(0.32, 0.16, ascentT) + fallT * 0.14;
+      const glideRightThigh = lerp(0.48, 0.38, ascentT) + fallT * 0.08;
+      pose.leftThighPitch =
+        (isGliding
+          ? glideLeftThigh
+          : lerp(0.22, -0.28, ascentT) * (1 - fallT * 0.5)) -
+        takeoffBlend * 0.22 +
+        airSway;
+      pose.leftKneePitch = isGliding
+        ? lerp(0.42, 0.68, Math.max(ascentT, takeoffBlend)) * (1 - fallT * 0.35)
+        : lerp(0.68, 0.94, Math.max(ascentT, takeoffBlend)) * (1 - fallT * 0.35);
+      pose.leftAnklePitch = lerp(0.45, -0.12, fallT);
 
-      // Arms spread wide beneath cape like wings!
-      const strokeAngle = isFlapping ? flapWave * 0.72 : flapWave * 0.16;
-      pose.leftShoulderRoll = (isGliding ? 1.28 : 1.05) + strokeAngle * 0.45;
-      pose.rightShoulderRoll = -(isGliding ? 1.28 : 1.05) - strokeAngle * 0.45;
-      pose.leftShoulderPitch = isGliding ? 0.25 : 0.1;
-      pose.rightShoulderPitch = isGliding ? 0.25 : 0.1;
-      pose.leftElbowPitch = -0.15;
-      pose.rightElbowPitch = -0.15;
+      pose.rightThighPitch =
+        (isGliding
+          ? glideRightThigh
+          : lerp(0.08, 0.24, ascentT) * (1 - fallT * 0.6)) -
+        airSway;
+      pose.rightKneePitch = isGliding
+        ? lerp(0.18, 0.26, ascentT) * (1 - fallT * 0.25)
+        : lerp(0.35, 0.22, ascentT) + fallT * 0.12;
+      pose.rightAnklePitch = lerp(0.55, -0.08, fallT);
 
-      pose.wingFlare = isGliding ? 0.98 : 0.82;
+      // Arms spread wide beneath cape like wings, with asymmetric turn banking!
+      const strokeAngle = isFlapping
+        ? flapWave * 0.74
+        : takeoffBlend > 0
+          ? Math.sin(takeoffBlend * Math.PI) * 0.48
+          : flapWave * 0.15;
+      const wingBankOffset = turnRate * (isGliding ? 0.22 : 0.14);
+      const baseShoulderRoll = isGliding
+        ? 1.28 - fallT * 0.08 + ascentT * 0.05
+        : 1.05 + fallT * 0.12 + takeoffBlend * 0.18;
+
+      pose.leftShoulderRoll =
+        baseShoulderRoll + strokeAngle * 0.45 + wingBankOffset;
+      pose.rightShoulderRoll =
+        -baseShoulderRoll - strokeAngle * 0.45 + wingBankOffset;
+
+      const glideShoulderSweep =
+        lerp(0.24, 0.06, ascentT) + fallT * 0.18;
+      pose.leftShoulderPitch = isGliding
+        ? glideShoulderSweep
+        : 0.1 - ascentT * 0.18 - takeoffBlend * 0.12;
+      pose.rightShoulderPitch = isGliding
+        ? glideShoulderSweep
+        : 0.1 - ascentT * 0.18 - takeoffBlend * 0.12;
+      pose.leftElbowPitch = -0.15 - ascentT * 0.12;
+      pose.rightElbowPitch = -0.15 - ascentT * 0.12;
+
+      pose.wingFlare = isGliding
+        ? 0.98
+        : Math.min(0.98, 0.82 + fallT * 0.08 + takeoffBlend * 0.14);
       pose.wingStroke = strokeAngle;
-      pose.capeBillow = Math.min(1, 0.65 + Math.max(0, -vy) * 0.04);
+      pose.capeBillow = Math.min(
+        1,
+        (isGliding ? 0.72 : 0.60) +
+          Math.max(0, -vy) * 0.045 +
+          takeoffBlend * 0.18 +
+          (input.inCloudBank ? 0.12 : 0)
+      );
     }
   }
 
-  // 3. Stage 1 Ground Special States: Slope Sliding, High-Landing Stiffness, Sitting & Shrine Meditation
+  // 3. Stage 1 Ground Special States: Slope Sliding, High-Landing Stiffness, Soft Jump/Glide Landing Cushion, Sitting & Shrine Meditation
   if (grounded && input.locomotionMode === 'slide') {
     // Dynamic surfing / ski stance down steep slopes
     pose.hipsY = 0.72;
@@ -274,7 +392,26 @@ export function computeSkyChildPose(input: AnimatorInput): JointPose {
     pose.rightKneePitch = lerp(pose.rightKneePitch, 1.45, stiffBlend);
     pose.leftShoulderRoll = lerp(pose.leftShoulderRoll, 0.55, stiffBlend);
     pose.rightShoulderRoll = lerp(pose.rightShoulderRoll, -0.55, stiffBlend);
+    pose.wingFlare = Math.max(pose.wingFlare, stiffBlend * 0.48);
     pose.capeBillow = 0.45;
+  } else if (grounded && (input.landingCushionTimer ?? 0) > 0) {
+    // Normal jump / glide touchdown elastic knee-bend landing cushion + progressive wing-folding (calibrated to prevent ground clipping)
+    const normT = Math.max(0, Math.min(1, (input.landingCushionTimer ?? 0) / 0.28));
+    const cushionBell = Math.sin(normT * Math.PI); // 0 -> 1 -> 0 elastic compression curve
+    pose.hipsY = Math.max(0.76, pose.hipsY - cushionBell * 0.095);
+    pose.hipsPitch += cushionBell * 0.09;
+    pose.spinePitch += cushionBell * 0.11;
+    pose.headPitch += cushionBell * 0.06;
+    pose.leftThighPitch -= cushionBell * 0.30;
+    pose.leftKneePitch += cushionBell * 0.50;
+    pose.leftAnklePitch -= cushionBell * 0.20;
+    pose.rightThighPitch -= cushionBell * 0.30;
+    pose.rightKneePitch += cushionBell * 0.50;
+    pose.rightAnklePitch -= cushionBell * 0.20;
+    pose.leftShoulderRoll += cushionBell * 0.26 + normT * 0.22;
+    pose.rightShoulderRoll -= cushionBell * 0.26 + normT * 0.22;
+    pose.wingFlare = Math.max(pose.wingFlare, normT * 0.64);
+    pose.capeBillow = Math.max(pose.capeBillow, cushionBell * 0.42);
   } else if (grounded && input.sitMode && input.sitMode !== 'none') {
     if (input.sitMode === 'meditate_shrine') {
       // Cross-legged lotus meditation at the shrine with gentle levitation bob
@@ -490,6 +627,22 @@ export function computeSkyChildPose(input: AnimatorInput): JointPose {
     }
   }
 
+  // 6. Module 11: Interactive Action Feedback (Warm Candle-Offering / Reach-Out Gesture on Interact or Shard Absorb)
+  const interactTimer = input.interactGestureTimer ?? 0;
+  if (interactTimer > 0 && (!activeEmote || activeEmoteTimer <= 0)) {
+    const normG = Math.max(0, Math.min(1, interactTimer / 1.15));
+    const gEnvelope = Math.sin(normG * Math.PI);
+    pose.spinePitch = lerp(pose.spinePitch, pose.spinePitch + 0.14, gEnvelope);
+    pose.headPitch = lerp(pose.headPitch, pose.headPitch + 0.10, gEnvelope);
+    pose.rightShoulderPitch = lerp(pose.rightShoulderPitch, -1.24, gEnvelope);
+    pose.rightShoulderRoll = lerp(pose.rightShoulderRoll, 0.14, gEnvelope);
+    pose.rightElbowPitch = lerp(pose.rightElbowPitch, -0.36, gEnvelope);
+    pose.leftShoulderPitch = lerp(pose.leftShoulderPitch, -0.48, gEnvelope * 0.75);
+    pose.leftElbowPitch = lerp(pose.leftElbowPitch, -0.72, gEnvelope * 0.75);
+    pose.wingFlare = Math.max(pose.wingFlare, 0.36 * gEnvelope);
+    pose.capeBillow = Math.max(pose.capeBillow, 0.26 * gEnvelope);
+  }
+
   return pose;
 }
 
@@ -510,6 +663,10 @@ export function computeWingTrailConfig(input: {
   flapCooldown: number;
   activeEmote: string | null;
   activeEmoteTimer: number;
+  turnRate?: number;
+  isDiving?: boolean;
+  inCloudBank?: boolean;
+  inWindTunnel?: boolean;
 }): WingTrailConfig {
   const {
     grounded,
@@ -519,6 +676,10 @@ export function computeWingTrailConfig(input: {
     flapCooldown,
     activeEmote,
     activeEmoteTimer,
+    turnRate = 0,
+    isDiving = false,
+    inCloudBank = false,
+    inWindTunnel = false,
   } = input;
 
   const isSpinEmote =
@@ -537,35 +698,138 @@ export function computeWingTrailConfig(input: {
   }
 
   const airSpeed = Math.hypot(horizSpeed, vy);
-  const speedFactor = Math.min(1, airSpeed / 12.0);
+  const speedFactor = Math.min(1, airSpeed / 14.0);
   const isGliding = !grounded && flightMode === 'glide';
   const isFlapping = flapCooldown > 0;
+  const turnIntensity = Math.min(1, Math.abs(turnRate) / 1.1);
 
   if (isSpinEmote && grounded) {
     return {
       active: true,
-      intensity: 0.72,
-      spawnInterval: 0.025,
-      puffBaseScale: 0.78,
-      ribbonOpacity: 0.58,
+      intensity: 0.66,
+      spawnInterval: 0.028,
+      puffBaseScale: 0.62,
+      ribbonOpacity: 0.52,
       turbulence: 1.15,
     };
   }
 
+  // Differentiate turning vortex, diving slipstream, cloud-sea grazing, and serene glide without occluding character!
   const intensity = Math.min(
     1.0,
-    (isGliding ? 0.78 : 0.56) +
-      speedFactor * 0.22 +
-      (isFlapping ? 0.25 : 0)
+    (isGliding ? 0.72 : 0.48) +
+      speedFactor * 0.20 +
+      (isFlapping ? 0.22 : 0) +
+      (inCloudBank ? 0.18 : 0) +
+      (inWindTunnel ? 0.14 : 0)
+  );
+
+  const puffBaseScale = Math.min(
+    0.88,
+    (isDiving ? 0.56 : isGliding ? 0.68 : 0.54) +
+      (isFlapping ? 0.14 : 0) +
+      (inCloudBank ? 0.14 : 0)
   );
 
   return {
     active: true,
     intensity,
-    spawnInterval: isFlapping ? 0.012 : isGliding ? 0.016 : 0.024,
-    puffBaseScale: (isGliding ? 0.95 : 0.76) + (isFlapping ? 0.28 : 0),
-    ribbonOpacity: Math.min(0.82, (isGliding ? 0.68 : 0.48) + speedFactor * 0.16),
-    turbulence: (isGliding ? 0.95 : 0.65) + (isFlapping ? 0.65 : 0),
+    spawnInterval: isFlapping
+      ? 0.013
+      : isDiving || inWindTunnel
+        ? 0.014
+        : inCloudBank
+          ? 0.015
+          : isGliding
+            ? 0.018
+            : 0.026,
+    puffBaseScale,
+    ribbonOpacity: Math.min(
+      0.76,
+      (isDiving ? 0.74 : isGliding ? 0.62 : 0.42) +
+        speedFactor * 0.14 +
+        turnIntensity * 0.08
+    ),
+    turbulence:
+      (isGliding ? 0.85 : 0.58) +
+      (isFlapping ? 0.55 : 0) +
+      turnIntensity * 0.65 +
+      (inWindTunnel ? 0.35 : 0),
   };
 }
+
+export interface SecondaryClothAndHairMotion {
+  primaryWaveFreq: number;
+  secondaryFlutterFreq: number;
+  waveAmplitude: number;
+  asymmetricTurnTwist: number;
+  hemLift: number;
+  hairSwayPitch: number;
+  hairSwayRoll: number;
+  neckScarfFlutter: number;
+}
+
+/**
+ * Module 6 Pure Function: Computes secondary physical inertia and wind-ripple harmonics
+ * for the poncho cape, hair tufts, and neck accessories across ground and aerial locomotion.
+ */
+export function computeSecondaryClothAndHairMotionPure(input: {
+  elapsed: number;
+  capeBillow: number;
+  wingFlare: number;
+  wingStroke: number;
+  hipsRoll: number;
+  spineYaw: number;
+  spinePitch: number;
+}): SecondaryClothAndHairMotion {
+  const {
+    elapsed,
+    capeBillow,
+    wingFlare,
+    wingStroke,
+    hipsRoll,
+    spineYaw,
+    spinePitch,
+  } = input;
+
+  const windEnergy = Math.max(0, Math.min(1.5, capeBillow * 0.85 + wingFlare * 0.55));
+  const primaryWaveFreq = 5.2 + windEnergy * 3.4;
+  const secondaryFlutterFreq = 8.4 + windEnergy * 5.2;
+  const waveAmplitude = 0.036 + windEnergy * 0.038;
+
+  // Turn-induced asymmetric trailing twist along the cape hem and wings
+  const asymmetricTurnTwist = Math.max(
+    -0.38,
+    Math.min(0.38, hipsRoll * 0.65 - spineYaw * 0.55)
+  );
+  const hemLift = Math.max(
+    0,
+    Math.min(0.45, capeBillow * 0.24 + Math.max(0, -wingStroke) * 0.16)
+  );
+
+  // Secondary hair & neck-accessory wind follow-through
+  const breezePitch = Math.sin(elapsed * 3.8) * (0.025 + windEnergy * 0.045);
+  const breezeRoll = Math.cos(elapsed * 3.1) * (0.02 + windEnergy * 0.04);
+  const hairSwayPitch = Math.max(
+    -0.42,
+    Math.min(0.42, -spinePitch * 0.28 - capeBillow * 0.18 + breezePitch)
+  );
+  const hairSwayRoll = Math.max(
+    -0.36,
+    Math.min(0.36, -hipsRoll * 0.35 + spineYaw * 0.25 + breezeRoll)
+  );
+  const neckScarfFlutter = Math.sin(elapsed * (6.2 + windEnergy * 4.0)) * (0.06 + windEnergy * 0.16);
+
+  return {
+    primaryWaveFreq,
+    secondaryFlutterFreq,
+    waveAmplitude,
+    asymmetricTurnTwist,
+    hemLift,
+    hairSwayPitch,
+    hairSwayRoll,
+    neckScarfFlutter,
+  };
+}
+
 

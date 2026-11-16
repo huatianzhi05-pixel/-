@@ -40,11 +40,47 @@ import {
   createInitialEnsemblePracticeStatePure,
   stepEnsemblePracticeNotePure,
   evaluateEnsembleAccuracyRatingPure,
+  SKYWARD_EXPLORATION_RINGS,
+  isInCloudBankAt,
+  isNearLightMantaAt,
+  findActiveSkywardRingAt,
+  SCENIC_VISTA_ZONES,
+  createInitialCameraStatePure,
+  evaluateScenicVistaAtPure,
+  computeCameraObstacleClearancePure,
+  computeCinematicCameraStepPure,
+  REGIONAL_BIOME_THEMES,
+  FLOATING_SKY_ISLANDS,
+  ANCIENT_STORY_MURALS,
+  blendHexColorsPure,
+  computeAtmosphericVisualProfilePure,
+  computeTerrainVertexColorPure,
+  LUMINA_SHARD_CATALOG,
+  SECRET_EXPLORATION_LANDMARKS,
+  evaluateNearbyLuminaShardPure,
+  findNewlyDiscoveredSecretLandmarkAtPure,
+  evaluateNearbySocialPeerPure,
+  evaluateCoopMechanismPure,
+  evaluateSharedEmotionalMomentPure,
+  computeFollowerStepPure,
+  deduplicateNetworkEventPure,
+  evaluateContextualControlHintPure,
+  resolveResponsiveUiProfilePure,
+  evaluateHudAutoHideStatePure,
+  WORLD_SPATIAL_SOUND_EMITTERS,
+  computeSpatialAudioGainAndPanPure,
+  evaluateAcousticSoundscapeAtPure,
+  computeDynamicAudioMixBalancePure,
+  computeGenerativeMusicStepPure,
+  computeOrganicFlickerPure,
+  computeIdleMicroBehaviorPure,
+  evaluateImmersionSceneFeedbackPure,
 } from './rules';
 import { DEFAULT_LOADOUT, getCosmeticsByCategory } from './cosmetics';
 import {
   computeSkyChildPose,
   computeWingTrailConfig,
+  computeSecondaryClothAndHairMotionPure,
 } from './characterAnimator';
 import { skyAudio } from './audio';
 import {
@@ -86,8 +122,16 @@ import {
   discoverEasterEggPure,
   evaluateSunsetRaceMedalPure,
   recordSunsetRaceCompletionPure,
+  EXPLORER_GROWTH_RANKS,
+  evaluateExplorerGrowthRankPure,
+  collectLuminaShardPure,
+  discoverSecretLandmarkPure,
+  sanitizeAndValidateSaveDataPure,
 } from '../core/StorageService';
-import { resolveDeployNetworkStrategyPure } from '../core/NetworkClient';
+import {
+  resolveDeployNetworkStrategyPure,
+  networkClient,
+} from '../core/NetworkClient';
 
 test('Full-Skin Wardrobe catalog contains all 8 modular categories with rich items', () => {
   assert.ok(getCosmeticsByCategory('cape').length >= 12);
@@ -2004,9 +2048,9 @@ test('Continental Ground Architectural Hubs (8 Complexes): Terrace heights, sub-
   const items = createWorldInteractables('prairie');
   const hubItems = items.filter((i) => i.id.includes('_hub_'));
   assert.equal(hubItems.length, 18);
-  assert.equal(items.filter((i) => i.type === 'candle_cluster').length, 10);
-  assert.equal(items.filter((i) => i.type === 'light_bloom').length, 6);
-  assert.equal(items.filter((i) => i.type === 'winged_light').length, 11);
+  assert.equal(items.filter((i) => i.type === 'candle_cluster').length, 12);
+  assert.equal(items.filter((i) => i.type === 'light_bloom').length, 7);
+  assert.equal(items.filter((i) => i.type === 'winged_light').length, 12);
 
   // 3. Solid architectural colliders at the new ground hubs block clipping while keeping plazas accessible
   const hubSolidChecks = [
@@ -2340,5 +2384,1978 @@ test('8 Sky Instrument Timbres (Xylophone, Wind Chime, Flute, Music Box, etc.) &
   assert.equal(evaluateEnsembleAccuracyRatingPure(5, 5), 'B');
 });
 
+test('Module 1 Character Movement Polish: Natural Accel/Decel, Non-Snapping Anatomical Turn, Distinct Walk vs Run Pose, Jump Apex & Soft Landing Cushion, and Stone Bridge Deck', () => {
+  // 1. Natural acceleration ramp & smooth deceleration coasting to zero without yaw jitter
+  let state = createInitialPhysicsState(DEFAULT_LOADOUT);
+  const step1 = stepPlayerPhysics(
+    state,
+    {
+      moveX: 0,
+      moveZ: -1.0,
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: true,
+      cameraYaw: 0,
+    },
+    0.02,
+    DEFAULT_LOADOUT
+  ).nextState;
+  const spd1 = Math.hypot(step1.vx, step1.vz);
+  assert.ok(spd1 > 0.5 && spd1 < 4.5, 'First 20ms frame accelerates smoothly rather than snapping to max speed');
 
+  state = step1;
+  for (let i = 0; i < 20; i++) {
+    state = stepPlayerPhysics(
+      state,
+      {
+        moveX: 0,
+        moveZ: -1.0,
+        jumpJustPressed: false,
+        jumpHeld: false,
+        toggleFlightModeJustPressed: false,
+        sprintHeld: true,
+        cameraYaw: 0,
+      },
+      0.02,
+      DEFAULT_LOADOUT
+    ).nextState;
+  }
+  const fullRunSpd = Math.hypot(state.vx, state.vz);
+  assert.ok(fullRunSpd > 6.8, 'Reaches full run speed smoothly over ~0.4s');
+
+  // Release input and verify smooth deceleration coasting to clean zero stop with zero yaw jitter
+  const stopStep1 = stepPlayerPhysics(
+    state,
+    {
+      moveX: 0,
+      moveZ: 0,
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: false,
+      cameraYaw: 0,
+    },
+    0.02,
+    DEFAULT_LOADOUT
+  ).nextState;
+  const coastSpd = Math.hypot(stopStep1.vx, stopStep1.vz);
+  assert.ok(coastSpd > 1.0 && coastSpd < fullRunSpd, 'Releasing input coasts smoothly with natural deceleration');
+
+  let stoppedState = stopStep1;
+  const yawAtRelease = stoppedState.yaw;
+  for (let i = 0; i < 30; i++) {
+    stoppedState = stepPlayerPhysics(
+      stoppedState,
+      {
+        moveX: 0,
+        moveZ: 0,
+        jumpJustPressed: false,
+        jumpHeld: false,
+        toggleFlightModeJustPressed: false,
+        sprintHeld: false,
+        cameraYaw: 0,
+      },
+      0.02,
+      DEFAULT_LOADOUT
+    ).nextState;
+  }
+  assert.equal(stoppedState.vx, 0);
+  assert.equal(stoppedState.vz, 0);
+  assert.equal(stoppedState.yaw, yawAtRelease, 'Zero yaw jitter when stopping');
+  assert.equal(stoppedState.locomotionMode, 'idle');
+
+  // 2. Smooth Non-Snapping Anatomical Turn on 180-deg Direction Reversal
+  let reverseState = state; // Moving North (yaw = PI, vz < 0)
+  const turnFrame1 = stepPlayerPhysics(
+    reverseState,
+    {
+      moveX: 0.15,
+      moveZ: 1.0, // Reverse toward South (+Z)
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: true,
+      cameraYaw: 0,
+    },
+    0.02,
+    DEFAULT_LOADOUT
+  ).nextState;
+  let yawChange1 = Math.abs(turnFrame1.yaw - reverseState.yaw);
+  if (yawChange1 > Math.PI) yawChange1 = Math.PI * 2 - yawChange1;
+  assert.ok(
+    yawChange1 > 0.05 && yawChange1 <= 0.25,
+    '180-degree direction switch turns at anatomical angular speed instead of instant teleport snap'
+  );
+
+  // 3. Distinct Walk vs Run Pose Biomechanics in computeSkyChildPose
+  const walkPose = computeSkyChildPose({
+    elapsed: 1.0,
+    dt: 0.016,
+    grounded: true,
+    horizSpeed: 3.2,
+    vy: 0,
+    gaitPhase: 0, // cos(0) = 1 (left leg forward swing peak)
+    flightMode: 'hover',
+    flapCooldown: 0,
+    turnRate: 0,
+    activeEmote: null,
+    activeEmoteTimer: 0,
+    instrumentOpen: false,
+    locomotionMode: 'walk',
+  });
+  const runPose = computeSkyChildPose({
+    elapsed: 1.0,
+    dt: 0.016,
+    grounded: true,
+    horizSpeed: 7.2,
+    vy: 0,
+    gaitPhase: 0,
+    flightMode: 'hover',
+    flapCooldown: 0,
+    turnRate: 0,
+    activeEmote: null,
+    activeEmoteTimer: 0,
+    instrumentOpen: false,
+    locomotionMode: 'run',
+  });
+  assert.ok(runPose.spinePitch > walkPose.spinePitch * 2.2, 'Run has distinctly stronger athletic forward torso lean than Walk');
+  assert.ok(runPose.leftKneePitch > walkPose.leftKneePitch * 1.5, 'Run has higher forward knee drive than Walk');
+  assert.ok(runPose.capeBillow > walkPose.capeBillow * 2.0, 'Run billows the cape more strongly than Walk');
+
+  // 4. Jump Lifecycle: Takeoff -> Ascent -> Apex -> Fall -> Elastic Soft Landing Cushion
+  let jumpPhys = createInitialPhysicsState(DEFAULT_LOADOUT);
+  const takeoff = stepPlayerPhysics(
+    jumpPhys,
+    {
+      moveX: 0,
+      moveZ: 0,
+      jumpJustPressed: true,
+      jumpHeld: true,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: false,
+      cameraYaw: 0,
+    },
+    0.02,
+    DEFAULT_LOADOUT
+  );
+  assert.equal(takeoff.didFlap, true);
+  assert.equal(takeoff.nextState.grounded, false);
+  assert.equal(takeoff.nextState.locomotionMode, 'jump');
+
+  // Simulate normal jump landing from moderate descent (vy = -4.8 m/s) -> triggers landingCushionTimer without high-fall stiffness
+  let landingPhys = {
+    ...takeoff.nextState,
+    y: groundHeightAt(0, 6) + 0.05,
+    vy: -4.8,
+    grounded: false,
+  };
+  const touchRes = stepPlayerPhysics(
+    landingPhys,
+    {
+      moveX: 0,
+      moveZ: 0,
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: false,
+      cameraYaw: 0,
+    },
+    0.03,
+    DEFAULT_LOADOUT
+  );
+  assert.equal(touchRes.didLand, true);
+  assert.equal(touchRes.nextState.grounded, true);
+  assert.equal(touchRes.nextState.landingStiffTimer, 0, 'Normal jump does not freeze player with high-fall stiffness');
+  assert.ok(touchRes.nextState.landingCushionTimer > 0.12, 'Normal jump triggers elastic landingCushionTimer');
+
+  const idleGroundPose = computeSkyChildPose({
+    elapsed: 2.0,
+    dt: 0.016,
+    grounded: true,
+    horizSpeed: 0,
+    vy: 0,
+    gaitPhase: 0,
+    flightMode: 'hover',
+    flapCooldown: 0,
+    turnRate: 0,
+    activeEmote: null,
+    activeEmoteTimer: 0,
+    instrumentOpen: false,
+    landingCushionTimer: 0,
+  });
+  const cushionedGroundPose = computeSkyChildPose({
+    elapsed: 2.0,
+    dt: 0.016,
+    grounded: true,
+    horizSpeed: 0,
+    vy: 0,
+    gaitPhase: 0,
+    flightMode: 'hover',
+    flapCooldown: 0,
+    turnRate: 0,
+    activeEmote: null,
+    activeEmoteTimer: 0,
+    instrumentOpen: false,
+    landingCushionTimer: 0.12, // Midpoint of 0.24s landing cushion bell curve
+  });
+  assert.ok(cushionedGroundPose.hipsY < idleGroundPose.hipsY - 0.08, 'Landing cushion dips hipsY gracefully on touchdown');
+  assert.ok(cushionedGroundPose.leftKneePitch > idleGroundPose.leftKneePitch + 0.35, 'Landing cushion flexes knees to absorb touchdown');
+
+  // 5. Slope & Uneven Terrain Stability: running downhill across Northern Temple ramp (0, -39 -> 0, -35) stays grounded without micro-hopping
+  let rampPhys = createInitialPhysicsState(DEFAULT_LOADOUT);
+  rampPhys.x = 0;
+  rampPhys.z = -39.0;
+  rampPhys.y = groundHeightAt(0, -39.0);
+  rampPhys.yaw = 0; // Facing South (+Z) downhill
+  for (let i = 0; i < 15; i++) {
+    rampPhys = stepPlayerPhysics(
+      rampPhys,
+      {
+        moveX: 0,
+        moveZ: 1.0,
+        jumpJustPressed: false,
+        jumpHeld: false,
+        toggleFlightModeJustPressed: false,
+        sprintHeld: true,
+        cameraYaw: 0,
+      },
+      0.03,
+      DEFAULT_LOADOUT
+    ).nextState;
+    assert.equal(rampPhys.grounded, true, 'Player remains stably grounded while running downhill on sloped ramp');
+    assert.equal(rampPhys.y, groundHeightAt(rampPhys.x, rampPhys.z), 'Player y tracks sloped ground height accurately');
+  }
+});
+
+test('Module 2 Flight & Gliding System Upgrade: Takeoff Momentum Carry, True Glide Inertia, Climb/Level/Descent Aerodynamics, Cloud-Sea Grazing & Skyward Current Rings, Balanced Energy, and Momentum-Preserving Touchdown', () => {
+  // 1. Takeoff System: taking off from a ground run carries forward momentum and activates takeoffTimer
+  let runTakeoffPhys = createInitialPhysicsState(DEFAULT_LOADOUT);
+  runTakeoffPhys.vx = 0;
+  runTakeoffPhys.vz = -6.5; // Running North (-Z)
+  runTakeoffPhys.yaw = Math.PI;
+  const takeoffStep = stepPlayerPhysics(
+    runTakeoffPhys,
+    {
+      moveX: 0,
+      moveZ: -1.0,
+      jumpJustPressed: true,
+      jumpHeld: true,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: true,
+      cameraYaw: 0,
+    },
+    0.02,
+    DEFAULT_LOADOUT
+  ).nextState;
+
+  assert.equal(takeoffStep.grounded, false, 'Takeoff transitions smoothly to airborne');
+  assert.ok(takeoffStep.takeoffTimer > 0.22, 'Takeoff activates takeoffTimer for ceremonial wing-unfurl posture');
+  assert.ok(Math.hypot(takeoffStep.vx, takeoffStep.vz) > 6.8, 'Takeoff from a run carries and boosts forward horizontal momentum');
+
+  const takeoffPose = computeSkyChildPose({
+    elapsed: 1.0,
+    dt: 0.016,
+    grounded: false,
+    horizSpeed: Math.hypot(takeoffStep.vx, takeoffStep.vz),
+    vy: takeoffStep.vy,
+    gaitPhase: 0,
+    flightMode: 'hover',
+    flapCooldown: takeoffStep.flapCooldown,
+    turnRate: 0,
+    activeEmote: null,
+    activeEmoteTimer: 0,
+    instrumentOpen: false,
+    takeoffTimer: takeoffStep.takeoffTimer,
+  });
+  assert.ok(takeoffPose.wingFlare > 0.9, 'Takeoff pose unfurls wings wide');
+
+  // 2. Gliding System: True Forward Inertia even when directional keys (WASD) are released
+  let glideCoastPhys = {
+    ...takeoffStep,
+    y: 18.0,
+    vy: -0.4,
+    flightMode: 'glide' as 'hover' | 'glide',
+  };
+  for (let i = 0; i < 20; i++) {
+    glideCoastPhys = stepPlayerPhysics(
+      glideCoastPhys,
+      {
+        moveX: 0,
+        moveZ: 0, // No WASD input held!
+        jumpJustPressed: false,
+        jumpHeld: false,
+        toggleFlightModeJustPressed: false,
+        sprintHeld: false,
+        cameraYaw: 0,
+      },
+      0.04,
+      DEFAULT_LOADOUT
+    ).nextState;
+  }
+  const coastSpeed = Math.hypot(glideCoastPhys.vx, glideCoastPhys.vz);
+  assert.ok(
+    coastSpeed > 8.5,
+    `Gliding preserves forward cruising inertia (${coastSpeed.toFixed(2)} m/s) even when WASD is released`
+  );
+
+  // 3. Climb vs Level vs Descent Aerodynamics & Turn Banking
+  let descGlidePhys = {
+    ...glideCoastPhys,
+    y: 24.0,
+    vy: -5.2,
+    flightMode: 'glide' as 'hover' | 'glide',
+  };
+  descGlidePhys = stepPlayerPhysics(
+    descGlidePhys,
+    {
+      moveX: 0.85, // Banking into a right turn while descending
+      moveZ: -0.5,
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: false,
+      cameraYaw: 0,
+    },
+    0.05,
+    DEFAULT_LOADOUT
+  ).nextState;
+  assert.equal(descGlidePhys.flightPitchPhase, 'descent', 'Descending glide sets flightPitchPhase to descent');
+  assert.ok(descGlidePhys.diveMomentum > 0, 'Descending in glide converts potential energy into diveMomentum');
+  assert.ok(Math.abs(descGlidePhys.roll) > 0.05, 'Turning in glide banks character roll angle');
+
+  const climbPose = computeSkyChildPose({
+    elapsed: 1.5,
+    dt: 0.016,
+    grounded: false,
+    horizSpeed: 10.5,
+    vy: 4.2,
+    gaitPhase: 0,
+    flightMode: 'glide',
+    flapCooldown: 0,
+    turnRate: 0.6,
+    activeEmote: null,
+    activeEmoteTimer: 0,
+    instrumentOpen: false,
+    flightPitchPhase: 'climb',
+  });
+  const descentPose = computeSkyChildPose({
+    elapsed: 1.5,
+    dt: 0.016,
+    grounded: false,
+    horizSpeed: 12.0,
+    vy: -5.2,
+    gaitPhase: 0,
+    flightMode: 'glide',
+    flapCooldown: 0,
+    turnRate: 0.6,
+    activeEmote: null,
+    activeEmoteTimer: 0,
+    instrumentOpen: false,
+    flightPitchPhase: 'descent',
+  });
+  assert.ok(descentPose.hipsPitch > climbPose.hipsPitch + 0.22, 'Descent glide pitches body steeper forward than Climb glide');
+  assert.notEqual(
+    Math.abs(climbPose.leftShoulderRoll),
+    Math.abs(climbPose.rightShoulderRoll),
+    'Turning in glide creates asymmetric wing banking between left and right shoulders'
+  );
+
+  // 4. Environmental Effects & Multi-Source Flight Energy: Cloud-Sea Grazing, Light Manta Draft & Skyward Exploration Rings
+  assert.equal(SKYWARD_EXPLORATION_RINGS.length, 5, '5 High-Altitude Skyward Exploration Current Rings exist');
+  assert.equal(isInCloudBankAt(38, 16, -12), true, 'Inner high cloud bank at (38, 16, -12) is detected');
+  assert.ok(findActiveSkywardRingAt(18.0, 14.5, -34.0) !== null, 'Bell Village Skyward Current Ring at (18, 14.5, -34) is detected');
+  assert.equal(isNearLightMantaAt(22.0, 14.0, -18.0, 0), true, 'Overhead Light Manta #0 at (22, 14, -18) t=0 is detected');
+
+  let ringBoostPhys = createInitialPhysicsState(DEFAULT_LOADOUT);
+  ringBoostPhys.x = 18.0;
+  ringBoostPhys.y = 14.5;
+  ringBoostPhys.z = -34.0;
+  ringBoostPhys.grounded = false;
+  ringBoostPhys.flightMode = 'glide';
+  ringBoostPhys.wingEnergy = 2.2;
+  const ringStep = stepPlayerPhysics(
+    ringBoostPhys,
+    {
+      moveX: 0,
+      moveZ: 0,
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: false,
+      cameraYaw: 0,
+      realmId: 'prairie',
+    },
+    0.1,
+    DEFAULT_LOADOUT
+  ).nextState;
+  assert.equal(ringStep.inWindTunnel, true, 'Flying through a Skyward Exploration Ring activates wind current boost');
+  assert.ok(ringStep.wingEnergy > 2.2, 'Skyward Exploration Ring recharges wing energy');
+
+  // Cloud-sea grazing provides buoyant lift and recharges energy
+  let cloudGlidePhys = createInitialPhysicsState(DEFAULT_LOADOUT);
+  cloudGlidePhys.x = 38.0;
+  cloudGlidePhys.y = 16.0;
+  cloudGlidePhys.z = -12.0;
+  cloudGlidePhys.grounded = false;
+  cloudGlidePhys.flightMode = 'glide';
+  cloudGlidePhys.wingEnergy = 2.0;
+  const cloudStep = stepPlayerPhysics(
+    cloudGlidePhys,
+    {
+      moveX: 0,
+      moveZ: 0,
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: false,
+      cameraYaw: 0,
+      realmId: 'prairie',
+    },
+    0.1,
+    DEFAULT_LOADOUT
+  ).nextState;
+  assert.equal(cloudStep.inCloudBank, true, 'Skimming cloud bank sets inCloudBank = true');
+  assert.ok(cloudStep.wingEnergy > 2.0, 'Skimming cloud bank recharges wing energy');
+
+  // 5. Flight Trail Non-Occlusion & Differentiation
+  const trailCfg = computeWingTrailConfig({
+    grounded: false,
+    flightMode: 'glide',
+    horizSpeed: 12.0,
+    vy: -2.0,
+    flapCooldown: 0,
+    activeEmote: null,
+    activeEmoteTimer: 0,
+    turnRate: 0.8,
+    isDiving: false,
+    inCloudBank: true,
+    inWindTunnel: false,
+  });
+  assert.equal(trailCfg.active, true);
+  assert.ok(trailCfg.puffBaseScale <= 0.88, 'Cloud puff scale stays compact (<= 0.88) so it never occludes the character');
+  assert.ok(trailCfg.ribbonOpacity <= 0.76, 'Ribbon opacity stays translucent (<= 0.76)');
+
+  // 6. Momentum-Preserving Glide Touchdown: landing from glide preserves horizontal speed into a smooth ground run-out
+  let glideTouchdownPhys = createInitialPhysicsState(DEFAULT_LOADOUT);
+  glideTouchdownPhys.x = 0;
+  glideTouchdownPhys.z = 6;
+  glideTouchdownPhys.y = groundHeightAt(0, 6) + 0.05;
+  glideTouchdownPhys.vx = 0;
+  glideTouchdownPhys.vz = -7.8; // Fast forward glide
+  glideTouchdownPhys.vy = -3.6;
+  glideTouchdownPhys.grounded = false;
+  glideTouchdownPhys.flightMode = 'glide';
+
+  const glideLandRes = stepPlayerPhysics(
+    glideTouchdownPhys,
+    {
+      moveX: 0,
+      moveZ: -1.0,
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: false,
+      cameraYaw: 0,
+    },
+    0.02,
+    DEFAULT_LOADOUT
+  );
+  assert.equal(glideLandRes.didLand, true);
+  assert.equal(glideLandRes.nextState.grounded, true);
+  assert.ok(glideLandRes.nextState.landingCushionTimer > 0.2, 'Glide touchdown activates elastic landing cushion');
+  assert.ok(
+    Math.hypot(glideLandRes.nextState.vx, glideLandRes.nextState.vz) > 6.5,
+    'Glide touchdown preserves forward momentum into a smooth ground run-out instead of stopping abruptly'
+  );
+});
+
+test('34. Module 3 Upgrade: Cinematic Third-Person Camera System (Damped Follow, Rule-of-Thirds Framing, Multi-Obstacle Avoidance, Scenic Vistas & Flight Camera)', () => {
+  // 1. Damped Camera Follow & Forward Velocity Look-Ahead (with Takeoff Vertical Lag)
+  const p0 = createInitialPhysicsState(DEFAULT_LOADOUT);
+  let cam = createInitialCameraStatePure(p0.x, p0.y, p0.z);
+  assert.equal(cam.focusX, p0.x);
+  assert.equal(cam.focusZ, p0.z);
+
+  // Move player forward (-Z) at running speed and verify focus leads motion smoothly without 1:1 snapping
+  const pRun = {
+    ...p0,
+    z: p0.z - 0.6,
+    vz: -6.0,
+    locomotionMode: 'run' as const,
+  };
+  const camStep1 = computeCinematicCameraStepPure(cam, pRun, {
+    dt: 0.016,
+    isDraggingCamera: false,
+    moveX: 0,
+    moveZ: -1,
+    turnRate: 0,
+    selfieMode: false,
+    photoModeOpen: false,
+    photoFov: 60,
+  });
+  assert.ok(
+    camStep1.focusZ < cam.focusZ && camStep1.focusZ > pRun.z - 1.2,
+    'Camera focus smoothly lags/leads moving character instead of locking rigidly 1:1'
+  );
+
+  // Takeoff vertical lag: when takeoffTimer > 0, vertical focus follows more gently than grounded movement
+  const pTakeoff = {
+    ...p0,
+    y: p0.y + 2.0,
+    vy: 6.5,
+    grounded: false,
+    takeoffTimer: 0.28,
+  };
+  const camTakeoff = computeCinematicCameraStepPure(cam, pTakeoff, {
+    dt: 0.032,
+    isDraggingCamera: false,
+    moveX: 0,
+    moveZ: 0,
+    turnRate: 0,
+    selfieMode: false,
+    photoModeOpen: false,
+    photoFov: 60,
+  });
+  assert.ok(
+    camTakeoff.focusY > cam.focusY && camTakeoff.focusY < pTakeoff.y + 1.6,
+    'Takeoff camera exhibits smooth vertical follow buffer'
+  );
+
+  // 2. Non-Snapping Turn Alignment & Manual-Look Grace Period
+  let camTurn = createInitialCameraStatePure(p0.x, p0.y, p0.z);
+  camTurn.yaw = 0;
+  const pTurned = {
+    ...p0,
+    yaw: Math.PI * 0.5, // Player turned 90 degrees
+    vx: 4.5,
+    vz: 0,
+  };
+  // When user recently dragged camera (manualLookGraceTimer > 0), auto-recenter does NOT override user look direction
+  camTurn.manualLookGraceTimer = 1.2;
+  const camAfterManual = computeCinematicCameraStepPure(camTurn, pTurned, {
+    dt: 0.05,
+    isDraggingCamera: false,
+    moveX: 0,
+    moveZ: -1,
+    turnRate: 0.5,
+    selfieMode: false,
+    photoModeOpen: false,
+    photoFov: 60,
+  });
+  assert.equal(
+    camAfterManual.yaw,
+    0,
+    'Camera respects manual-look grace timer and never fights user orbit input'
+  );
+
+  // When grace timer expires, camera rotates smoothly toward behind-player angle with angular velocity cap (no sudden snap)
+  camTurn.manualLookGraceTimer = 0;
+  const camAutoAlign = computeCinematicCameraStepPure(camTurn, pTurned, {
+    dt: 0.05,
+    isDraggingCamera: false,
+    moveX: 0,
+    moveZ: -1,
+    turnRate: 0.5,
+    selfieMode: false,
+    photoModeOpen: false,
+    photoFov: 60,
+  });
+  const yawDelta = Math.abs(camAutoAlign.yaw - 0);
+  assert.ok(
+    yawDelta > 0.005 && yawDelta <= 0.85 * 0.05 + 1e-5,
+    'Camera turn alignment is smooth and bounded by max angular velocity (never snaps)'
+  );
+
+  // 3. Differentiated Camera Distance & FOV across States + Rule-of-Thirds Screen Composition
+  const measureSteadyCamera = (statePatch: Partial<typeof p0>, turnRate = 0) => {
+    let c = createInitialCameraStatePure(p0.x, p0.y, p0.z);
+    const pState = { ...p0, ...statePatch };
+    for (let i = 0; i < 60; i++) {
+      c = computeCinematicCameraStepPure(c, pState, {
+        dt: 0.05,
+        isDraggingCamera: false,
+        moveX: 0,
+        moveZ: -1,
+        turnRate,
+        selfieMode: false,
+        photoModeOpen: false,
+        photoFov: 60,
+      });
+    }
+    return c;
+  };
+
+  const camSit = measureSteadyCamera({ sitMode: 'sit_ground', vx: 0, vz: 0 });
+  const camIdle = measureSteadyCamera({ sitMode: 'none', vx: 0, vz: 0, locomotionMode: 'idle' });
+  const camRun = measureSteadyCamera({ vx: 0, vz: -5.8, locomotionMode: 'run' });
+  const camHover = measureSteadyCamera({ grounded: false, flightMode: 'hover', vx: 0, vz: -4.0, vy: 0.5 });
+  const camGlide = measureSteadyCamera({ grounded: false, flightMode: 'glide', vx: 0, vz: -11.5, vy: -1.0 });
+  const camDive = measureSteadyCamera({ grounded: false, flightMode: 'glide', isDiving: true, vx: 0, vz: -14.0, vy: -8.5 });
+
+  assert.ok(camSit.distance < camIdle.distance, 'Sitting camera pulls closer for intimate framing');
+  assert.ok(camIdle.distance < camRun.distance, 'Running camera pulls back slightly compared to idle');
+  assert.ok(camRun.distance < camHover.distance, 'Airborne hover camera is wider than ground running');
+  assert.ok(camHover.distance < camGlide.distance, 'Gliding camera pulls back to showcase spatial depth');
+  assert.ok(camGlide.distance < camDive.distance, 'High-speed diving camera pulls back furthest');
+  assert.ok(camGlide.fov > camIdle.fov && camDive.fov > camGlide.fov, 'FOV expands progressively from ground -> glide -> dive');
+
+  // Rule-of-Thirds composition: turning shifts focus laterally so character is not locked to dead center
+  const camBankRight = measureSteadyCamera(
+    { grounded: false, flightMode: 'glide', vx: 0, vz: -10.5, roll: -0.45 },
+    0.9
+  );
+  assert.ok(
+    Math.abs(camBankRight.focusX - p0.x) > 0.15,
+    'Rule-of-Thirds lateral offset shifts camera focus when turning so character does not stay fixed at screen center'
+  );
+  assert.ok(
+    Math.abs(camBankRight.roll) > 0.01,
+    'Aerial gliding turn applies subtle horizon roll banking'
+  );
+
+  // 4. Multi-Obstacle & Terrain Anti-Clipping (Wall Pull-In + Edge Tangential Slide)
+  assert.ok(SCENIC_VISTA_ZONES.length >= 8, 'At least 8 Scenic Vista zones configured across the continent');
+  // Place focus just outside Northern Temple Main Hall (0, -55, radius 5.2) and aim camera ray straight into the hall
+  const obsDirect = computeCameraObstacleClearancePure(
+    0,
+    11.0,
+    -48.0,
+    0,
+    12.0,
+    -56.0
+  );
+  assert.equal(obsDirect.occludedById, 'temple_main_hall');
+  assert.ok(
+    obsDirect.safeRatio < 0.75,
+    'Direct wall occlusion pulls camera forward smoothly in front of building'
+  );
+
+  // Grazing the outer edge of an obstacle slides tangentially instead of snapping distance
+  const obsGraze = computeCameraObstacleClearancePure(
+    5.4,
+    11.0,
+    -48.0,
+    5.4,
+    12.0,
+    -58.0
+  );
+  assert.equal(obsGraze.occludedById, 'temple_main_hall');
+  assert.equal(obsGraze.safeRatio, 1.0, 'Grazing obstacle edge preserves longitudinal distance ratio');
+  assert.ok(Math.abs(obsGraze.deflectX) > 0.05, 'Grazing obstacle edge applies smooth tangential deflection');
+
+  // 5. Scenic Vista Presentation (Landmark Vista + High-Altitude Cloud Panorama)
+  const templeVista = evaluateScenicVistaAtPure(0, 8.5, -42.0, false);
+  assert.ok(templeVista.vista !== null && templeVista.blend > 0.4, 'Approaching Elder Temple activates Scenic Vista zone');
+  assert.ok(templeVista.distBonus > 0.8 && templeVista.fovBonus > 1.5, 'Scenic Vista expands camera distance and FOV to showcase architecture');
+
+  const highCloudVista = evaluateScenicVistaAtPure(38.0, 22.0, -12.0, true);
+  assert.ok(
+    highCloudVista.distBonus > 1.5 && highCloudVista.fovBonus > 2.5,
+    'High-altitude cloud sea triggers panoramic camera expansion'
+  );
+});
+
+test('Module 4 Art Direction & Lighting Upgrade: Cohesive Color System, Regional Biome Blending, Volumetric God-Rays, Terrain Vertex AO, and Anti-Blowout Tone Mapping', () => {
+  // 1. Color Blending & Anti-Neon Desaturation Guard
+  const pureMid = blendHexColorsPure('#000000', '#FFFFFF', 0.5, 1.0);
+  assert.equal(pureMid, '#808080');
+
+  const tamedNeon = blendHexColorsPure('#FF00FF', '#00FFFF', 0.2, 0.78);
+  assert.ok(
+    tamedNeon.startsWith('#') && tamedNeon.length === 7,
+    'blendHexColorsPure returns valid 6-digit hex color with saturation taming'
+  );
+
+  // 2. Realm Color Identity & Day/Night Phase Transitions
+  const homeNoon = computeAtmosphericVisualProfilePure('home', 'noon', 0, 1.2, 6, false);
+  const prairieNoon = computeAtmosphericVisualProfilePure('prairie', 'noon', 0, 1.2, 6, false);
+  const forestNoon = computeAtmosphericVisualProfilePure('forest', 'noon', 0, 1.2, 6, false);
+  const vaultNight = computeAtmosphericVisualProfilePure('vault', 'starry_night', 0, 1.2, 6, false);
+
+  assert.notEqual(
+    homeNoon.skyTopColor,
+    prairieNoon.skyTopColor,
+    'Home and Prairie preserve distinct signature sky palettes at default noon phase'
+  );
+  assert.notEqual(
+    prairieNoon.fogColor,
+    forestNoon.fogColor,
+    'Prairie and Forest have distinct atmospheric fog colors'
+  );
+  assert.ok(
+    vaultNight.starfieldIntensity > prairieNoon.starfieldIntensity + 0.5,
+    'Starry night / Vault has significantly higher procedural starfield intensity than noon Prairie'
+  );
+  assert.ok(
+    homeNoon.auroraIntensity > 0.3 && vaultNight.auroraIntensity > 0.4,
+    'Home and Starry Night activate high-altitude Aurora ribbons'
+  );
+
+  // 3. Highlight Anti-Blowout & Tone Mapping Exposure Guard across all realms & phases
+  for (const phase of DAY_NIGHT_PHASES) {
+    const prof = computeAtmosphericVisualProfilePure('prairie', phase, 0, 1.2, 6, false);
+    assert.ok(
+      prof.toneMappingExposure >= 0.84 && prof.toneMappingExposure <= 1.04,
+      `ToneMappingExposure (${prof.toneMappingExposure}) stays in safe anti-blowout range [0.84, 1.04]`
+    );
+    assert.ok(
+      prof.sunIntensity >= 0.95 && prof.sunIntensity <= 1.88,
+      `SunIntensity (${prof.sunIntensity}) stays in balanced range [0.95, 1.88]`
+    );
+    const sunNorm = Math.hypot(prof.sunDirection.x, prof.sunDirection.y, prof.sunDirection.z);
+    assert.ok(Math.abs(sunNorm - 1.0) < 1e-4, 'Sun direction vector is unit-normalized');
+  }
+
+  // 4. Regional Sub-Zone Biome Theme Blending & Altitude Fog Thinning
+  assert.ok(REGIONAL_BIOME_THEMES.length >= 7, 'At least 7 regional biome color themes defined');
+  const sanctuaryProfile = computeAtmosphericVisualProfilePure(
+    'prairie',
+    'noon',
+    52.0,
+    4.0,
+    -28.0,
+    false
+  );
+  assert.equal(
+    sanctuaryProfile.localThemeName,
+    '圣岛海螺群岛·晴海暖金',
+    'Standing inside Sanctuary Islands blends regional turquoise/coral palette'
+  );
+
+  const highAltitudeProfile = computeAtmosphericVisualProfilePure(
+    'prairie',
+    'noon',
+    0,
+    28.0,
+    6,
+    false
+  );
+  assert.ok(
+    highAltitudeProfile.fogDensity < prairieNoon.fogDensity,
+    'High-altitude flight thins out atmospheric fog for clearer distant horizons'
+  );
+
+  // 5. Multi-Layer Terrain Vertex Coloring & Analytical Ambient Occlusion
+  const [beachR, beachG] = computeTerrainVertexColorPure(28.0, -0.05, 14.0, 0.98, '#86C995', '#5EA876', '#FEF0C7');
+  const [meadowR, meadowG] = computeTerrainVertexColorPure(14.0, 2.5, 10.0, 0.99, '#86C995', '#5EA876', '#FEF0C7');
+  const [cliffR, cliffG] = computeTerrainVertexColorPure(18.0, 3.0, 0.0, 0.45, '#86C995', '#5EA876', '#FEF0C7');
+  const [, shrineSocketG] = computeTerrainVertexColorPure(7.2, 1.2, 0.0, 0.72, '#86C995', '#5EA876', '#FEF0C7');
+
+  assert.ok(
+    beachR > meadowR && beachG > 0.65,
+    'Low shoreline elevation blends warm coastal sand tones'
+  );
+  assert.ok(
+    Math.abs(cliffR - meadowR) > 0.03 || Math.abs(cliffG - meadowG) > 0.03,
+    'Steep slope normal blends weathered cliff stone color'
+  );
+  assert.ok(
+    shrineSocketG < meadowG,
+    'Analytical Ambient Occlusion darkens terrain socket underneath architectural platforms'
+  );
+});
+
+test('Module 5 Game Map & World Level Design Upgrade: Multi-Tiered Floating Sky Islands, Aerial Stepping-Stone Route, Environmental Storytelling Murals, and Exploration Rewards', () => {
+  // 1. Spatial Hierarchy: 4 Multi-Tiered Floating Sky Islands with ascending elevations (9.5m -> 14.8m -> 21.5m & 11.2m)
+  assert.equal(FLOATING_SKY_ISLANDS.length, 4);
+  assert.ok(
+    Math.abs(groundHeightAt(-32.0, -28.0) - 9.5) < 0.05,
+    'West Step 1 Floating Sky Island plateau sits at 9.5m altitude'
+  );
+  assert.ok(
+    Math.abs(groundHeightAt(-48.0, -54.0) - 14.8) < 0.05,
+    'Northwest Step 2 Floating Sky Island plateau sits at 14.8m altitude'
+  );
+  assert.ok(
+    Math.abs(groundHeightAt(-28.0, -80.0) - 21.5) < 0.05,
+    'Celestial Observatory Secret Floating Island sits at 21.5m altitude'
+  );
+  assert.ok(
+    Math.abs(groundHeightAt(42.0, -6.0) - 11.2) < 0.05,
+    'East Canyon Bridge Floating Island sits at 11.2m altitude'
+  );
+
+  // 2. Sub-Zone Discovery & Environmental Storytelling Murals
+  assert.equal(ANCIENT_STORY_MURALS.length, 4);
+  assert.equal(
+    getSubZoneNameAt('prairie', -32.0, -28.0),
+    '西境云阶浮岛 · 一阶微风台'
+  );
+  assert.equal(
+    getSubZoneNameAt('prairie', -28.0, -80.0),
+    '云端天星观景浮岛 · 秘境穹顶'
+  );
+  assert.equal(
+    getSubZoneNameAt('prairie', -26.0, -4.5),
+    '遗落巨人山谷 · 守望者残像'
+  );
+  assert.equal(
+    getSubZoneNameAt('prairie', -24.5, -22.0),
+    '幽晶回音暗道 · 沉没星盘壁画'
+  );
+
+  // 3. Aerial Exploration Route Updraft Thermals on Floating Sky Islands
+  let islAir = createInitialPhysicsState(DEFAULT_LOADOUT);
+  islAir.grounded = false;
+  islAir.x = -32.0;
+  islAir.z = -28.0;
+  islAir.y = 11.5;
+  islAir.vy = -1.0;
+  islAir.wingEnergy = 2.5;
+  const islStep = stepPlayerPhysics(
+    islAir,
+    {
+      moveX: 0,
+      moveZ: -1,
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: false,
+      cameraYaw: 0,
+      realmId: 'prairie',
+    },
+    0.2,
+    DEFAULT_LOADOUT
+  ).nextState;
+  assert.equal(
+    islStep.inWindTunnel,
+    true,
+    'Floating Sky Island thermal updraft activates inWindTunnel lift'
+  );
+  assert.ok(
+    islStep.vy > -1.0 && islStep.wingEnergy > 2.5,
+    'Floating Sky Island thermal updraft lifts the player and recharges wing energy'
+  );
+
+  // 4. Scenic Overlook Framing & Biome Atmosphere at Celestial Observatory (-28, 21.5, -80)
+  const obsVista = evaluateScenicVistaAtPure(-28.0, 21.5, -80.0, false);
+  assert.ok(
+    obsVista.vista && obsVista.vista.id === 'vista_celestial_observatory',
+    'Standing on the Celestial Observatory triggers panoramic scenic vista framing'
+  );
+  const obsAtmo = computeAtmosphericVisualProfilePure(
+    'prairie',
+    'noon',
+    -28.0,
+    21.5,
+    -80.0,
+    false
+  );
+  assert.equal(
+    obsAtmo.localThemeName,
+    '云端天星观景浮岛·星穹琉璃',
+    'Celestial Observatory blends its dedicated starlight biome atmosphere'
+  );
+
+  // 5. Exploration Rewards on Floating Islands & Secret Routes
+  const prairieItems = createWorldInteractables('prairie');
+  const obsWingedLight = prairieItems.find(
+    (it) => it.id === 'prairie_wl_celestial_observatory'
+  );
+  const step1Candles = prairieItems.find(
+    (it) => it.id === 'prairie_candle_west_step_island'
+  );
+  const step2Bloom = prairieItems.find(
+    (it) => it.id === 'prairie_bloom_nw_step_island'
+  );
+  assert.ok(obsWingedLight, 'Celestial Observatory rewards explorers with a Winged Light');
+  assert.ok(step1Candles, 'West Step 1 Floating Island rewards explorers with a Candle Cluster');
+  assert.ok(step2Bloom, 'Northwest Step 2 Floating Island rewards explorers with a Light Bloom');
+});
+
+test('Module 6 Character Cape/Hair Secondary Physics & Surface-Differentiated Footstep Audio Upgrade', () => {
+  // 1. Idle vs High-Speed Glide Secondary Cloth & Hair Wind Harmonics
+  const idleSec = computeSecondaryClothAndHairMotionPure({
+    elapsed: 1.5,
+    capeBillow: 0.08,
+    wingFlare: 0.1,
+    wingStroke: 0,
+    hipsRoll: 0,
+    spineYaw: 0,
+    spinePitch: 0.03,
+  });
+  const glideTurnSec = computeSecondaryClothAndHairMotionPure({
+    elapsed: 1.5,
+    capeBillow: 0.88,
+    wingFlare: 0.98,
+    wingStroke: -0.25,
+    hipsRoll: 0.36,
+    spineYaw: -0.18,
+    spinePitch: 0.24,
+  });
+
+  assert.ok(
+    glideTurnSec.primaryWaveFreq > idleSec.primaryWaveFreq + 3.0,
+    'High-speed gliding accelerates cape wind ripple frequency'
+  );
+  assert.ok(
+    glideTurnSec.waveAmplitude > idleSec.waveAmplitude + 0.025,
+    'High-speed gliding increases cape billow wave amplitude'
+  );
+  assert.ok(
+    Math.abs(glideTurnSec.asymmetricTurnTwist) > 0.25,
+    'Banking into a glide turn produces asymmetric wingtip cloth twist'
+  );
+  assert.ok(
+    glideTurnSec.hemLift > idleSec.hemLift + 0.15,
+    'Gliding and wing downstrokes lift the trailing cape hemline'
+  );
+  assert.ok(
+    Math.abs(glideTurnSec.hairSwayPitch) > Math.abs(idleSec.hairSwayPitch),
+    'Forward pitch and wind billow trail hair tufts backward'
+  );
+
+  // 2. Surface-differentiated footstep audio synthesis executes safely across all 5 surfaces
+  assert.equal(typeof skyAudio.playFootstep, 'function');
+  skyAudio.playFootstep('grass', false);
+  skyAudio.playFootstep('stone', true);
+  skyAudio.playFootstep('water', false);
+  skyAudio.playFootstep('snow', true);
+  skyAudio.playFootstep('sand', false);
+});
+
+test('38. Exploration Light-Energy Collection & Progression System: 4-Tier Lumina Shards, Proximity Visual Hints, Explorer Growth Ranks (Lv.1-Lv.6), Session Echo Resonance & Save Data Sanitization', () => {
+  // 1. 16 Original Lumina Shards across 4 distinct tiers with ascending values
+  assert.equal(LUMINA_SHARD_CATALOG.length, 16);
+  const dewCount = LUMINA_SHARD_CATALOG.filter((s) => s.tier === 'dew_glimmer').length;
+  const prismCount = LUMINA_SHARD_CATALOG.filter((s) => s.tier === 'prism_crystal').length;
+  const nebulaCount = LUMINA_SHARD_CATALOG.filter((s) => s.tier === 'nebula_core').length;
+  const aetherCount = LUMINA_SHARD_CATALOG.filter((s) => s.tier === 'aether_crown').length;
+  assert.equal(dewCount, 6);
+  assert.equal(prismCount, 4);
+  assert.equal(nebulaCount, 4);
+  assert.equal(aetherCount, 2);
+
+  // Verify tier audio feedback executes safely
+  skyAudio.playLuminaShardCollect('dew_glimmer', false);
+  skyAudio.playLuminaShardCollect('prism_crystal', false);
+  skyAudio.playLuminaShardCollect('nebula_core', true);
+  skyAudio.playLuminaShardCollect('aether_crown', false);
+  skyAudio.playExplorerRankUpCeremony(3);
+  skyAudio.playSecretLandmarkDiscover();
+
+  // 2. Proximity Visual Hint (<= 14.5m) & Magnetic Collection Radius (<= 2.65m)
+  const firstShard = LUMINA_SHARD_CATALOG[0]; // shard_dew_shrine_arch at (2.8, y, -8.0)
+  const hintEval = evaluateNearbyLuminaShardPure(
+    firstShard.x,
+    firstShard.y - 1.0,
+    firstShard.z + 8.0,
+    [],
+    []
+  );
+  assert.equal(hintEval.nearestShard?.id, firstShard.id);
+  assert.equal(hintEval.isWithinVisualHintRadius, true);
+  assert.equal(hintEval.isWithinCollectRadius, false);
+  assert.ok(hintEval.proximityIntensity > 0.25 && hintEval.proximityIntensity < 0.9);
+
+  const collectEval = evaluateNearbyLuminaShardPure(
+    firstShard.x,
+    firstShard.y - 1.0,
+    firstShard.z + 1.2,
+    [],
+    []
+  );
+  assert.equal(collectEval.nearestShard?.id, firstShard.id);
+  assert.equal(collectEval.isWithinCollectRadius, true);
+
+  // 3. First-time collection, Explorer Growth Rank milestone unlock & Repeat-Session Echo Resonance
+  let save = buildDefaultSaveData();
+  assert.equal(save.explorerRank, 1);
+  assert.equal(save.luminaResonancePts, 0);
+
+  // Collect Aether Crown shard (+85 resonancePts -> crosses Lv.2 threshold at 45pt!)
+  const aetherShard = LUMINA_SHARD_CATALOG.find(
+    (s) => s.id === 'shard_aether_celestial_crown'
+  )!;
+  const collect1 = collectLuminaShardPure(save, aetherShard.id, []);
+  assert.equal(collect1.newlyCollected, true);
+  assert.equal(collect1.isEchoResonance, false);
+  assert.equal(collect1.leveledUpRank, true);
+  assert.equal(collect1.nextSave.explorerRank, 2);
+  assert.ok(collect1.ceremonyTitle && collect1.ceremonyTitle.includes('晨露拾光客'));
+
+  save = collect1.nextSave;
+  assert.equal(save.luminaResonancePts, 85);
+  assert.equal(save.explorerRank, 2);
+  assert.ok(save.collectedLuminaShardIds?.includes(aetherShard.id));
+  // Lv.2 unlocks face_star_earrings + neck_gold_choker + emote_butterfly Lv.2
+  assert.ok(
+    save.unlockedCosmeticIds.includes('face_star_earrings'),
+    'Reaching Explorer Rank Lv.2 unlocks face_star_earrings via exploration without grinding'
+  );
+  assert.ok((save.emoteLevels.emote_butterfly || 1) >= 2);
+
+  // Repeat collection in the SAME session (already in sessionEchoedShardIds) -> prevents duplicate farming
+  const waxBeforeRepeat = save.candleWax;
+  const candlesBeforeRepeat = save.candles;
+  const repeatSameSession = collectLuminaShardPure(
+    save,
+    aetherShard.id,
+    collect1.nextSessionEchoedIds
+  );
+  assert.equal(repeatSameSession.newlyCollected, false);
+  assert.equal(repeatSameSession.isEchoResonance, false);
+  assert.equal(repeatSameSession.alreadyEchoedThisSession, true);
+  assert.equal(repeatSameSession.nextSave.candleWax, waxBeforeRepeat);
+  assert.equal(repeatSameSession.nextSave.candles, candlesBeforeRepeat);
+
+  // Repeat visit in a NEW session (sessionEchoedIds = []) -> triggers gentle Echo Resonance (+echoWaxValue wax)
+  const repeatNewSession = collectLuminaShardPure(save, aetherShard.id, []);
+  assert.equal(repeatNewSession.newlyCollected, false);
+  assert.equal(repeatNewSession.isEchoResonance, true);
+  assert.equal(repeatNewSession.resonanceAdded, 0);
+  const totalWaxBefore = save.candles * 100 + save.candleWax;
+  const totalWaxAfter =
+    repeatNewSession.nextSave.candles * 100 + repeatNewSession.nextSave.candleWax;
+  assert.equal(totalWaxAfter - totalWaxBefore, aetherShard.echoWaxValue);
+
+  // 4. Secret Landmark & Ancient Story Mural Discovery Compendium (8 landmarks)
+  assert.equal(SECRET_EXPLORATION_LANDMARKS.length, 8);
+  const firstLandmark = SECRET_EXPLORATION_LANDMARKS[0];
+  const detectedLm = findNewlyDiscoveredSecretLandmarkAtPure(
+    firstLandmark.x,
+    firstLandmark.y,
+    firstLandmark.z,
+    save.discoveredSecretZoneIds || []
+  );
+  assert.equal(detectedLm?.id, firstLandmark.id);
+
+  const ptsBeforeLm = save.luminaResonancePts || 0;
+  const lmRes1 = discoverSecretLandmarkPure(save, firstLandmark.id);
+  assert.equal(lmRes1.newlyDiscovered, true);
+  save = lmRes1.nextSave;
+  assert.equal(
+    save.luminaResonancePts,
+    ptsBeforeLm + firstLandmark.resonanceRewardPts
+  );
+  assert.ok(save.discoveredSecretZoneIds?.includes(firstLandmark.id));
+
+  // Duplicate landmark visit does not re-award
+  const lmRes2 = discoverSecretLandmarkPure(save, firstLandmark.id);
+  assert.equal(lmRes2.newlyDiscovered, false);
+  assert.equal(lmRes2.nextSave.luminaResonancePts, save.luminaResonancePts);
+
+  // 5. Save Data Sanitization & Corruption Recovery (NaN, negative numbers, duplicate IDs, Rank reconciliation)
+  const corruptedRaw = {
+    ...save,
+    candles: -50,
+    hearts: Number.NaN,
+    ascendedCandles: Number.POSITIVE_INFINITY,
+    luminaResonancePts: 650, // Should reconcile to Lv.6 MAX Explorer Rank!
+    explorerRank: 1,
+    collectedLuminaShardIds: [
+      'shard_dew_shrine_arch',
+      'shard_dew_shrine_arch',
+      '',
+    ],
+    discoveredSecretZoneIds: ['island_west_step_1', 'island_west_step_1'],
+  };
+  const sanitized = sanitizeAndValidateSaveDataPure(corruptedRaw);
+  assert.equal(sanitized.candles >= 0, true, 'Negative candles clamped and milestone bonuses applied');
+  assert.equal(Number.isFinite(sanitized.hearts), true, 'NaN hearts recovered safely');
+  assert.equal(Number.isFinite(sanitized.ascendedCandles), true, 'Infinity ascendedCandles recovered safely');
+  assert.equal(sanitized.collectedLuminaShardIds?.length, 1, 'Duplicate shard IDs deduplicated');
+  assert.equal(sanitized.discoveredSecretZoneIds?.length, 1, 'Duplicate secret landmark IDs deduplicated');
+  assert.equal(
+    sanitized.explorerRank,
+    EXPLORER_GROWTH_RANKS.length,
+    'Sanitizer reconciles explorerRank to Lv.6 when luminaResonancePts >= 460'
+  );
+  assert.ok(
+    sanitized.unlockedCosmeticIds.includes('cape_aurora_wings'),
+    'Lv.6 Explorer Rank milestone unlocks cape_aurora_wings'
+  );
+});
+
+test('Module 8 Social & Multiplayer Interaction Upgrade: Proximity Bar, Strict Real-vs-AI Companion Distinction, 2-Player Co-op Mechanism, Partner Auto-Follow, Shared Emotional Resonance, and Idempotent Network Deduplication', () => {
+  // 1. Proximity Interaction Evaluation & Strict Separation of Local AI Companion vs Real Online Player
+  const peers = [
+    {
+      playerId: 'bot_traveller_1',
+      name: '晨岛旅人·星芒',
+      x: 1.5,
+      y: 1.2,
+      z: 0.0,
+      yaw: 0,
+      isBot: true,
+      activeEmote: null,
+      instrumentOpen: false,
+      sitMode: 'stand' as const,
+      dualActionMode: 'none' as const,
+    },
+    {
+      playerId: 'ws_real_peer_99',
+      name: '星海旅人·真实联机',
+      x: 2.2,
+      y: 1.2,
+      z: 0.0,
+      yaw: 0,
+      isBot: false,
+      activeEmote: 'emote_spin_dance',
+      instrumentOpen: false,
+      sitMode: 'stand' as const,
+      dualActionMode: 'none' as const,
+    },
+  ];
+
+  // Unignited local AI bot at 1.5m is closest -> strictly labeled 'local_ai_companion' ('🤖 本地AI旅伴')
+  const proxBot = evaluateNearbySocialPeerPure(0, 1.2, 0, peers, {}, [], 4.5);
+  assert.equal(proxBot.isWithinPromptRadius, true);
+  assert.equal(proxBot.nearestPeer?.playerId, 'bot_traveller_1');
+  assert.equal(proxBot.nearestPeer?.isBot, true);
+  assert.equal(proxBot.peerSourceType, 'local_ai_companion');
+  assert.equal(proxBot.peerSourceBadge, '🤖 本地AI旅伴');
+  assert.equal(proxBot.ignited, false);
+  assert.ok(proxBot.availableQuickActions.includes('ignite'));
+  assert.ok(proxBot.availableQuickActions.includes('wave_greet'));
+
+  // When closer to real player (x = 2.1) and ignited + friended -> strictly labeled 'real_online_player' ('🌐 真实联机玩家')
+  const proxReal = evaluateNearbySocialPeerPure(
+    2.1,
+    1.2,
+    0,
+    peers,
+    {
+      ws_real_peer_99: {
+        nickname: '星海挚友',
+        ignited: true,
+        isFriend: true,
+        unlockLevel: 4,
+      },
+    },
+    [],
+    4.5
+  );
+  assert.equal(proxReal.isWithinPromptRadius, true);
+  assert.equal(proxReal.nearestPeer?.playerId, 'ws_real_peer_99');
+  assert.equal(proxReal.nearestPeer?.isBot, false);
+  assert.equal(proxReal.peerSourceType, 'real_online_player');
+  assert.equal(proxReal.peerSourceBadge, '🌐 真实联机玩家');
+  assert.equal(proxReal.ignited, true);
+  assert.equal(proxReal.isFriend, true);
+  assert.ok(proxReal.availableQuickActions.includes('follow_partner'));
+  assert.ok(proxReal.availableQuickActions.includes('hand_hold'));
+  assert.ok(proxReal.availableQuickActions.includes('high_five'));
+  assert.ok(proxReal.availableQuickActions.includes('hug'));
+
+  // 2. True 2-Player Co-op Mechanism Evaluation & applyInteraction Enforcement
+  const prairieItems = createWorldInteractables('prairie');
+  const coopDoor = prairieItems.find((i) => i.type === 'coop_door');
+  assert.ok(
+    coopDoor,
+    'Every realm (including prairie) spawns a 2-player Co-op Resonance Door'
+  );
+
+  // Solo player at the door (peers far away at x=0, z=0) -> 1/2 participants -> CANNOT activate!
+  const soloCoopEval = evaluateCoopMechanismPure(
+    coopDoor.x,
+    coopDoor.y,
+    coopDoor.z + 1.0,
+    coopDoor,
+    peers.map((p) => ({ ...p, x: 0, z: 0 })),
+    2,
+    5.8
+  );
+  assert.equal(soloCoopEval.participantCount, 1);
+  assert.equal(soloCoopEval.requiredParticipants, 2);
+  assert.equal(soloCoopEval.canActivate, false);
+
+  const soloDoorAttempt = applyInteraction(
+    coopDoor,
+    createInitialProgressState(),
+    createInitialPhysicsState(DEFAULT_LOADOUT),
+    DEFAULT_LOADOUT,
+    {
+      coopParticipantCount: soloCoopEval.participantCount,
+      requiredCoopParticipants: soloCoopEval.requiredParticipants,
+    }
+  );
+  assert.equal(
+    soloDoorAttempt.updatedTarget.activated,
+    false,
+    'Solo player cannot open 2-player co-op door without a partner or summoned companion'
+  );
+
+  // Summon AI companions to coopTarget plinth -> stepBotTravelerAiPure moves bot toward coopTarget
+  const summonedBotStep = stepBotTravelerAiPure(
+    {
+      playerId: 'bot_traveller_1',
+      x: 5.0,
+      y: 1.2,
+      z: -5.0,
+      yaw: 0,
+      botPhase: 0,
+    },
+    { x: 0, y: 1.2, z: 0, yaw: 0 },
+    'patrol',
+    1.0,
+    0.1,
+    { x: coopDoor.x - 1.25, z: coopDoor.z + 0.45 }
+  );
+  assert.ok(
+    Math.hypot(
+      summonedBotStep.x - (coopDoor.x - 1.25),
+      summonedBotStep.z - (coopDoor.z + 0.45)
+    ) <
+      Math.hypot(5.0 - (coopDoor.x - 1.25), -5.0 - (coopDoor.z + 0.45)),
+    'Summoned companion walks directly toward the co-op door plinth'
+  );
+
+  // When 2+ travelers stand within 5.8m of the door -> canActivate = true -> door genuinely opens!
+  const duoCoopEval = evaluateCoopMechanismPure(
+    coopDoor.x,
+    coopDoor.y,
+    coopDoor.z + 1.0,
+    coopDoor,
+    [
+      {
+        ...peers[0],
+        x: coopDoor.x - 1.2,
+        z: coopDoor.z + 0.4,
+      },
+      {
+        ...peers[1],
+        x: coopDoor.x + 1.2,
+        z: coopDoor.z + 0.4,
+      },
+    ],
+    2,
+    5.8
+  );
+  assert.equal(duoCoopEval.participantCount, 3);
+  assert.equal(duoCoopEval.realHumanParticipants, 2); // local player + 1 real online peer
+  assert.equal(duoCoopEval.aiCompanionParticipants, 1); // 1 local AI companion
+  assert.equal(duoCoopEval.canActivate, true);
+
+  const duoDoorOpen = applyInteraction(
+    coopDoor,
+    createInitialProgressState(),
+    createInitialPhysicsState(DEFAULT_LOADOUT),
+    DEFAULT_LOADOUT,
+    {
+      coopParticipantCount: duoCoopEval.participantCount,
+      requiredCoopParticipants: duoCoopEval.requiredParticipants,
+    }
+  );
+  assert.equal(duoDoorOpen.updatedTarget.activated, true);
+  assert.ok(duoDoorOpen.nextPhysics.vy >= 5.2, 'Co-op door activation grants upward resonance lift');
+
+  // 3. Partner Auto-Follow ('computeFollowerStepPure') trails leader and releases on manual WASD
+  const followActive = computeFollowerStepPure(
+    { x: 0, y: 1.2, z: 0, yaw: 0 },
+    { x: 0, y: 1.2, z: -6.0, yaw: Math.PI },
+    0, // zero manual WASD input
+    0.05
+  );
+  assert.equal(followActive.cancelledByInput, false);
+  assert.ok(followActive.z < -0.1, 'Auto-follow smoothly steps player toward leader');
+
+  const followCancelled = computeFollowerStepPure(
+    { x: 0, y: 1.2, z: 0, yaw: 0 },
+    { x: 0, y: 1.2, z: -6.0, yaw: Math.PI },
+    0.85, // player presses WASD
+    0.05
+  );
+  assert.equal(
+    followCancelled.cancelledByInput,
+    true,
+    'Manual WASD input immediately releases auto-follow so player retains full control'
+  );
+
+  // 4. Shared Emotional Moments ('shared_bench', 'shared_hand_hold_flight', 'shared_scenic_vista', 'shared_music_duet')
+  const benchMoment = evaluateSharedEmotionalMomentPure(
+    2.0,
+    1.2,
+    0,
+    'sit_bench',
+    'none',
+    null,
+    false,
+    peers,
+    { ws_real_peer_99: { ignited: true, isFriend: true, nickname: '星海挚友' } }
+  );
+  assert.equal(benchMoment.active, true);
+  assert.equal(benchMoment.momentType, 'shared_bench');
+  assert.ok(benchMoment.wingRechargeBonusPerSec >= 1.3);
+
+  const flightMoment = evaluateSharedEmotionalMomentPure(
+    2.0,
+    12.0,
+    0,
+    'stand',
+    'hand_hold',
+    null,
+    false,
+    peers,
+    { ws_real_peer_99: { ignited: true, isFriend: true, nickname: '星海挚友' } }
+  );
+  assert.equal(flightMoment.active, true);
+  assert.equal(flightMoment.momentType, 'shared_hand_hold_flight');
+  assert.ok(flightMoment.wingRechargeBonusPerSec >= 1.4);
+
+  // 5. Idempotent Network Event Deduplication ('deduplicateNetworkEventPure')
+  const dedup1 = deduplicateNetworkEventPure('evt_ignite_101', [], 32);
+  assert.equal(dedup1.isDuplicate, false);
+  const dedup2 = deduplicateNetworkEventPure('evt_ignite_101', dedup1.nextSeenEventIds, 32);
+  assert.equal(
+    dedup2.isDuplicate,
+    true,
+    'Duplicate network packet eventId is rejected idempotently'
+  );
+});
+
+test('Module 9: Dynamic Contextual Operation Hints, 4.2s Anti-Permanence Auto-Fade, Multi-Device Responsive Profile & Breathing HUD Auto-Hide', () => {
+  // 1. Dynamic contextual hints adapt to walk/run, flight modes, collect, interact, and co-op
+  const walkHint = evaluateContextualControlHintPure({
+    grounded: true,
+    locomotionMode: 'walk',
+    flightMode: 'hover',
+    isDiving: false,
+    sitMode: 'stand',
+    wingEnergy: 5,
+    stateAgeSec: 1.0,
+    inputDevice: 'keyboard',
+  });
+  assert.equal(walkHint.visible, true);
+  assert.equal(walkHint.category, 'walk_run');
+  assert.equal(walkHint.isEphemeralTimedOut, false);
+  assert.ok(walkHint.opacity01 > 0.9);
+  assert.ok(walkHint.keybindLabel.includes('[Space]'), 'Keyboard walk hint shows Space badge');
+
+  // Same walk state on Gamepad & Touch shows device-appropriate badges
+  const gpWalkHint = evaluateContextualControlHintPure({
+    grounded: true,
+    locomotionMode: 'walk',
+    flightMode: 'hover',
+    isDiving: false,
+    sitMode: 'stand',
+    wingEnergy: 5,
+    stateAgeSec: 1.0,
+    inputDevice: 'gamepad',
+  });
+  assert.ok(gpWalkHint.keybindLabel.includes('[A / ✕]'), 'Gamepad walk hint shows A / Cross badge');
+
+  const touchWalkHint = evaluateContextualControlHintPure({
+    grounded: true,
+    locomotionMode: 'walk',
+    flightMode: 'hover',
+    isDiving: false,
+    sitMode: 'stand',
+    wingEnergy: 5,
+    stateAgeSec: 1.0,
+    inputDevice: 'touch',
+  });
+  assert.ok(touchWalkHint.keybindLabel.includes('[点击振翅]'), 'Touch walk hint shows tap-flap badge');
+
+  // 2. Anti-Permanence Rule: Steady-state locomotion/flight hints auto-fade after 4.2s so they never stay permanently fixed
+  const expiredWalkHint = evaluateContextualControlHintPure({
+    grounded: true,
+    locomotionMode: 'walk',
+    flightMode: 'hover',
+    isDiving: false,
+    sitMode: 'stand',
+    wingEnergy: 5,
+    stateAgeSec: 5.0,
+    inputDevice: 'keyboard',
+  });
+  assert.equal(expiredWalkHint.visible, false, 'Steady-state walk hint auto-hides after 4.2s');
+  assert.equal(expiredWalkHint.isEphemeralTimedOut, true);
+  assert.equal(expiredWalkHint.opacity01, 0);
+
+  // Flight Glide & Dive hints
+  const glideHint = evaluateContextualControlHintPure({
+    grounded: false,
+    locomotionMode: 'air',
+    flightMode: 'glide',
+    isDiving: false,
+    sitMode: 'stand',
+    wingEnergy: 5,
+    stateAgeSec: 1.2,
+    inputDevice: 'keyboard',
+  });
+  assert.equal(glideHint.visible, true);
+  assert.equal(glideHint.category, 'flight_glide');
+
+  const diveHint = evaluateContextualControlHintPure({
+    grounded: false,
+    locomotionMode: 'air',
+    flightMode: 'glide',
+    isDiving: true,
+    sitMode: 'stand',
+    wingEnergy: 5,
+    stateAgeSec: 0.8,
+    inputDevice: 'keyboard',
+  });
+  assert.equal(diveHint.visible, true);
+  assert.equal(diveHint.category, 'flight_dive');
+
+  // Proximity Collectible & Interactable hints take priority even if locomotion stateAgeSec > 4.2s
+  const collectHint = evaluateContextualControlHintPure({
+    grounded: true,
+    locomotionMode: 'idle',
+    flightMode: 'hover',
+    isDiving: false,
+    sitMode: 'stand',
+    wingEnergy: 5,
+    nearbyLuminaShard: {
+      isWithinVisualHintRadius: true,
+      nearestShard: {
+        id: 'shard_1',
+        name: '晨岛流光结晶',
+        tierLabel: '星辉结晶',
+      },
+      isAlreadyCollected: false,
+    },
+    stateAgeSec: 9.0,
+    inputDevice: 'keyboard',
+  });
+  assert.equal(collectHint.visible, true);
+  assert.equal(collectHint.category, 'collect');
+  assert.ok(collectHint.primaryText.includes('晨岛流光结晶'));
+
+  // 3. Multi-Device Responsive Profile ('resolveResponsiveUiProfilePure')
+  const mobileProfile = resolveResponsiveUiProfilePure(390, 844, true, false);
+  assert.equal(mobileProfile.deviceCategory, 'mobile');
+  assert.equal(mobileProfile.primaryInput, 'touch');
+  assert.equal(mobileProfile.isCompactViewport, true);
+  assert.ok(mobileProfile.joystickDiameterPx >= 64, 'Mobile touch has comfortable virtual joystick diameter');
+
+  const desktopGpProfile = resolveResponsiveUiProfilePure(1440, 900, false, true);
+  assert.equal(desktopGpProfile.deviceCategory, 'desktop');
+  assert.equal(desktopGpProfile.primaryInput, 'gamepad');
+  assert.equal(desktopGpProfile.isCompactViewport, false);
+
+  // 4. Whisper Minimal Breathing HUD Auto-Hide ('evaluateHudAutoHideStatePure')
+  const calmCruiseHud = evaluateHudAutoHideStatePure({
+    immersiveModeManual: false,
+    isHoveringHud: false,
+    secondsSinceCurrencyChange: 10.0,
+    secondsSinceInteraction: 10.0,
+    isCompactViewport: false,
+    hasActiveEmergencyAlert: false,
+  });
+  assert.equal(
+    calmCruiseHud.showExpandedCurrencies,
+    false,
+    'Secondary currencies auto-collapse during calm aerial gliding so screen stays clean'
+  );
+  assert.equal(calmCruiseHud.isWhisperMinimalMode, true);
+
+  const recentCurrencyHud = evaluateHudAutoHideStatePure({
+    immersiveModeManual: false,
+    isHoveringHud: false,
+    secondsSinceCurrencyChange: 1.2,
+    secondsSinceInteraction: 10.0,
+    isCompactViewport: false,
+    hasActiveEmergencyAlert: false,
+  });
+  assert.equal(
+    recentCurrencyHud.showExpandedCurrencies,
+    true,
+    'Currency capsule automatically expands for 4s when candles or winged lights change'
+  );
+
+  const immersiveManualHud = evaluateHudAutoHideStatePure({
+    immersiveModeManual: true,
+    isHoveringHud: false,
+    secondsSinceCurrencyChange: 1.0,
+    secondsSinceInteraction: 1.0,
+    isCompactViewport: false,
+    hasActiveEmergencyAlert: false,
+  });
+  assert.equal(immersiveManualHud.showExpandedCurrencies, false);
+  assert.equal(immersiveManualHud.isWhisperMinimalMode, true);
+});
+
+test('Module 10: 3D Spatial Audio Attenuation & Stereo Panning, Regional Acoustic Soundscapes & Cavern Reverb, Anti-Fatigue Generative Music, and Anti-Masking Flight Wind Mix', () => {
+  assert.ok(
+    WORLD_SPATIAL_SOUND_EMITTERS.length >= 8,
+    'World contains at least 8 3D positional sound emitters (campfire, shore, bell spire, wind chime, cavern spring, waterfall, updraft, manta choir)'
+  );
+
+  // 1. 3D Spatial Audio Distance Attenuation, Air-Absorption Filter & Stereo Panning
+  const campfireEmitter = WORLD_SPATIAL_SOUND_EMITTERS[0]; // (4.5, 1.2, 3.5)
+  const nearEval = computeSpatialAudioGainAndPanPure(
+    3.5,
+    1.2,
+    3.5,
+    0, // facing North (-Z), so emitter at +X is to the right (+pan)
+    campfireEmitter
+  );
+  assert.equal(nearEval.isAudible, true);
+  assert.equal(nearEval.gain01, 1.0, 'Within refDistance gain is 1.0');
+  assert.ok(nearEval.panStereo > 0.7, 'Emitter to the right of listener pans positively to right channel');
+  assert.ok(nearEval.lowpassCutoffHz > 12500, 'Close emitter retains crisp high frequencies');
+
+  const midEval = computeSpatialAudioGainAndPanPure(
+    20.0,
+    1.2,
+    3.5,
+    0, // now listener is at X=20, so emitter at X=4.5 is to the left (-pan)
+    campfireEmitter
+  );
+  assert.equal(midEval.isAudible, true);
+  assert.ok(midEval.gain01 > 0.15 && midEval.gain01 < 0.85, 'Mid-distance smoothly attenuates gain');
+  assert.ok(midEval.panStereo < -0.7, 'Emitter to the left of listener pans negatively to left channel');
+  assert.ok(midEval.lowpassCutoffHz < nearEval.lowpassCutoffHz, 'Air absorption lowers filter cutoff over distance');
+
+  const farEval = computeSpatialAudioGainAndPanPure(
+    100.0,
+    1.2,
+    100.0,
+    0,
+    campfireEmitter
+  );
+  assert.equal(farEval.isAudible, false);
+  assert.equal(farEval.gain01, 0);
+
+  // 2. Regional Acoustic Soundscapes & Cavern Reverb vs Meadow Breeze vs Cloud Sea
+  const meadowProfile = evaluateAcousticSoundscapeAtPure({
+    realmId: 'prairie',
+    x: 2.0,
+    y: 1.2,
+    z: 4.0,
+    yaw: 0,
+    grounded: true,
+    inCloudBank: false,
+    horizSpeed: 2.5,
+    vy: 0,
+    isDiving: false,
+    krillAlertLevel: 0,
+  });
+  assert.equal(meadowProfile.acousticZone, 'meadow_breeze');
+  assert.equal(meadowProfile.musicMood, 'calm_explore');
+  assert.ok(meadowProfile.reverbWetMix01 <= 0.25, 'Open meadow has light natural reverb');
+
+  const shoreProfile = evaluateAcousticSoundscapeAtPure({
+    realmId: 'prairie',
+    x: -14.0,
+    y: 0.5,
+    z: 10.0,
+    yaw: 0,
+    grounded: true,
+    inCloudBank: false,
+    horizSpeed: 1.8,
+    vy: 0,
+    isDiving: false,
+    krillAlertLevel: 0,
+  });
+  assert.equal(shoreProfile.acousticZone, 'sanctuary_water_shore');
+  assert.ok(shoreProfile.waterLayerPresence01 >= 0.8);
+
+  const cavernProfile = evaluateAcousticSoundscapeAtPure({
+    realmId: 'prairie',
+    x: -54.0,
+    y: 2.2,
+    z: -18.0,
+    yaw: 0,
+    grounded: true,
+    inCloudBank: false,
+    horizSpeed: 1.5,
+    vy: 0,
+    isDiving: false,
+    krillAlertLevel: 0,
+  });
+  assert.equal(cavernProfile.acousticZone, 'cavern_crystal_echo');
+  assert.equal(cavernProfile.musicMood, 'mystic_cavern');
+  assert.ok(
+    cavernProfile.reverbWetMix01 >= 0.6 &&
+      cavernProfile.reverbDecaySec >= 2.5,
+    'Crystal cavern automatically activates deep spatial reverb and echo decay'
+  );
+
+  const cloudFlightProfile = evaluateAcousticSoundscapeAtPure({
+    realmId: 'prairie',
+    x: 0,
+    y: 24.0,
+    z: -30.0,
+    yaw: 0,
+    grounded: false,
+    inCloudBank: true,
+    horizSpeed: 11.5,
+    vy: 2.0,
+    isDiving: false,
+    krillAlertLevel: 0,
+    activeVistaId: 'vista_sky_citadel',
+  });
+  assert.equal(cloudFlightProfile.acousticZone, 'cloud_sea_aether');
+  assert.equal(
+    cloudFlightProfile.musicMood,
+    'scenic_leitmotif',
+    'High sanctuary vista triggers unique Original Scenic Leitmotif'
+  );
+
+  // 3. Anti-Masking Flight Wind Ceiling & Sidechain Ducking ('computeDynamicAudioMixBalancePure')
+  const highSpeedDiveMix = computeDynamicAudioMixBalancePure({
+    masterVolume: 0.9,
+    bgmVolume: 0.8,
+    ambientVolume: 0.85,
+    sfxVolume: 0.9,
+    instrumentVolume: 0.95,
+    grounded: false,
+    horizSpeed: 18.0,
+    vy: -14.0,
+    isDiving: true,
+    inCloudBank: true,
+    isPlayingInstrument: false,
+    recentImportantSfxTimerSec: 0,
+  });
+  assert.equal(highSpeedDiveMix.isWindCapped, true);
+  assert.ok(
+    highSpeedDiveMix.flightWindGain01 <=
+      highSpeedDiveMix.effectiveAmbientGain * 0.241,
+    'High-speed dive wind is strictly capped at <= 24% of ambient bus so it never drowns out BGM or SFX'
+  );
+
+  const instrumentDuckMix = computeDynamicAudioMixBalancePure({
+    masterVolume: 0.9,
+    bgmVolume: 0.8,
+    ambientVolume: 0.85,
+    sfxVolume: 0.9,
+    instrumentVolume: 0.95,
+    grounded: true,
+    horizSpeed: 0,
+    vy: 0,
+    isDiving: false,
+    inCloudBank: false,
+    isPlayingInstrument: true,
+    recentImportantSfxTimerSec: 1.0,
+  });
+  assert.ok(
+    instrumentDuckMix.effectiveBgmGain < highSpeedDiveMix.effectiveBgmGain * 0.45,
+    'BGM gently ducks when player is performing on an instrument or triggering a ceremony chime'
+  );
+
+  // 4. Non-Repeating Generative Music Engine with Breathing Rests ('computeGenerativeMusicStepPure')
+  const steps = Array.from({ length: 24 }, (_, idx) =>
+    computeGenerativeMusicStepPure(idx, 293.66, 'calm_explore', 1.0)
+  );
+  const restCount = steps.filter((s) => s.isRest).length;
+  const uniqueFreqs = new Set(steps.map((s) => s.harpFreqHz));
+  const uniqueHarmonies = new Set(steps.map((s) => s.harmonicDegreeLabel));
+  assert.ok(
+    restCount >= 3 && restCount <= 10,
+    'Generative soundtrack inserts natural breathing rests to prevent listening fatigue'
+  );
+  assert.ok(uniqueFreqs.size >= 5, 'Melody evolves across diverse pentatonic/lydian intervals');
+  assert.ok(uniqueHarmonies.size >= 3, 'Harmony progresses across Imaj9, IVmaj7, vi9, V6, Iadd9');
+});
+
+test('Bugfix Audit: Spawn HUD Anti-Clutter (11.5m Shard Hint Radius) & NetworkClient Ghost/0m Peer Prevention', () => {
+  // 1. At default spawn (0, 1.2, 6), nearest Lumina Shard (~14.0m away) should NOT trigger permanent HUD visual hint banner
+  const spawnShardEval = evaluateNearbyLuminaShardPure(0, 1.2, 6.0, [], []);
+  assert.equal(
+    spawnShardEval.isWithinVisualHintRadius,
+    false,
+    'Default spawn point (0, 1.2, 6) stays free of permanent Lumina Shard proximity pill clutter'
+  );
+
+  // Walking within 11.5m of first Lumina Shard activates the soft visual hint
+  const s0 = LUMINA_SHARD_CATALOG[0];
+  const approachShardEval = evaluateNearbyLuminaShardPure(
+    s0.x,
+    s0.y - 1.0,
+    s0.z + 8.5,
+    [],
+    []
+  );
+  assert.equal(approachShardEval.isWithinVisualHintRadius, true);
+
+  // 2. NetworkClient filters out Title-Screen peers (inWorld: false), protects bot IDs, and prevents 0m spawn overlap
+  networkClient.connect('local_player_test', '测试旅人', 'home', DEFAULT_LOADOUT);
+  (networkClient as any).handleMessage({
+    type: 'peer:joined',
+    peer: {
+      playerId: 'title_screen_ghost_peer',
+      playerName: '标题界面挂机者',
+      inWorld: false,
+      x: 0,
+      y: 1.2,
+      z: 6,
+    },
+  });
+  assert.equal(
+    networkClient.remoteTravelers.has('title_screen_ghost_peer'),
+    false,
+    'Peers still on Title Screen (inWorld: false) must not spawn ghost avatars in active rooms'
+  );
+
+  // Real in-world peer joining at default (0, 1.2, 6) receives deterministic ~2.4m plaza offset (never 0m overlap)
+  (networkClient as any).handleMessage({
+    type: 'peer:joined',
+    peer: {
+      playerId: 'real_online_peer_abc',
+      playerName: '云海旅伴',
+      inWorld: true,
+      x: 0,
+      y: 1.2,
+      z: 6,
+    },
+  });
+  const joinedPeer = networkClient.remoteTravelers.get('real_online_peer_abc');
+  assert.ok(joinedPeer, 'In-world peer is registered');
+  const distFromDefaultSpawn = Math.hypot(joinedPeer!.x - 0, joinedPeer!.z - 6);
+  assert.ok(
+    distFromDefaultSpawn >= 2.0,
+    `Real peer joining at default spawn is offset by ${distFromDefaultSpawn.toFixed(2)}m (>=2.0m) so players never clip at 0m`
+  );
+  networkClient.remoteTravelers.delete('real_online_peer_abc');
+});
+
+test('Module 11 Immersion & Micro-Detail Polish Upgrade: Organic Flicker, Multi-Phase Idle Micro-Behaviors, High-Altitude Spatial Feel, Water Wake & Interactive Action Gesture', () => {
+  // 1. Non-Mechanical Organic Multi-Harmonic Flicker & Curl Drift ('computeOrganicFlickerPure')
+  const f0 = computeOrganicFlickerPure(1.2, 0);
+  const f1 = computeOrganicFlickerPure(1.2, 3.7);
+  assert.ok(f0.wave >= -1 && f0.wave <= 1);
+  assert.ok(
+    f0.intensityMultiplier >= 0.75 && f0.intensityMultiplier <= 1.25,
+    'Light intensity multiplier stays within natural warm candle bounds'
+  );
+  assert.notEqual(
+    f0.wave,
+    f1.wave,
+    'Different seeds produce asynchronous organic flicker so lights never blink in lockstep'
+  );
+  assert.ok(
+    Math.abs(f0.driftX) > 0 || Math.abs(f0.driftY) > 0,
+    'Produces 3D curl-like drift for particles and foliage gusts'
+  );
+
+  // 2. Multi-Phase Idle Micro-Behaviors & Strict Anti-Ground-Clipping ('computeIdleMicroBehaviorPure')
+  const phaseBreath = computeIdleMicroBehaviorPure(0.5);
+  const phaseHorizon = computeIdleMicroBehaviorPure(3.8);
+  const phaseSkyward = computeIdleMicroBehaviorPure(8.8);
+  const phaseWeight = computeIdleMicroBehaviorPure(12.4);
+
+  assert.equal(phaseBreath.microBehaviorPhase, 'calm_breath');
+  assert.equal(phaseHorizon.microBehaviorPhase, 'horizon_glance');
+  assert.equal(phaseSkyward.microBehaviorPhase, 'skyward_gaze');
+  assert.equal(phaseWeight.microBehaviorPhase, 'weight_shift');
+  assert.ok(
+    Math.abs(phaseHorizon.headGlanceYaw) > 0.12,
+    'Horizon glance turns head curiously to look around'
+  );
+  assert.ok(
+    phaseSkyward.headGlancePitch < -0.1,
+    'Skyward gaze tilts head upward toward floating islands and mantas'
+  );
+
+  // Verify zero ground penetration across an entire 14s idle cycle
+  for (let t = 0; t <= 14.0; t += 0.35) {
+    const sample = computeIdleMicroBehaviorPure(t);
+    assert.ok(
+      sample.safeHipsY >= 0.858,
+      `Idle safeHipsY (${sample.safeHipsY}) stays >= 0.858 at t=${t.toFixed(2)}s so feet never clip into ground`
+    );
+  }
+
+  // 3. Scene Feedback: High-Altitude Spatial Expansion, Item Approach Shimmer & Low-Flight Water Wake ('evaluateImmersionSceneFeedbackPure')
+  const groundScene = evaluateImmersionSceneFeedbackPure({
+    x: 0,
+    y: 1.2,
+    z: 6.0,
+    grounded: true,
+    isInShallowWater: false,
+    nearestInteractableDist: 16.0,
+    nearestShardDist: 14.0,
+  });
+  assert.equal(groundScene.highAltitudeRatio01, 0);
+  assert.equal(groundScene.horizonClarityMultiplier, 1.0);
+  assert.equal(groundScene.itemApproachShimmer01, 0);
+  assert.equal(groundScene.shouldEmitWaterWake, false);
+
+  const highAltScene = evaluateImmersionSceneFeedbackPure({
+    x: -28.0,
+    y: 28.0,
+    z: -80.0,
+    grounded: false,
+    isInShallowWater: false,
+    nearestInteractableDist: 3.2,
+    nearestShardDist: 4.0,
+  });
+  assert.ok(highAltScene.highAltitudeRatio01 > 0.75);
+  assert.ok(
+    highAltScene.altitudeFovBonusDeg > 3.0 &&
+      highAltScene.horizonClarityMultiplier > 1.25,
+    'Climbing to high altitude expands FOV and clears distant horizon fog'
+  );
+  assert.ok(
+    highAltScene.itemApproachShimmer01 > 0.8,
+    'Approaching within 3.2m of a special item activates harmonic shimmer feedback'
+  );
+
+  // Skimming low (y = 1.4m) over Sanctuary Wading Pool (-15.5, 0) emits water wake ripples even while airborne
+  const lowGlideOverWater = evaluateImmersionSceneFeedbackPure({
+    x: -15.5,
+    y: 1.4,
+    z: 0.0,
+    grounded: false,
+    isInShallowWater: false,
+    nearestInteractableDist: null,
+    nearestShardDist: null,
+  });
+  assert.equal(
+    lowGlideOverWater.shouldEmitWaterWake,
+    true,
+    'Gliding low over shallow water basin emits water wake ripples'
+  );
+
+  // 4. Interactive Action Feedback ('interactGestureTimer') & Anti-Clipping Landing Cushion in 'computeSkyChildPose'
+  const baseStandPose = computeSkyChildPose({
+    elapsed: 1.0,
+    dt: 0.016,
+    grounded: true,
+    horizSpeed: 0,
+    vy: 0,
+    gaitPhase: 0,
+    flightMode: 'hover',
+    flapCooldown: 0,
+    turnRate: 0,
+    activeEmote: null,
+    activeEmoteTimer: 0,
+    instrumentOpen: false,
+    interactGestureTimer: 0,
+  });
+  const interactReachPose = computeSkyChildPose({
+    elapsed: 1.0,
+    dt: 0.016,
+    grounded: true,
+    horizSpeed: 0,
+    vy: 0,
+    gaitPhase: 0,
+    flightMode: 'hover',
+    flapCooldown: 0,
+    turnRate: 0,
+    activeEmote: null,
+    activeEmoteTimer: 0,
+    instrumentOpen: false,
+    interactGestureTimer: 0.58, // Midpoint of 1.15s reach-out gesture
+  });
+  assert.ok(
+    interactReachPose.rightShoulderPitch < baseStandPose.rightShoulderPitch - 0.8,
+    'interactGestureTimer raises right arm forward in a warm candle-offering reach gesture'
+  );
+  assert.ok(
+    interactReachPose.wingFlare > baseStandPose.wingFlare + 0.15,
+    'interactGestureTimer gently flares wings in response to interaction'
+  );
+});
+
+test('Module 12: Performance, Collision Anti-Stuck & Full-System Regression Audit', () => {
+  // 1. Terrain Anti-Clipping Audit: Across a 121-point world grid (-120..120), groundHeightAt is finite and stepPlayerPhysics never clips below ground
+  for (let gx = -120; gx <= 120; gx += 24) {
+    for (let gz = -120; gz <= 120; gz += 24) {
+      const gh = groundHeightAt(gx, gz);
+      assert.ok(Number.isFinite(gh), `groundHeightAt(${gx}, ${gz}) must be finite`);
+      let p = createInitialPhysicsState(DEFAULT_LOADOUT);
+      p.x = gx;
+      p.z = gz;
+      p.y = gh - 2.5; // Start 2.5m underground to test anti-tunneling recovery
+      p.vy = -8.0;
+      p.grounded = false;
+      const stepRes = stepPlayerPhysics(
+        p,
+        {
+          moveX: 0,
+          moveZ: 0,
+          jumpJustPressed: false,
+          jumpHeld: false,
+          toggleFlightModeJustPressed: false,
+          sprintHeld: false,
+          cameraYaw: 0,
+        },
+        0.016,
+        DEFAULT_LOADOUT
+      ).nextState;
+      const floorAfter = groundHeightAt(stepRes.x, stepRes.z);
+      assert.ok(
+        stepRes.y >= floorAfter - 1e-4,
+        `Actor at (${gx}, ${gz}) must immediately recover above ground height (${stepRes.y} >= ${floorAfter})`
+      );
+    }
+  }
+
+  // 2. Solid Wall Anti-Penetration & Aerial Flight Anti-Stuck Deflection:
+  // Gliding nose-first into Northern Temple Left Bell Tower (-11, -47.5, r=2.25, maxY=20.0) at mid-altitude (y=12.0)
+  // must never penetrate the cylinder and must smoothly deflect yaw & velocity around the tower instead of getting pinned.
+  let glideP = createInitialPhysicsState(DEFAULT_LOADOUT);
+  glideP.x = -10.85;
+  glideP.y = 12.0;
+  glideP.z = -43.5; // Just south of the tower at (-11, -47.5)
+  glideP.grounded = false;
+  glideP.flightMode = 'glide';
+  glideP.yaw = Math.PI; // Aiming due north (0, -1) into the tower!
+  glideP.vx = 0.25;
+  glideP.vz = -10.5;
+
+  for (let f = 0; f < 45; f++) {
+    glideP = stepPlayerPhysics(
+      glideP,
+      {
+        moveX: 0,
+        moveZ: -1,
+        jumpJustPressed: false,
+        jumpHeld: false,
+        toggleFlightModeJustPressed: false,
+        sprintHeld: false,
+        cameraYaw: 0,
+      },
+      0.016,
+      DEFAULT_LOADOUT
+    ).nextState;
+    const distToTowerCenter = Math.hypot(glideP.x - -11.0, glideP.z - -47.5);
+    assert.ok(
+      distToTowerCenter >= 2.25 + 0.44 - 1e-3,
+      `Frame ${f}: Airborne glider must never penetrate solid Bell Tower cylinder (dist=${distToTowerCenter.toFixed(3)})`
+    );
+  }
+  assert.ok(
+    Math.abs(glideP.x - -11.0) > 0.85 && glideP.z < -45.2,
+    `Airborne glider smoothly slides around the tower laterally (x=${glideP.x.toFixed(2)}, z=${glideP.z.toFixed(2)}) instead of getting stuck`
+  );
+
+  // 3. Roof-Lip Vault Clearance: Gliding near the top edge of an obstacle (y = maxY - 0.8) receives an upward clearance lift
+  let roofGlide = createInitialPhysicsState(DEFAULT_LOADOUT);
+  roofGlide.x = -11.0;
+  roofGlide.y = 19.2; // Within 1.5m of tower maxY (20.0)
+  roofGlide.z = -44.85;
+  roofGlide.grounded = false;
+  roofGlide.flightMode = 'glide';
+  roofGlide.vy = -0.5;
+  roofGlide.vz = -12.0;
+  const roofStep = stepPlayerPhysics(
+    roofGlide,
+    {
+      moveX: 0,
+      moveZ: -1,
+      jumpJustPressed: false,
+      jumpHeld: false,
+      toggleFlightModeJustPressed: false,
+      sprintHeld: false,
+      cameraYaw: 0,
+    },
+    0.016,
+    DEFAULT_LOADOUT
+  ).nextState;
+  assert.ok(
+    roofStep.vy >= 3.0,
+    `Gliding against top roof edge of tower grants upward clearance lift (vy=${roofStep.vy.toFixed(2)})`
+  );
+
+  // 4. Full Functional & Device Adaptation Regression (Quality Tiers & Responsive Viewports)
+  const lowTier = computeQualityTierSettingsPure('low', 30);
+  const highTier = computeQualityTierSettingsPure('high', 60);
+  const autoDropTier = computeQualityTierSettingsPure('auto', 24);
+  assert.ok(lowTier.pixelRatioCap < highTier.pixelRatioCap);
+  assert.equal(lowTier.shadowMapEnabled, false);
+  assert.equal(highTier.shadowMapEnabled, true);
+  assert.equal(autoDropTier.resolvedTier, 'low');
+
+  const desktopHud = resolveResponsiveUiProfilePure(1440, 900, false, false);
+  const mobileHud = resolveResponsiveUiProfilePure(390, 844, true, false);
+  assert.equal(desktopHud.deviceCategory, 'desktop');
+  assert.equal(mobileHud.deviceCategory, 'mobile');
+  assert.ok(mobileHud.joystickDiameterPx >= 64);
+});
 

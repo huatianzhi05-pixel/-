@@ -37,6 +37,28 @@ import {
   SunsetRaceTrialState,
   createInitialSunsetRaceStatePure,
   stepSunsetRaceTrialPure,
+  CinematicCameraState,
+  createInitialCameraStatePure,
+  computeCinematicCameraStepPure,
+  computeAtmosphericVisualProfilePure,
+  LUMINA_SHARD_CATALOG,
+  SECRET_EXPLORATION_LANDMARKS,
+  SCENIC_VISTA_ZONES,
+  NearbyLuminaShardEvaluation,
+  evaluateNearbyLuminaShardPure,
+  findNewlyDiscoveredSecretLandmarkAtPure,
+  NearbySocialPeerEvaluation,
+  CoopMechanismEvaluation,
+  SharedEmotionalMomentEvaluation,
+  evaluateNearbySocialPeerPure,
+  evaluateCoopMechanismPure,
+  evaluateSharedEmotionalMomentPure,
+  computeFollowerStepPure,
+  ActiveInputDeviceType,
+  AcousticSoundscapeProfile,
+  evaluateAcousticSoundscapeAtPure,
+  computeOrganicFlickerPure,
+  evaluateImmersionSceneFeedbackPure,
 } from './game/rules';
 import {
   buildSkyChildRig,
@@ -46,8 +68,11 @@ import {
   buildAncestorSpiritMesh,
   buildLightMantaMesh,
   buildWingCloudTrailSystem,
+  buildLuminaShardMesh,
+  updateLuminaShardMesh,
   createContactShadowTexture,
   createMicroReliefTexture,
+  disposeObject3DResources,
   SkyChildRig,
   WingCloudTrailSystem,
 } from './game/models';
@@ -67,7 +92,12 @@ import {
   computeSkyChildPose,
   computeWingTrailConfig,
 } from './game/characterAnimator';
-import { skyAudio, InstrumentVoice, CallVoiceType } from './game/audio';
+import {
+  skyAudio,
+  InstrumentVoice,
+  CallVoiceType,
+  AudioMixerSettings,
+} from './game/audio';
 import {
   GAME_CONFIG,
   storageService,
@@ -106,6 +136,8 @@ import {
   advanceOnboardingTutorialPure,
   discoverEasterEggPure,
   recordSunsetRaceCompletionPure,
+  collectLuminaShardPure,
+  discoverSecretLandmarkPure,
   QualityTierOption,
 } from './core/StorageService';
 import { networkClient } from './core/NetworkClient';
@@ -139,7 +171,6 @@ interface PooledParticle {
 
 // Pre-allocated module-scope math helpers (Zero GC in render loop)
 const _camTarget = new THREE.Vector3();
-const _camDesired = new THREE.Vector3();
 const _dummyMatrixObj = new THREE.Object3D();
 const _rainbowColor = new THREE.Color();
 
@@ -220,6 +251,26 @@ export default function App() {
   const [sunsetRaceState, setSunsetRaceState] = useState<SunsetRaceTrialState>(
     () => createInitialSunsetRaceStatePure()
   );
+  const [sessionEchoedShardIds, setSessionEchoedShardIds] = useState<string[]>(
+    []
+  );
+  const [nearbyLuminaShardEval, setNearbyLuminaShardEval] =
+    useState<NearbyLuminaShardEvaluation | null>(null);
+  const [nearbySocialPeerEval, setNearbySocialPeerEval] =
+    useState<NearbySocialPeerEvaluation | null>(null);
+  const [coopEval, setCoopEval] = useState<CoopMechanismEvaluation | null>(null);
+  const [sharedEmotionalEval, setSharedEmotionalEval] =
+    useState<SharedEmotionalMomentEvaluation | null>(null);
+  const [ceremonyTitle, setCeremonyTitle] = useState<string | null>(null);
+  const [activeInputDevice, setActiveInputDevice] =
+    useState<ActiveInputDeviceType>('keyboard');
+  const activeInputDeviceRef = useRef<ActiveInputDeviceType>('keyboard');
+  const [soundscapeProfile, setSoundscapeProfile] =
+    useState<AcousticSoundscapeProfile | null>(null);
+  const soundscapeRef = useRef<AcousticSoundscapeProfile | null>(null);
+  const [audioMixer, setAudioMixer] = useState<AudioMixerSettings>(() =>
+    skyAudio.getMixerVolumes()
+  );
 
   // Multiplayer & Debug telemetry states
   const [fps, setFps] = useState<number>(60);
@@ -252,6 +303,7 @@ export default function App() {
   const instrumentOpenRef = useRef<boolean>(instrumentOpen);
   const constellationModalOpenRef = useRef<boolean>(constellationModalOpen);
   const photoModeOpenRef = useRef<boolean>(photoModeOpen);
+  const photoFovRef = useRef<number>(photoFov);
   const selfieModeRef = useRef<boolean>(selfieMode);
   const dayNightPhaseRef = useRef<DayNightPhase>(dayNightPhase);
   const activeSpiritMemoryRef = useRef<SpiritMemoryQuestState | null>(null);
@@ -262,6 +314,15 @@ export default function App() {
   const sunsetRaceRef = useRef<SunsetRaceTrialState>(
     createInitialSunsetRaceStatePure()
   );
+  const sessionEchoedShardIdsRef = useRef<string[]>([]);
+  const nearbyLuminaShardRef = useRef<NearbyLuminaShardEvaluation | null>(null);
+  const nearbySocialPeerRef = useRef<NearbySocialPeerEvaluation | null>(null);
+  const coopEvalRef = useRef<CoopMechanismEvaluation | null>(null);
+  const sharedEmotionalRef = useRef<SharedEmotionalMomentEvaluation | null>(null);
+  const ceremonyTimerRef = useRef<number | null>(null);
+  const handleCollectLuminaShardRef = useRef<
+    ((shardId: string, warpFirst?: boolean) => void) | null
+  >(null);
 
   // Three.js scene refs for instant imperative updates
   const playerRigRef = useRef<SkyChildRig | null>(null);
@@ -270,7 +331,9 @@ export default function App() {
   const sceneRef = useRef<THREE.Scene | null>(null);
   const sunLightRef = useRef<THREE.DirectionalLight | null>(null);
   const hemiLightRef = useRef<THREE.HemisphereLight | null>(null);
+  const rimLightRef = useRef<THREE.DirectionalLight | null>(null);
   const interactableMeshesRef = useRef<Map<string, THREE.Group>>(new Map());
+  const luminaShardMeshesRef = useRef<Map<string, THREE.Group>>(new Map());
   const populateInteractablesFnRef = useRef<(() => void) | null>(null);
   const spawnBurstRef = useRef<
     ((x: number, y: number, z: number, count: number, upward?: number) => void) | null
@@ -293,14 +356,19 @@ export default function App() {
   const diveHeldRef = useRef(false);
   const cameraYawRef = useRef(0);
   const cameraPitchRef = useRef(0.28);
+  const cameraStateRef = useRef<CinematicCameraState>(
+    createInitialCameraStatePure(0, groundHeightAt(0, 6), 6)
+  );
   const gaitDistanceRef = useRef(0);
   const squashScaleYRef = useRef(1.0);
+  const interactGestureTimerRef = useRef(0);
   const bannerTimerRef = useRef<number | null>(null);
 
-  // Sync body dataset state
+  // Sync body dataset state & active 3D world network presence
   useEffect(() => {
     gameStateRef.current = gameState;
     document.body.dataset.state = gameState;
+    networkClient.setInWorld(gameState === 'playing');
   }, [gameState]);
 
   useEffect(() => {
@@ -324,6 +392,7 @@ export default function App() {
   }, [selfieMode]);
 
   useEffect(() => {
+    photoFovRef.current = photoFov;
     if (cameraRef.current) {
       cameraRef.current.fov = photoFov;
       cameraRef.current.updateProjectionMatrix();
@@ -335,7 +404,7 @@ export default function App() {
     if (bannerTimerRef.current) window.clearTimeout(bannerTimerRef.current);
     bannerTimerRef.current = window.setTimeout(() => {
       setBannerMessage(null);
-    }, 3200);
+    }, 2800);
   }, []);
 
   // Connect NetworkClient + EventBus listeners on mount
@@ -355,7 +424,10 @@ export default function App() {
     });
 
     const offNet = gameEventBus.on('network:status', (status) => {
-      setNetStatus(status);
+      setNetStatus((prev) => ({
+        ...prev,
+        ...status,
+      }));
     });
 
     return () => {
@@ -414,13 +486,20 @@ export default function App() {
     [commitSaveData]
   );
 
-  // Apply Day/Night Atmosphere & Realm Lighting helper
+  // Apply Day/Night Atmosphere, Regional Biome Color Grading & Realm Lighting helper
   const applySceneAtmosphere = useCallback(
     (realmId: RealmId, phase: DayNightPhase) => {
       const realmCfg = REALMS[realmId];
       const atmo = getDayNightAtmosphere(phase);
-      const useAtmo =
-        realmId === 'prairie' || realmId === 'home' || phase !== 'noon';
+      const p = physicsRef.current;
+      const profile = computeAtmosphericVisualProfilePure(
+        realmId,
+        phase,
+        p.x,
+        p.y,
+        p.z,
+        p.inCloudBank
+      );
 
       if (worldRefs.current && sceneRef.current) {
         worldRefs.current.applyRealmTheme(realmCfg, phase);
@@ -428,28 +507,41 @@ export default function App() {
           saveDataRef.current.homeFurniturePlacements,
           realmId === 'home'
         );
-        sceneRef.current.background = new THREE.Color(
-          useAtmo ? atmo.skyHorizonColor : realmCfg.skyHorizonColor
-        );
-        sceneRef.current.fog = new THREE.FogExp2(
-          useAtmo ? atmo.fogColor : realmCfg.fogColor,
-          (useAtmo ? atmo.fogDensity : realmCfg.fogDensity) * 0.58
-        );
+        if (sceneRef.current.background instanceof THREE.Color) {
+          sceneRef.current.background.set(profile.skyHorizonColor);
+        } else {
+          sceneRef.current.background = new THREE.Color(profile.skyHorizonColor);
+        }
+        if (sceneRef.current.fog instanceof THREE.FogExp2) {
+          sceneRef.current.fog.color.set(profile.fogColor);
+          sceneRef.current.fog.density = profile.fogDensity;
+        } else {
+          sceneRef.current.fog = new THREE.FogExp2(
+            profile.fogColor,
+            profile.fogDensity
+          );
+        }
+      }
+      if (rendererRef.current) {
+        rendererRef.current.toneMappingExposure = profile.toneMappingExposure;
       }
       if (sunLightRef.current) {
-        sunLightRef.current.color.set(
-          useAtmo ? atmo.sunColor : realmCfg.sunColor
+        sunLightRef.current.color.set(profile.sunColor);
+        sunLightRef.current.intensity = profile.sunIntensity * 0.85;
+        sunLightRef.current.position.set(
+          profile.sunDirection.x * 58,
+          profile.sunDirection.y * 58,
+          profile.sunDirection.z * 58
         );
-        sunLightRef.current.intensity =
-          (useAtmo ? atmo.sunIntensity : realmCfg.sunIntensity) * 0.78;
       }
       if (hemiLightRef.current) {
-        hemiLightRef.current.color.set(
-          useAtmo ? atmo.hemiSkyColor : realmCfg.hemiSkyColor
-        );
-        hemiLightRef.current.groundColor.set(
-          useAtmo ? atmo.hemiGroundColor : realmCfg.hemiGroundColor
-        );
+        hemiLightRef.current.color.set(profile.hemiSkyColor);
+        hemiLightRef.current.groundColor.set(profile.hemiGroundColor);
+        hemiLightRef.current.intensity = profile.hemiIntensity;
+      }
+      if (rimLightRef.current) {
+        rimLightRef.current.color.set(profile.rimLightColor);
+        rimLightRef.current.intensity = profile.rimLightIntensity;
       }
       skyAudio.setMusicContext(
         realmCfg.ambientNoteBase,
@@ -494,6 +586,13 @@ export default function App() {
       resetPhys.wingEnergy = resetPhys.maxWingWedges;
       physicsRef.current = resetPhys;
       setPhysics({ ...resetPhys });
+      cameraYawRef.current = 0;
+      cameraPitchRef.current = 0.28;
+      cameraStateRef.current = createInitialCameraStatePure(
+        resetPhys.x,
+        resetPhys.y,
+        resetPhys.z
+      );
 
       // Rebuild realm interactables and preserve persistent discovery state
       const newInteractables = createWorldInteractables(realmId).map((item) =>
@@ -532,14 +631,27 @@ export default function App() {
     [applySceneAtmosphere, showBanner]
   );
 
-  // Trigger Start Game
+  // Trigger Start Game (Seamless camera dolly transition from Title Vista into Exploration)
   const handleStartGame = useCallback(() => {
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
     keysHeldRef.current.clear();
+    if (cameraRef.current) {
+      cameraStateRef.current = {
+        ...cameraStateRef.current,
+        camX: cameraRef.current.position.x,
+        camY: cameraRef.current.position.y,
+        camZ: cameraRef.current.position.z,
+        focusX: physicsRef.current.x,
+        focusY: physicsRef.current.y + 1.6,
+        focusZ: physicsRef.current.z - 2.0,
+      };
+    }
+    interactGestureTimerRef.current = 0.95;
     gameStateRef.current = 'playing';
     document.body.dataset.state = 'playing';
+    networkClient.setInWorld(true);
     setGameState('playing');
     skyAudio.setMusicContext(
       REALMS[progressRef.current.currentRealm].ambientNoteBase,
@@ -631,13 +743,23 @@ export default function App() {
         }
       }
 
+      if (saveDataRef.current.tutorialStep === 1) {
+        const tutRes = advanceOnboardingTutorialPure(
+          saveDataRef.current,
+          'ignite'
+        );
+        if (tutRes.advanced) {
+          commitSaveData(tutRes.nextSave);
+        }
+      }
+
       showBanner(
         callEffect.isDeepCall
           ? `🌟 发出蓄力深呼唤 (${activeCallVoiceRef.current}) · 扩散 ${callEffect.waveRadius}m 圣光波纹，蝶群共鸣回复 +${callEffect.energyRestored} 格翼能${crabFlippedCount > 0 ? `，并震翻了 ${crabFlippedCount} 只暮土暗蟹！` : '并掀翻周围暗蟹！'}`
           : `🔊 发出星音呼唤 (${activeCallVoiceRef.current}) · 已感应周围小金人、先祖与旅人方位 (+${callEffect.energyRestored} 格翼能)`
       );
     },
-    [showBanner]
+    [commitSaveData, showBanner]
   );
 
   // Stage 5: Switch Call Voice Timbre ('default' | 'manta' | 'jellyfish' | 'bell')
@@ -657,11 +779,16 @@ export default function App() {
     [commitSaveData, showBanner]
   );
 
-  // Trigger Wing Flap [Space]
+  // Trigger Jump Takeoff (Ground) or Wing Flap (Air) [Space]
   const handleTriggerFlap = useCallback(() => {
+    const isGrounded = physicsRef.current.grounded;
     jumpJustPressedRef.current = true;
     squashScaleYRef.current = 1.22;
-    skyAudio.playWingFlap();
+    if (isGrounded) {
+      skyAudio.playJumpTakeoff();
+    } else {
+      skyAudio.playWingFlap();
+    }
     spawnBurstRef.current?.(
       physicsRef.current.x,
       physicsRef.current.y + 0.9,
@@ -672,7 +799,15 @@ export default function App() {
     if (playerRigRef.current) {
       wingTrailRef.current?.burstWingTipClouds(playerRigRef.current, 8);
     }
-  }, []);
+    if (saveDataRef.current.tutorialStep === 2) {
+      const tutRes = advanceOnboardingTutorialPure(saveDataRef.current, 'fly');
+      if (tutRes.advanced) {
+        commitSaveData(tutRes.nextSave);
+        skyAudio.playWingedLightAbsorb();
+        if (tutRes.message) showBanner(tutRes.message);
+      }
+    }
+  }, [commitSaveData, showBanner]);
 
   // Toggle Flight Mode [Shift]
   const handleToggleFlightMode = useCallback(() => {
@@ -682,8 +817,17 @@ export default function App() {
   // Toggle Sit / Shrine Meditate / Bench Sit Alongside [Z]
   const handleToggleSit = useCallback(() => {
     toggleSitJustPressedRef.current = true;
-    skyAudio.playCandleIgnite();
+    skyAudio.playSocialInteractionChime('sit');
   }, []);
+
+  // Update 5-Bus Audio Mixer Volumes
+  const handleUpdateAudioMixer = useCallback(
+    (partial: Partial<AudioMixerSettings>) => {
+      skyAudio.setMixerVolumes(partial);
+      setAudioMixer(skyAudio.getMixerVolumes());
+    },
+    []
+  );
 
   // Set Aerial Dive Held [X / Ctrl / HUD Button]
   const handleSetDiveHeld = useCallback((held: boolean) => {
@@ -773,10 +917,21 @@ export default function App() {
         );
         wingTrailRef.current?.resetRibbonHistory(playerRigRef.current);
       }
+      cameraYawRef.current = 0;
+      cameraPitchRef.current = 0.28;
+      cameraStateRef.current = createInitialCameraStatePure(tx, finalY, tz);
       if (cameraRef.current) {
-        cameraYawRef.current = 0;
-        cameraRef.current.position.set(tx, finalY + 3.4, tz + 7.6);
-        cameraRef.current.lookAt(tx, finalY + 1.5, tz - 2.0);
+        cameraRef.current.up.set(0, 1, 0);
+        cameraRef.current.position.set(
+          cameraStateRef.current.camX,
+          cameraStateRef.current.camY,
+          cameraStateRef.current.camZ
+        );
+        cameraRef.current.lookAt(
+          cameraStateRef.current.focusX,
+          cameraStateRef.current.focusY,
+          cameraStateRef.current.focusZ
+        );
       }
       if (rendererRef.current && sceneRef.current && cameraRef.current) {
         rendererRef.current.render(sceneRef.current, cameraRef.current);
@@ -834,7 +989,9 @@ export default function App() {
         activeEmoteTimer: spec.durationSec,
       };
       setProgress({ ...progressRef.current });
-      skyAudio.playCandleIgnite();
+      skyAudio.playSocialInteractionChime(
+        emoteId.includes('dance') || emoteId.includes('cheer') ? 'dance' : 'wave'
+      );
       networkClient.broadcastEvent('player:emote', {
         emoteId,
         level: spec.level,
@@ -942,6 +1099,79 @@ export default function App() {
     );
   }, [showBanner]);
 
+  // Module 8: Toggle Local AI Companions vs. Real Online Players Only
+  const handleToggleLocalBotsEnabled = useCallback(() => {
+    const enabled = networkClient.toggleLocalBotsEnabled();
+    setNetStatus(networkClient.getStatusSnapshot());
+    showBanner(
+      enabled
+        ? '🤖 已开启「本地 AI 旅伴」单机陪伴（3名AI旅伴已明确标识，可供随时练习牵手、合奏与双人机关）'
+        : '🌐 已隐藏所有本地 AI 旅伴：当前场景仅显示真实 WebSocket / BroadcastChannel 联机玩家！'
+    );
+  }, [showBanner]);
+
+  // Module 8: Set or Cancel Partner Auto-Follow Mode
+  const handleFollowPartner = useCallback(
+    (peerId: string | null) => {
+      networkClient.setFollowLeader(peerId);
+      setNetStatus(networkClient.getStatusSnapshot());
+      if (peerId) {
+        const peer = networkClient.remoteTravelers.get(peerId);
+        const name =
+          saveDataRef.current.friends[peerId]?.nickname ||
+          peer?.playerName ||
+          peerId;
+        const roleTag = peer?.isBot ? '🤖 本地AI旅伴' : '🌐 真实联机玩家';
+        showBanner(
+          `🧭 已开启自动跟随「${name}」(${roleTag}) · 角色将自然伴随其探索轨迹，按 WASD 可随时自主脱离`
+        );
+      } else {
+        showBanner('🧭 已停止自动跟随伙伴 · 恢复自由探索操控');
+      }
+    },
+    [showBanner]
+  );
+
+  // Module 8: Summon Companions / Broadcast Co-op Beacon to 2-Player Mechanism
+  const handleSummonCoopCompanions = useCallback(() => {
+    const door =
+      interactablesRef.current.find(
+        (i) => i.type === 'coop_door' && !i.activated
+      ) || interactablesRef.current.find((i) => i.type === 'coop_door');
+    if (!door) {
+      showBanner('当前区域暂无双人协力星芒石门');
+      return;
+    }
+    const dist = Math.hypot(
+      physicsRef.current.x - door.x,
+      physicsRef.current.z - door.z
+    );
+    if (dist > 4.2) {
+      const yGround = groundHeightAt(door.x, door.z + 1.4);
+      physicsRef.current = {
+        ...physicsRef.current,
+        x: door.x,
+        y: yGround,
+        z: door.z + 1.4,
+        vx: 0,
+        vy: 0,
+        vz: 0,
+        grounded: true,
+      };
+      if (playerRigRef.current) {
+        playerRigRef.current.root.position.set(door.x, yGround, door.z + 1.4);
+        wingTrailRef.current?.resetRibbonHistory(playerRigRef.current);
+      }
+    }
+    networkClient.summonCompanionsToCoopPoint(door.x, door.z);
+    setNetStatus(networkClient.getStatusSnapshot());
+    skyAudio.playSkyCall(1.12, 1.0, false, activeCallVoiceRef.current);
+    spawnBurstRef.current?.(door.x, door.y + 1.5, door.z, 28, 6.2);
+    showBanner(
+      `🔔 已呼唤旅伴前往「${door.name}」双星基座协力共鸣 (2/2 人已就位) · 现在按 [E] 即可开启秘境石门！`
+    );
+  }, [showBanner]);
+
   // Trigger Context Interaction [E / F]
   const handleTriggerInteract = useCallback(() => {
     if (activeSpiritMemoryRef.current) {
@@ -983,6 +1213,19 @@ export default function App() {
         );
         showBanner(res.message);
       }
+      return;
+    }
+
+    // Module 6: If player is within proximity hint range of a Lumina Shard, pressing [E] absorbs/echoes it
+    if (
+      nearbyLuminaShardRef.current?.isWithinVisualHintRadius &&
+      nearbyLuminaShardRef.current.nearestShard &&
+      handleCollectLuminaShardRef.current
+    ) {
+      handleCollectLuminaShardRef.current(
+        nearbyLuminaShardRef.current.nearestShard.id,
+        false
+      );
       return;
     }
 
@@ -1030,12 +1273,48 @@ export default function App() {
 
     if (!target) return;
 
+    let coopOptions:
+      | { coopParticipantCount: number; requiredCoopParticipants: number }
+      | undefined;
+    if (target.type === 'coop_door') {
+      const peerSnapshots = Array.from(networkClient.remoteTravelers.values()).map(
+        (r) => ({
+          playerId: r.playerId,
+          name: r.playerName,
+          x: r.x,
+          y: r.y,
+          z: r.z,
+          yaw: r.yaw,
+          grounded: r.grounded,
+          flightMode: r.flightMode,
+          sitMode: r.sitMode,
+          activeEmote: r.activeEmote,
+          isBot: r.isBot,
+        })
+      );
+      const coopCheck = evaluateCoopMechanismPure(
+        physicsRef.current.x,
+        physicsRef.current.y,
+        physicsRef.current.z,
+        target,
+        peerSnapshots,
+        2,
+        5.8
+      );
+      coopOptions = {
+        coopParticipantCount: coopCheck.participantCount,
+        requiredCoopParticipants: coopCheck.requiredParticipants,
+      };
+    }
+
     const result = applyInteraction(
       target,
       progressRef.current,
       physicsRef.current,
-      loadoutRef.current
+      loadoutRef.current,
+      coopOptions
     );
+    interactGestureTimerRef.current = 1.15;
 
     progressRef.current = result.nextProgress;
     if (activeSpellIdRef.current === 'spell_golden_aegis') {
@@ -1058,6 +1337,14 @@ export default function App() {
       item.id === target!.id ? result.updatedTarget : item
     );
 
+    if (target.type === 'coop_door' && result.updatedTarget.activated) {
+      const doorMesh = interactableMeshesRef.current.get(target.id);
+      if (doorMesh) {
+        doorMesh.position.y += 2.6;
+      }
+      networkClient.broadcastEvent('coop:activate', { doorId: target.id });
+    }
+
     if (
       target.type === 'winged_light' ||
       target.type === 'dark_plant' ||
@@ -1071,7 +1358,7 @@ export default function App() {
       target.type === 'temple_altar' ||
       target.type === 'eden_statue' ||
       target.type === 'starlight_elevator' ||
-      target.type === 'coop_door' ||
+      (target.type === 'coop_door' && result.updatedTarget.activated) ||
       target.type === 'race_ring'
     ) {
       skyAudio.playWingedLightAbsorb();
@@ -1177,6 +1464,13 @@ export default function App() {
     resetPhys.wingEnergy = resetPhys.maxWingWedges;
     physicsRef.current = resetPhys;
     setPhysics({ ...resetPhys });
+    cameraYawRef.current = 0;
+    cameraPitchRef.current = 0.28;
+    cameraStateRef.current = createInitialCameraStatePure(
+      resetPhys.x,
+      resetPhys.y,
+      resetPhys.z
+    );
     if (playerRigRef.current) {
       wingTrailRef.current?.resetRibbonHistory(playerRigRef.current);
     }
@@ -1538,6 +1832,13 @@ export default function App() {
         );
         wingTrailRef.current?.resetRibbonHistory(playerRigRef.current);
       }
+      cameraStateRef.current = createInitialCameraStatePure(
+        safeFriendPos.x,
+        finalFriendY,
+        safeFriendPos.z
+      );
+      cameraStateRef.current.yaw = cameraYawRef.current;
+      cameraStateRef.current.pitch = cameraPitchRef.current;
       setPhysics({ ...physicsRef.current });
       setConstellationModalOpen(false);
       skyAudio.playWingedLightAbsorb();
@@ -2131,6 +2432,159 @@ export default function App() {
     [commitSaveData, handleDebugTeleport, showBanner]
   );
 
+  const showCeremonyBanner = useCallback((title: string | null) => {
+    if (!title) return;
+    setCeremonyTitle(title);
+    if (ceremonyTimerRef.current) {
+      window.clearTimeout(ceremonyTimerRef.current);
+    }
+    ceremonyTimerRef.current = window.setTimeout(() => {
+      setCeremonyTitle(null);
+    }, 4200);
+  }, []);
+
+  // Module 6: Collect or Echo-Resonate a 4-Tier Lumina Shard (with optional warp from Compendium)
+  const handleCollectLuminaShard = useCallback(
+    (shardId: string, warpFirst = false) => {
+      const shardSpec = LUMINA_SHARD_CATALOG.find((s) => s.id === shardId);
+      if (warpFirst && shardSpec) {
+        const targetY = Math.max(
+          groundHeightAt(shardSpec.x, shardSpec.z),
+          shardSpec.y - 1.05
+        );
+        handleDebugTeleport(
+          shardSpec.x,
+          targetY,
+          shardSpec.z + 0.9,
+          shardSpec.name
+        );
+      }
+
+      const res = collectLuminaShardPure(
+        saveDataRef.current,
+        shardId,
+        sessionEchoedShardIdsRef.current
+      );
+      if (!res.shard) {
+        showBanner(res.message);
+        return;
+      }
+
+      interactGestureTimerRef.current = 1.15;
+      sessionEchoedShardIdsRef.current = res.nextSessionEchoedIds;
+      setSessionEchoedShardIds(res.nextSessionEchoedIds);
+      commitSaveData(res.nextSave);
+
+      progressRef.current = {
+        ...progressRef.current,
+        candles: res.nextSave.candles,
+        wax: res.nextSave.candleWax,
+        hearts: res.nextSave.hearts,
+        wingedLights: res.nextSave.wingedLights,
+        ascendedCandles: res.nextSave.ascendedCandles,
+      };
+      const newMaxWedges = calculateWingWedges(
+        res.nextSave.wingedLights,
+        loadoutRef.current
+      );
+      physicsRef.current = {
+        ...physicsRef.current,
+        maxWingWedges: newMaxWedges,
+        wingEnergy: Math.max(physicsRef.current.wingEnergy, newMaxWedges),
+        tempLostWedges: 0,
+      };
+
+      const nextShardEval = evaluateNearbyLuminaShardPure(
+        physicsRef.current.x,
+        physicsRef.current.y,
+        physicsRef.current.z,
+        res.nextSave.collectedLuminaShardIds || [],
+        res.nextSessionEchoedIds
+      );
+      nearbyLuminaShardRef.current = nextShardEval;
+      setNearbyLuminaShardEval(nextShardEval);
+      setProgress({ ...progressRef.current });
+      setPhysics({ ...physicsRef.current });
+
+      skyAudio.playLuminaShardCollect(res.shard.tier, res.isEchoResonance);
+      if (res.leveledUpRank) {
+        skyAudio.playExplorerRankUpCeremony(res.nextSave.explorerRank || 2);
+      }
+
+      spawnBurstRef.current?.(
+        res.shard.x,
+        res.shard.y,
+        res.shard.z,
+        res.leveledUpRank ? 52 : res.newlyCollected ? 36 : 20,
+        res.leveledUpRank ? 9.5 : 6.8
+      );
+      if (playerRigRef.current) {
+        wingTrailRef.current?.burstWingTipClouds(
+          playerRigRef.current,
+          res.leveledUpRank ? 8 : 5
+        );
+      }
+
+      if (res.ceremonyTitle) {
+        showCeremonyBanner(res.ceremonyTitle);
+      }
+      showBanner(res.message);
+    },
+    [commitSaveData, handleDebugTeleport, showBanner, showCeremonyBanner]
+  );
+  handleCollectLuminaShardRef.current = handleCollectLuminaShard;
+
+  const handleCollectAndWarpLuminaShard = useCallback(
+    (shardId: string) => {
+      handleCollectLuminaShard(shardId, true);
+    },
+    [handleCollectLuminaShard]
+  );
+
+  // Module 6: Warp to and discover a Secret Exploration Landmark or Ancient Story Mural
+  const handleDiscoverAndWarpSecretLandmark = useCallback(
+    (landmarkId: string) => {
+      const lmSpec = SECRET_EXPLORATION_LANDMARKS.find(
+        (l) => l.id === landmarkId
+      );
+      if (lmSpec) {
+        handleDebugTeleport(lmSpec.x, lmSpec.y, lmSpec.z + 1.2, lmSpec.name);
+      }
+      const res = discoverSecretLandmarkPure(saveDataRef.current, landmarkId);
+      if (!res.landmark) {
+        showBanner(res.message);
+        return;
+      }
+      if (res.newlyDiscovered) {
+        commitSaveData(res.nextSave);
+        progressRef.current = {
+          ...progressRef.current,
+          candles: res.nextSave.candles,
+          hearts: res.nextSave.hearts,
+          wingedLights: res.nextSave.wingedLights,
+          ascendedCandles: res.nextSave.ascendedCandles,
+        };
+        setProgress({ ...progressRef.current });
+        skyAudio.playSecretLandmarkDiscover();
+        if (res.leveledUpRank) {
+          skyAudio.playExplorerRankUpCeremony(res.nextSave.explorerRank || 2);
+        }
+        spawnBurstRef.current?.(
+          res.landmark.x,
+          res.landmark.y + 1.5,
+          res.landmark.z,
+          40,
+          7.8
+        );
+        if (res.ceremonyTitle) {
+          showCeremonyBanner(res.ceremonyTitle);
+        }
+      }
+      showBanner(res.message);
+    },
+    [commitSaveData, handleDebugTeleport, showBanner, showCeremonyBanner]
+  );
+
   // Stage 14: Activate or cancel a Sky Alchemy Spell Buff from the Aviary Spell Workshop
   const handleActivateSkySpell = useCallback(
     (spellId: SkySpellId | null) => {
@@ -2335,14 +2789,24 @@ export default function App() {
     mountEl.innerHTML = '';
     mountEl.appendChild(renderer.domElement);
 
-    // 2. Scene, Studio PBR Environment Map & Warm/Cool Lighting Rig
+    // 2. Scene, Studio PBR Environment Map & Ethereal Multi-Layer Lighting Rig
     const initialRealm = REALMS[progressRef.current.currentRealm];
+    const initialProfile = computeAtmosphericVisualProfilePure(
+      initialRealm.id,
+      dayNightPhaseRef.current,
+      physicsRef.current.x,
+      physicsRef.current.y,
+      physicsRef.current.z,
+      false
+    );
+    renderer.toneMappingExposure = initialProfile.toneMappingExposure;
+
     const scene = new THREE.Scene();
     sceneRef.current = scene;
-    scene.background = new THREE.Color(initialRealm.skyHorizonColor);
+    scene.background = new THREE.Color(initialProfile.skyHorizonColor);
     scene.fog = new THREE.FogExp2(
-      initialRealm.fogColor,
-      initialRealm.fogDensity * 0.58
+      initialProfile.fogColor,
+      initialProfile.fogDensity
     );
 
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
@@ -2357,19 +2821,23 @@ export default function App() {
     cameraRef.current = camera;
 
     const hemiLight = new THREE.HemisphereLight(
-      initialRealm.hemiSkyColor,
-      initialRealm.hemiGroundColor,
-      0.72
+      initialProfile.hemiSkyColor,
+      initialProfile.hemiGroundColor,
+      initialProfile.hemiIntensity
     );
     hemiLight.position.set(0, 50, 0);
     scene.add(hemiLight);
     hemiLightRef.current = hemiLight;
 
     const sunLight = new THREE.DirectionalLight(
-      initialRealm.sunColor,
-      initialRealm.sunIntensity * 0.78
+      initialProfile.sunColor,
+      initialProfile.sunIntensity * 0.85
     );
-    sunLight.position.set(24, 42, 18);
+    sunLight.position.set(
+      initialProfile.sunDirection.x * 58,
+      initialProfile.sunDirection.y * 58,
+      initialProfile.sunDirection.z * 58
+    );
     sunLight.castShadow = !isSoftwareGl;
     sunLight.shadow.mapSize.set(1024, 1024);
     const d = 38;
@@ -2384,9 +2852,13 @@ export default function App() {
     scene.add(sunLight);
     sunLightRef.current = sunLight;
 
-    const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.55);
+    const rimLight = new THREE.DirectionalLight(
+      initialProfile.rimLightColor,
+      initialProfile.rimLightIntensity
+    );
     rimLight.position.set(-18, 22, -45);
     scene.add(rimLight);
+    rimLightRef.current = rimLight;
 
     // 3. Build World Environment & Landmarks
     const builtWorld = buildSkyWorldEnvironment(renderer, initialRealm);
@@ -2470,7 +2942,9 @@ export default function App() {
     const populateInteractableMeshes = () => {
       interactableMeshesRef.current.clear();
       while (interactablesGroup.children.length > 0) {
-        interactablesGroup.remove(interactablesGroup.children[0]);
+        const oldChild = interactablesGroup.children[0];
+        interactablesGroup.remove(oldChild);
+        disposeObject3DResources(oldChild);
       }
 
       for (const item of interactablesRef.current) {
@@ -2511,6 +2985,18 @@ export default function App() {
     populateInteractableMeshes();
     populateInteractablesFnRef.current = populateInteractableMeshes;
 
+    // 7b. Module 6: Build 16 Original 4-Tier Lumina Shard 3D Meshes
+    const luminaShardsGroup = new THREE.Group();
+    luminaShardsGroup.name = 'lumina_shards_world_group';
+    scene.add(luminaShardsGroup);
+    luminaShardMeshesRef.current.clear();
+    for (const shard of LUMINA_SHARD_CATALOG) {
+      const shardMesh = buildLuminaShardMesh(shard, shadowTex);
+      shardMesh.position.set(shard.x, shard.y, shard.z);
+      luminaShardsGroup.add(shardMesh);
+      luminaShardMeshesRef.current.set(shard.id, shardMesh);
+    }
+
     // 8. Zero-GC Pooled Particle Ring Buffer (64 Golden Starlight Particles)
     const PARTICLE_CAP = 64;
     const particleGeo = new THREE.OctahedronGeometry(0.14, 0);
@@ -2521,6 +3007,14 @@ export default function App() {
       PARTICLE_CAP
     );
     particleInstanced.frustumCulled = false;
+    const initParticleDummy = new THREE.Object3D();
+    initParticleDummy.position.set(0, -200, 0);
+    initParticleDummy.scale.set(0, 0, 0);
+    initParticleDummy.updateMatrix();
+    for (let i = 0; i < PARTICLE_CAP; i++) {
+      particleInstanced.setMatrixAt(i, initParticleDummy.matrix);
+    }
+    particleInstanced.instanceMatrix.needsUpdate = true;
     scene.add(particleInstanced);
 
     const particlePool: PooledParticle[] = Array.from(
@@ -2570,33 +3064,56 @@ export default function App() {
       renderer.compile(scene, camera);
     }
 
-    // 9. Pointer & Keyboard Listeners (Unified Input Hub)
+    // 9. Pointer, Wheel & Keyboard Listeners (Unified PC + Mobile Multi-Touch Input Hub)
     let isDraggingCamera = false;
+    let activeCameraPointerId: number | null = null;
     let lastPointerX = 0;
     let lastPointerY = 0;
 
     const onPointerDown = (e: PointerEvent) => {
       if (e.target !== renderer.domElement) return;
+      if (activeCameraPointerId !== null) return;
       isDraggingCamera = true;
+      activeCameraPointerId = e.pointerId;
       lastPointerX = e.clientX;
       lastPointerY = e.clientY;
+      cameraStateRef.current.manualLookGraceTimer = 1.65;
     };
 
     const onPointerMove = (e: PointerEvent) => {
-      if (!isDraggingCamera) return;
+      if (!isDraggingCamera || e.pointerId !== activeCameraPointerId) return;
       const dx = e.clientX - lastPointerX;
       const dy = e.clientY - lastPointerY;
       lastPointerX = e.clientX;
       lastPointerY = e.clientY;
-      cameraYawRef.current -= dx * 0.0065;
+      cameraYawRef.current -= dx * 0.0062;
+      while (cameraYawRef.current > Math.PI) cameraYawRef.current -= Math.PI * 2;
+      while (cameraYawRef.current < -Math.PI) cameraYawRef.current += Math.PI * 2;
       cameraPitchRef.current = Math.max(
-        0.05,
-        Math.min(0.85, cameraPitchRef.current + dy * 0.005)
+        -0.18,
+        Math.min(0.86, cameraPitchRef.current + dy * 0.0048)
       );
+      cameraStateRef.current.yaw = cameraYawRef.current;
+      cameraStateRef.current.pitch = cameraPitchRef.current;
+      cameraStateRef.current.manualLookGraceTimer = 1.65;
     };
 
-    const onPointerUp = () => {
-      isDraggingCamera = false;
+    const onPointerUp = (e: PointerEvent) => {
+      if (e.pointerId === activeCameraPointerId) {
+        isDraggingCamera = false;
+        activeCameraPointerId = null;
+      }
+    };
+
+    const onWheel = (e: WheelEvent) => {
+      if (e.target !== renderer.domElement || gameStateRef.current !== 'playing') {
+        return;
+      }
+      const zoomStep = Math.sign(e.deltaY) * 0.55;
+      cameraStateRef.current.userZoomOffset = Math.max(
+        -2.2,
+        Math.min(3.5, cameraStateRef.current.userZoomOffset + zoomStep)
+      );
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -2610,6 +3127,10 @@ export default function App() {
 
       const code = e.code;
       keysHeldRef.current.add(code);
+      if (activeInputDeviceRef.current !== 'keyboard') {
+        activeInputDeviceRef.current = 'keyboard';
+        setActiveInputDevice('keyboard');
+      }
 
       if (gameStateRef.current === 'title') {
         if (code === 'Enter' || code === 'Space') {
@@ -2710,6 +3231,7 @@ export default function App() {
     const clearHeldInputs = () => {
       keysHeldRef.current.clear();
       isDraggingCamera = false;
+      activeCameraPointerId = null;
     };
 
     const onResize = () => {
@@ -2719,6 +3241,7 @@ export default function App() {
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
+      renderer.render(scene, camera);
     };
 
     const resizeObserver = new ResizeObserver(() => {
@@ -2729,6 +3252,8 @@ export default function App() {
     window.addEventListener('pointerdown', onPointerDown);
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
+    renderer.domElement.addEventListener('wheel', onWheel, { passive: true });
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
     window.addEventListener('blur', clearHeldInputs);
@@ -2762,6 +3287,15 @@ export default function App() {
 
     let prevYaw = physicsRef.current.yaw;
     let smoothedTurnRate = 0;
+    let smoothedInputX = 0;
+    let smoothedInputZ = 0;
+    let prevGpJumpHeld = false;
+    let prevGpFlightToggleHeld = false;
+    let prevGpSitToggleHeld = false;
+    let prevInCloudBank = false;
+    let prevInWindTunnel = false;
+    let lowEnergyChimeCooldown = 0;
+    let worldEvalAccumulator = 0.05;
 
     function tick() {
       if (disposed) return;
@@ -2779,12 +3313,49 @@ export default function App() {
       builtWorld.astrolabeRing1.rotation.z = elapsed * 0.35;
       builtWorld.astrolabeRing2.rotation.y = elapsed * 0.48;
 
-      // Update dynamic world hazards (Krill patrol in Wasteland, Shard Eruption crystal)
+      // Update dynamic world hazards, Sky Dome, Volumetric God-Rays & Regional Biome Lighting
+      const pAtmo = physicsRef.current;
+      const liveAtmoProfile = computeAtmosphericVisualProfilePure(
+        progressRef.current.currentRealm,
+        dayNightPhaseRef.current,
+        pAtmo.x,
+        pAtmo.y,
+        pAtmo.z,
+        pAtmo.inCloudBank
+      );
+      if (scene.fog instanceof THREE.FogExp2) {
+        scene.fog.color.set(liveAtmoProfile.fogColor);
+        scene.fog.density = liveAtmoProfile.fogDensity;
+      }
+      if (scene.background instanceof THREE.Color) {
+        scene.background.set(liveAtmoProfile.skyHorizonColor);
+      }
+      renderer.toneMappingExposure +=
+        (liveAtmoProfile.toneMappingExposure - renderer.toneMappingExposure) *
+        Math.min(1, dt * 3.5);
+      sunLight.color.set(liveAtmoProfile.sunColor);
+      sunLight.intensity = liveAtmoProfile.sunIntensity * 0.85;
+      sunLight.position.set(
+        liveAtmoProfile.sunDirection.x * 58,
+        liveAtmoProfile.sunDirection.y * 58,
+        liveAtmoProfile.sunDirection.z * 58
+      );
+      hemiLight.color.set(liveAtmoProfile.hemiSkyColor);
+      hemiLight.groundColor.set(liveAtmoProfile.hemiGroundColor);
+      hemiLight.intensity = liveAtmoProfile.hemiIntensity;
+      rimLight.color.set(liveAtmoProfile.rimLightColor);
+      rimLight.intensity = liveAtmoProfile.rimLightIntensity;
+
       builtWorld.updateDynamicHazards(
         elapsed,
         REALMS[progressRef.current.currentRealm],
         physicsRef.current.krillAlertLevel,
-        progressRef.current.shardEventType
+        progressRef.current.shardEventType,
+        dayNightPhaseRef.current,
+        pAtmo.x,
+        pAtmo.y,
+        pAtmo.z,
+        pAtmo.inCloudBank
       );
 
       mantas.forEach((m) => {
@@ -2812,12 +3383,33 @@ export default function App() {
         flightMode: pCurr.flightMode,
       });
 
-      const remotes = Array.from(networkClient.remoteTravelers.values());
+      // Prioritize real online human players (!isBot) first, then local AI companions
+      const remotes = Array.from(networkClient.remoteTravelers.values()).sort(
+        (a, b) => Number(a.isBot) - Number(b.isBot)
+      );
       const companionRigs = [companion1, companion2, companion3];
+      companionRigs.forEach((rig) => {
+        if (rig) rig.root.visible = false;
+      });
       const blockedList = saveDataRef.current.blockedPeerIds || [];
       remotes.slice(0, 3).forEach((rem, idx) => {
         const cRig = companionRigs[idx];
         if (!cRig) return;
+
+        // Dynamically register real online players into saveDataRef.current.friends if newly met
+        if (!saveDataRef.current.friends[rem.playerId]) {
+          saveDataRef.current.friends[rem.playerId] = {
+            peerId: rem.playerId,
+            nickname: rem.playerName || '远方旅人',
+            ignited: false,
+            isFriend: false,
+            unlockedNodes: [],
+            lastGiftedDate: null,
+            online: true,
+            isBot: Boolean(rem.isBot),
+            loadout: rem.loadout || DEFAULT_LOADOUT,
+          };
+        }
 
         const isBlocked = blockedList.includes(rem.playerId);
         cRig.root.visible = !isBlocked;
@@ -2858,7 +3450,9 @@ export default function App() {
           activeEmoteTimer: rem.activeEmoteTimer,
           activeEmoteLevel: rem.activeEmoteLevel || 3,
           instrumentOpen: Boolean(rem.notePopupTimer > 0),
-          sitMode: isSittingAlongside ? 'sit_bench' : 'none',
+          sitMode: isSittingAlongside
+            ? 'sit_bench'
+            : (rem.sitMode as any) || 'none',
         });
         cRig.applyPose(cPose, elapsed + idx * 1.7);
         cRig.bodyVisual.scale.setScalar(isIgnited ? 1.0 : 0.96);
@@ -2874,17 +3468,47 @@ export default function App() {
         }
       });
 
-      // Update Interactable Beacons
-      interactableMeshesRef.current.forEach((meshGroup) => {
+      // Update Interactable Beacons with Organic Multi-Harmonic Flicker & Proximity Shimmer
+      let beaconIdx = 0;
+      const nearestTargetId = nearestInteractableRef.current?.id;
+      interactableMeshesRef.current.forEach((meshGroup, itemId) => {
+        beaconIdx++;
         const core = meshGroup.getObjectByName('spirit_core');
         if (core) {
-          core.rotation.y = elapsed * 2.2;
-          core.position.y = 1.55 + Math.sin(elapsed * 3.0) * 0.12;
+          const flicker = computeOrganicFlickerPure(elapsed, beaconIdx * 0.77);
+          const isNearest = itemId === nearestTargetId;
+          core.rotation.y = elapsed * 2.1 + flicker.wave * 0.25;
+          core.position.y =
+            1.55 + flicker.driftY * 0.14 + (isNearest ? 0.08 : 0);
+          const coreScale =
+            1.0 + flicker.wave * 0.08 + (isNearest ? 0.16 : 0);
+          core.scale.setScalar(coreScale);
         }
       });
 
+      // Module 6: Animate 16 4-Tier Lumina Shards & Proximity Visual Hints
+      const collectedShardsList =
+        saveDataRef.current.collectedLuminaShardIds || [];
+      const echoedShardsList = sessionEchoedShardIdsRef.current;
+      for (const shard of LUMINA_SHARD_CATALOG) {
+        const sGroup = luminaShardMeshesRef.current.get(shard.id);
+        if (!sGroup) continue;
+        updateLuminaShardMesh(
+          sGroup,
+          elapsed,
+          shard,
+          collectedShardsList.includes(shard.id),
+          echoedShardsList.includes(shard.id),
+          pCurr.x,
+          pCurr.y,
+          pCurr.z
+        );
+      }
+
       if (gameStateRef.current === 'title') {
+        builtWorld.updateWaterRipples(elapsed, 0, 6, false);
         const orbitAngle = Math.sin(elapsed * 0.25) * 0.45;
+        camera.up.set(0, 1, 0);
         camera.position.set(
           Math.sin(orbitAngle) * 7.5,
           3.8 + Math.sin(elapsed * 0.5) * 0.25,
@@ -2921,14 +3545,99 @@ export default function App() {
           (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0) -
           (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0);
 
-        const moveX =
+        // Poll standard HTML5 Gamepad (Xbox / PlayStation / Switch Pro / DualSense) if connected
+        let gpMoveX = 0;
+        let gpMoveZ = 0;
+        let gpJumpHeld = false;
+        let gpJumpJustPressed = false;
+        let gpSprintHeld = false;
+        let gpDiveHeld = false;
+        let gpFlightToggleJustPressed = false;
+        let gpSitToggleJustPressed = false;
+
+        if (typeof navigator !== 'undefined' && typeof navigator.getGamepads === 'function') {
+          const pads = navigator.getGamepads();
+          const pad = pads ? pads[0] || pads[1] || pads[2] || pads[3] : null;
+          if (pad && pad.connected) {
+            const lx = pad.axes[0] ?? 0;
+            const lz = pad.axes[1] ?? 0;
+            const lMag = Math.hypot(lx, lz);
+            if (lMag > 0.12) {
+              const normMag = Math.min(1, (lMag - 0.12) / 0.88);
+              gpMoveX = (lx / lMag) * normMag;
+              gpMoveZ = (lz / lMag) * normMag;
+            }
+            // Right stick orbits camera smoothly
+            const rx = pad.axes[2] ?? 0;
+            const rz = pad.axes[3] ?? 0;
+            if (Math.abs(rx) > 0.15 || Math.abs(rz) > 0.15) {
+              if (Math.abs(rx) > 0.15) {
+                cameraYawRef.current -= rx * 2.4 * dt;
+                while (cameraYawRef.current > Math.PI) cameraYawRef.current -= Math.PI * 2;
+                while (cameraYawRef.current < -Math.PI) cameraYawRef.current += Math.PI * 2;
+              }
+              if (Math.abs(rz) > 0.15) {
+                cameraPitchRef.current = Math.max(
+                  -0.18,
+                  Math.min(0.86, cameraPitchRef.current + rz * 1.6 * dt)
+                );
+              }
+              cameraStateRef.current.yaw = cameraYawRef.current;
+              cameraStateRef.current.pitch = cameraPitchRef.current;
+              cameraStateRef.current.manualLookGraceTimer = 1.65;
+            }
+            gpJumpHeld = Boolean(pad.buttons[0]?.pressed);
+            gpJumpJustPressed = gpJumpHeld && !prevGpJumpHeld;
+            prevGpJumpHeld = gpJumpHeld;
+
+            const flightBtn = Boolean(pad.buttons[3]?.pressed);
+            gpFlightToggleJustPressed = flightBtn && !prevGpFlightToggleHeld;
+            prevGpFlightToggleHeld = flightBtn;
+
+            const sitBtn = Boolean(pad.buttons[2]?.pressed);
+            gpSitToggleJustPressed = sitBtn && !prevGpSitToggleHeld;
+            prevGpSitToggleHeld = sitBtn;
+
+            gpSprintHeld = Boolean(pad.buttons[5]?.pressed || pad.buttons[7]?.pressed);
+            gpDiveHeld = Boolean(pad.buttons[6]?.pressed);
+            if (
+              (lMag > 0.16 || gpJumpHeld || gpSprintHeld || gpDiveHeld) &&
+              activeInputDeviceRef.current !== 'gamepad'
+            ) {
+              activeInputDeviceRef.current = 'gamepad';
+              setActiveInputDevice('gamepad');
+            }
+          } else {
+            prevGpJumpHeld = false;
+            prevGpFlightToggleHeld = false;
+            prevGpSitToggleHeld = false;
+          }
+        }
+
+        const rawMoveX =
           Math.abs(touchInputRef.current.moveX) > 0.01
             ? touchInputRef.current.moveX
-            : kbMoveX;
-        const moveZ =
+            : Math.abs(gpMoveX) > 0.01
+              ? gpMoveX
+              : kbMoveX;
+        const rawMoveZ =
           Math.abs(touchInputRef.current.moveZ) > 0.01
             ? touchInputRef.current.moveZ
-            : kbMoveZ;
+            : Math.abs(gpMoveZ) > 0.01
+              ? gpMoveZ
+              : kbMoveZ;
+
+        // Smooth input vector transitions so diagonal WASD/stick direction switches feel fluid and organic
+        const inputSmoothRate = Math.hypot(rawMoveX, rawMoveZ) > 0.01 ? 22.0 : 18.0;
+        const inputAlpha = 1 - Math.exp(-inputSmoothRate * dt);
+        smoothedInputX += (rawMoveX - smoothedInputX) * inputAlpha;
+        smoothedInputZ += (rawMoveZ - smoothedInputZ) * inputAlpha;
+        if (Math.hypot(rawMoveX, rawMoveZ) < 0.01 && Math.hypot(smoothedInputX, smoothedInputZ) < 0.03) {
+          smoothedInputX = 0;
+          smoothedInputZ = 0;
+        }
+        const moveX = smoothedInputX;
+        const moveZ = smoothedInputZ;
 
         // Check proximity to any remote/bot companion traveler (< 4.5m) for companion recharge
         const isNearCompanion = remotes.slice(0, 2).some((rem) => {
@@ -2937,6 +3646,7 @@ export default function App() {
 
         const isDiveInputHeld =
           diveHeldRef.current ||
+          gpDiveHeld ||
           keys.has('KeyX') ||
           keys.has('ControlLeft') ||
           keys.has('ControlRight');
@@ -2946,16 +3656,19 @@ export default function App() {
           {
             moveX,
             moveZ,
-            jumpJustPressed: jumpJustPressedRef.current,
-            jumpHeld: keys.has('Space'),
-            toggleFlightModeJustPressed: toggleFlightJustPressedRef.current,
-            toggleSitJustPressed: toggleSitJustPressedRef.current,
+            jumpJustPressed: jumpJustPressedRef.current || gpJumpJustPressed,
+            jumpHeld: keys.has('Space') || gpJumpHeld,
+            toggleFlightModeJustPressed:
+              toggleFlightJustPressedRef.current || gpFlightToggleJustPressed,
+            toggleSitJustPressed:
+              toggleSitJustPressedRef.current || gpSitToggleJustPressed,
             diveHeld: isDiveInputHeld,
             nearCompanion: isNearCompanion,
             sprintHeld:
               keys.has('ShiftLeft') ||
               keys.has('ShiftRight') ||
-              touchInputRef.current.sprint,
+              touchInputRef.current.sprint ||
+              gpSprintHeld,
             cameraYaw: cameraYawRef.current,
             realmId: progressRef.current.currentRealm,
             elapsed,
@@ -2965,10 +3678,56 @@ export default function App() {
           loadoutRef.current
         );
 
+        const hadManualFlapPress = jumpJustPressedRef.current;
         jumpJustPressedRef.current = false;
         toggleFlightJustPressedRef.current = false;
         toggleSitJustPressedRef.current = false;
         physicsRef.current = stepRes.nextState;
+
+        // Module 8: Partner Auto-Follow Mode (smoothly trails selected leader until manual WASD input)
+        if (networkClient.followLeaderId) {
+          const leaderPeer = networkClient.remoteTravelers.get(
+            networkClient.followLeaderId
+          );
+          if (!leaderPeer) {
+            networkClient.setFollowLeader(null);
+          } else {
+            const followStep = computeFollowerStepPure(
+              physicsRef.current,
+              leaderPeer,
+              Math.hypot(rawMoveX, rawMoveZ),
+              dt
+            );
+            if (followStep.cancelledByInput) {
+              networkClient.setFollowLeader(null);
+              showBanner('🧭 已检测到方向键输入 · 自动脱离跟随状态');
+            } else {
+              physicsRef.current = {
+                ...physicsRef.current,
+                x: followStep.x,
+                y: followStep.y,
+                z: followStep.z,
+                yaw: followStep.yaw,
+                grounded: followStep.grounded,
+                flightMode: followStep.flightMode,
+                locomotionMode: followStep.grounded ? 'walk' : 'fly',
+              };
+            }
+          }
+        }
+
+        if (stepRes.didFlap && !hadManualFlapPress) {
+          squashScaleYRef.current = 1.18;
+          skyAudio.playWingFlap();
+          spawnBurst(
+            physicsRef.current.x,
+            physicsRef.current.y + 0.9,
+            physicsRef.current.z,
+            8,
+            2.4
+          );
+          wingTrailSystem.burstWingTipClouds(playerRig, 6);
+        }
 
         if (stepRes.hazardStrike === 'krill') {
           skyAudio.playHazardAlert();
@@ -2979,8 +3738,20 @@ export default function App() {
 
         if (stepRes.didLand) {
           squashScaleYRef.current =
-            physicsRef.current.landingStiffTimer > 0 ? 0.68 : 0.82;
-          skyAudio.playLandStep();
+            physicsRef.current.landingStiffTimer > 0 ? 0.68 : 0.85;
+          const landSurface = physicsRef.current.isInShallowWater
+            ? 'water'
+            : Math.hypot(physicsRef.current.x, physicsRef.current.z) < 7.2
+              ? 'stone'
+              : progressRef.current.currentRealm === 'valley'
+                ? 'snow'
+                : progressRef.current.currentRealm === 'isle'
+                  ? 'sand'
+                  : 'grass';
+          skyAudio.playLandStep(
+            physicsRef.current.landingStiffTimer > 0 ? 9.5 : 4.2,
+            landSurface
+          );
           spawnBurst(
             physicsRef.current.x,
             physicsRef.current.y + 0.1,
@@ -2991,6 +3762,26 @@ export default function App() {
         }
 
         const p = physicsRef.current;
+        if (p.inCloudBank && !prevInCloudBank && !p.grounded) {
+          skyAudio.playCloudWhoosh(false);
+          wingTrailSystem.burstWingTipClouds(playerRig, 5);
+        }
+        prevInCloudBank = p.inCloudBank;
+
+        if (p.inWindTunnel && !prevInWindTunnel && !p.grounded) {
+          skyAudio.playCloudWhoosh(true);
+          spawnBurst(p.x, p.y + 1.0, p.z, 12, 3.2);
+          wingTrailSystem.burstWingTipClouds(playerRig, 6);
+        }
+        prevInWindTunnel = p.inWindTunnel;
+
+        if (lowEnergyChimeCooldown > 0) {
+          lowEnergyChimeCooldown = Math.max(0, lowEnergyChimeCooldown - dt);
+        }
+        if (!p.grounded && p.wingEnergy < 0.85 && lowEnergyChimeCooldown <= 0) {
+          skyAudio.playLowEnergyPulse();
+          lowEnergyChimeCooldown = 3.6;
+        }
         playerRig.root.position.set(p.x, p.y, p.z);
         playerRig.root.rotation.set(p.pitch, p.yaw, p.roll);
         playerRig.updateWingEnergyDisplay(
@@ -2998,18 +3789,50 @@ export default function App() {
           p.maxWingWedges,
           p.tempLostWedges
         );
-        builtWorld.updateWaterRipples(elapsed, p.x, p.z, p.isInShallowWater);
+
+        // Module 11: Evaluate Scene Feedback (high-altitude spatial expansion, water wake detection & item approach shimmer)
+        const nearItemDist = nearestInteractableRef.current
+          ? Math.hypot(
+              nearestInteractableRef.current.x - p.x,
+              nearestInteractableRef.current.z - p.z
+            )
+          : null;
+        const nearShardDist = nearbyLuminaShardRef.current?.distance3d ?? null;
+        const immersionFeedback = evaluateImmersionSceneFeedbackPure({
+          x: p.x,
+          y: p.y,
+          z: p.z,
+          grounded: p.grounded,
+          isInShallowWater: p.isInShallowWater,
+          nearestInteractableDist: nearItemDist,
+          nearestShardDist: nearShardDist,
+        });
+        if (scene.fog instanceof THREE.FogExp2) {
+          scene.fog.density =
+            liveAtmoProfile.fogDensity / immersionFeedback.horizonClarityMultiplier;
+        }
+        builtWorld.updateWaterRipples(
+          elapsed,
+          p.x,
+          p.z,
+          immersionFeedback.shouldEmitWaterWake
+        );
+
+        const horizSpeed = Math.hypot(p.vx, p.vz);
 
         let yawDelta = p.yaw - prevYaw;
         while (yawDelta > Math.PI) yawDelta -= Math.PI * 2;
         while (yawDelta < -Math.PI) yawDelta += Math.PI * 2;
         prevYaw = p.yaw;
-        const instantTurnRate = Math.max(
-          -1.5,
-          Math.min(1.5, (yawDelta / Math.max(0.008, dt)) * 0.18)
-        );
+        const instantTurnRate =
+          horizSpeed < 0.1 && p.grounded
+            ? 0
+            : Math.max(-1.5, Math.min(1.5, (yawDelta / Math.max(0.008, dt)) * 0.18));
         smoothedTurnRate +=
-          (instantTurnRate - smoothedTurnRate) * (1 - Math.exp(-10 * dt));
+          (instantTurnRate - smoothedTurnRate) * (1 - Math.exp(-12 * dt));
+        if (Math.abs(smoothedTurnRate) < 0.004 && instantTurnRate === 0) {
+          smoothedTurnRate = 0;
+        }
 
         squashScaleYRef.current +=
           (1.0 - squashScaleYRef.current) * (1 - Math.exp(-12 * dt));
@@ -3019,23 +3842,32 @@ export default function App() {
         const sxz = baseScale * (2.0 - squashScaleYRef.current);
         playerRig.bodyVisual.scale.set(sxz, sy, sxz);
 
-        const horizSpeed = Math.hypot(p.vx, p.vz);
-        if (p.grounded && horizSpeed > 0.15) {
-          gaitDistanceRef.current += horizSpeed * dt * 2.9;
-        }
-
-        // Camera gentle auto-recenter behind player only when flying or walking forward (never fight A/D/S walking!)
-        if (
-          !isDraggingCamera &&
-          horizSpeed > 1.2 &&
-          !selfieModeRef.current &&
-          (!p.grounded || moveZ < -0.15)
-        ) {
-          const desiredBehindYaw = p.yaw + Math.PI;
-          let camDiff = desiredBehindYaw - cameraYawRef.current;
-          while (camDiff > Math.PI) camDiff -= Math.PI * 2;
-          while (camDiff < -Math.PI) camDiff += Math.PI * 2;
-          cameraYawRef.current += camDiff * (1 - Math.exp(-(p.grounded ? 0.65 : 1.15) * dt));
+        if (p.grounded && horizSpeed > 0.12) {
+          const cadenceMult = p.locomotionMode === 'run' ? 2.95 : 2.45;
+          const prevGaitStep = Math.floor(gaitDistanceRef.current / Math.PI);
+          gaitDistanceRef.current += horizSpeed * dt * cadenceMult;
+          const nextGaitStep = Math.floor(gaitDistanceRef.current / Math.PI);
+          if (nextGaitStep > prevGaitStep) {
+            const surfaceType = p.isInShallowWater
+              ? 'water'
+              : Math.hypot(p.x, p.z) < 7.2 || Math.hypot(p.x, p.z + 50) < 12.0
+                ? 'stone'
+                : progressRef.current.currentRealm === 'valley'
+                  ? 'snow'
+                  : progressRef.current.currentRealm === 'isle'
+                    ? 'sand'
+                    : 'grass';
+            skyAudio.playFootstep(surfaceType, p.locomotionMode === 'run');
+            if (saveDataRef.current.tutorialStep === 0 && horizSpeed > 1.2) {
+              const tutRes = advanceOnboardingTutorialPure(
+                saveDataRef.current,
+                'move'
+              );
+              if (tutRes.advanced) {
+                commitSaveData(tutRes.nextSave);
+              }
+            }
+          }
         }
 
         if (progressRef.current.activeEmoteTimer > 0) {
@@ -3046,6 +3878,12 @@ export default function App() {
           if (progressRef.current.activeEmoteTimer <= 0) {
             progressRef.current.activeEmote = null;
           }
+        }
+        if (interactGestureTimerRef.current > 0) {
+          interactGestureTimerRef.current = Math.max(
+            0,
+            interactGestureTimerRef.current - dt
+          );
         }
 
         const playerPose = computeSkyChildPose({
@@ -3065,6 +3903,12 @@ export default function App() {
           locomotionMode: p.locomotionMode,
           sitMode: p.sitMode,
           landingStiffTimer: p.landingStiffTimer,
+          landingCushionTimer: p.landingCushionTimer,
+          takeoffTimer: p.takeoffTimer,
+          flightPitchPhase: p.flightPitchPhase,
+          inCloudBank: p.inCloudBank,
+          inWindTunnel: p.inWindTunnel,
+          interactGestureTimer: interactGestureTimerRef.current,
         });
 
         playerRig.applyPose(playerPose, elapsed);
@@ -3078,6 +3922,10 @@ export default function App() {
           flapCooldown: p.flapCooldown,
           activeEmote: progressRef.current.activeEmote,
           activeEmoteTimer: progressRef.current.activeEmoteTimer,
+          turnRate: smoothedTurnRate,
+          isDiving: p.isDiving,
+          inCloudBank: p.inCloudBank,
+          inWindTunnel: p.inWindTunnel,
         });
         wingTrailSystem.update(
           dt,
@@ -3089,7 +3937,7 @@ export default function App() {
           p.vz
         );
 
-        // Broadcast local transform + velocity + locomotion state over WebSocket at ~15Hz
+        // Broadcast local transform + velocity + locomotion + sitMode state over WebSocket at ~15Hz
         networkClient.sendTransformThrottled({
           x: p.x,
           y: p.y,
@@ -3102,6 +3950,7 @@ export default function App() {
           grounded: p.grounded,
           flightMode: p.flightMode,
           locomotionMode: p.locomotionMode,
+          sitMode: p.sitMode,
           activeEmote: progressRef.current.activeEmote,
           activeEmoteLevel: activeEmoteLevelRef.current,
           loadout: loadoutRef.current,
@@ -3139,63 +3988,39 @@ export default function App() {
             0;
         }
 
-        // Camera Follow with Flight/Glide/Dive Zoom-Out & Multi-Sample Terrain/Obstacle Anti-Clipping
-        const effectiveYaw = selfieModeRef.current
-          ? p.yaw + Math.PI
-          : cameraYawRef.current;
-        const camDist = selfieModeRef.current
-          ? 4.2
-          : p.grounded
-            ? 8.2
-            : p.isDiving
-              ? 12.2
-              : p.flightMode === 'glide'
-                ? 10.8
-                : 9.2;
-        if (!photoModeOpenRef.current) {
-          const targetFov = p.grounded
-            ? 60
-            : p.isDiving
-              ? 72
-              : p.flightMode === 'glide'
-                ? 66
-                : 62;
-          if (Math.abs(camera.fov - targetFov) > 0.15) {
-            camera.fov += (targetFov - camera.fov) * (1 - Math.exp(-6 * dt));
-            camera.updateProjectionMatrix();
+        // Module 3: Cinematic Third-Person Camera System
+        // (Damped Follow & Velocity Look-Ahead, Rule-of-Thirds Composition, Obstacle/Terrain Avoidance, Scenic Vistas & Flight Horizon Banking)
+        cameraStateRef.current.yaw = cameraYawRef.current;
+        cameraStateRef.current.pitch = cameraPitchRef.current;
+        const nextCam = computeCinematicCameraStepPure(
+          cameraStateRef.current,
+          p,
+          {
+            dt,
+            isDraggingCamera,
+            moveX,
+            moveZ,
+            turnRate: smoothedTurnRate,
+            selfieMode: selfieModeRef.current,
+            photoModeOpen: photoModeOpenRef.current,
+            photoFov: photoFovRef.current,
           }
-        }
-        const camHeight =
-          p.y + (p.grounded ? 2.6 : 3.2) + cameraPitchRef.current * 4.5;
-        let desiredCamX = p.x + Math.sin(effectiveYaw) * camDist;
-        let desiredCamZ = p.z + Math.cos(effectiveYaw) * camDist;
-        let desiredCamY = camHeight;
+        );
+        cameraStateRef.current = nextCam;
+        cameraYawRef.current = nextCam.yaw;
 
-        // Push camera smoothly out of only the large solid Northern Temple Main Hall (never snap camera on thin shrine pillars!)
-        const camHallDx = desiredCamX - 0;
-        const camHallDz = desiredCamZ - -55.0;
-        const camHallDist = Math.hypot(camHallDx, camHallDz);
-        if (desiredCamY < 24.0 && camHallDist < 5.75 && camHallDist > 0.001) {
-          desiredCamX = (camHallDx / camHallDist) * 5.75;
-          desiredCamZ = -55.0 + (camHallDz / camHallDist) * 5.75;
+        if (Math.abs(camera.fov - nextCam.fov) > 0.08) {
+          camera.fov = nextCam.fov;
+          camera.updateProjectionMatrix();
         }
 
-        // Multi-sample terrain ray check from player head (p.x, p.y + 1.6, p.z) to camera endpoint
-        for (let s = 1; s <= 4; s++) {
-          const frac = s / 4;
-          const sx = p.x + (desiredCamX - p.x) * frac;
-          const sz = p.z + (desiredCamZ - p.z) * frac;
-          const sy = p.y + 1.6 + (desiredCamY - (p.y + 1.6)) * frac;
-          const terrainClearY = groundHeightAt(sx, sz) + 1.15;
-          if (sy < terrainClearY) {
-            desiredCamY += (terrainClearY - sy) / frac;
-          }
-        }
-
-        _camDesired.set(desiredCamX, desiredCamY, desiredCamZ);
-        camera.position.lerp(_camDesired, 1 - Math.exp(-11.5 * dt));
-
-        _camTarget.set(p.x, p.y + 1.6, p.z);
+        camera.position.set(nextCam.camX, nextCam.camY, nextCam.camZ);
+        camera.up.set(
+          Math.sin(nextCam.roll),
+          Math.cos(nextCam.roll),
+          0
+        );
+        _camTarget.set(nextCam.focusX, nextCam.focusY, nextCam.focusZ);
         camera.lookAt(_camTarget);
 
         // Tick down active Sky Alchemy Spell duration & cycle Rainbow Trail color
@@ -3251,6 +4076,161 @@ export default function App() {
           }
         }
 
+        // Module 6: Check Magnetic Lumina Shard Collection & Secret Landmark Auto-Discovery
+        const shardEval = evaluateNearbyLuminaShardPure(
+          p.x,
+          p.y,
+          p.z,
+          saveDataRef.current.collectedLuminaShardIds || [],
+          sessionEchoedShardIdsRef.current
+        );
+        nearbyLuminaShardRef.current = shardEval;
+        if (shardEval.isWithinCollectRadius && shardEval.nearestShard) {
+          handleCollectLuminaShardRef.current?.(
+            shardEval.nearestShard.id,
+            false
+          );
+        }
+
+        // Throttle non-frame-critical landmark discovery, social proximity, co-op & acoustic profile scans to 20Hz
+        worldEvalAccumulator += dt;
+        if (worldEvalAccumulator >= 0.05 || !soundscapeRef.current) {
+          worldEvalAccumulator = 0;
+
+          const newlyFoundLandmark = findNewlyDiscoveredSecretLandmarkAtPure(
+            p.x,
+            p.y,
+            p.z,
+            saveDataRef.current.discoveredSecretZoneIds || []
+          );
+          if (newlyFoundLandmark) {
+            const lmRes = discoverSecretLandmarkPure(
+              saveDataRef.current,
+              newlyFoundLandmark.id
+            );
+            if (lmRes.newlyDiscovered) {
+              commitSaveData(lmRes.nextSave);
+              progressRef.current = {
+                ...progressRef.current,
+                candles: lmRes.nextSave.candles,
+                hearts: lmRes.nextSave.hearts,
+                wingedLights: lmRes.nextSave.wingedLights,
+                ascendedCandles: lmRes.nextSave.ascendedCandles,
+              };
+              skyAudio.playSecretLandmarkDiscover();
+              if (lmRes.leveledUpRank) {
+                skyAudio.playExplorerRankUpCeremony(
+                  lmRes.nextSave.explorerRank || 2
+                );
+              }
+              spawnBurst(p.x, p.y + 1.4, p.z, 36, 7.2);
+              if (lmRes.ceremonyTitle) {
+                showCeremonyBanner(lmRes.ceremonyTitle);
+              }
+              showBanner(lmRes.message);
+            }
+          }
+
+          // Module 8 & 10: Evaluate Contextual Proximity Social Prompt, Co-op Mechanism & Shared Emotional Resonance
+          const peerSnapshots = remotes.map((r) => ({
+            playerId: r.playerId,
+            name: r.playerName,
+            x: r.x,
+            y: r.y,
+            z: r.z,
+            yaw: r.yaw,
+            grounded: r.grounded,
+            flightMode: r.flightMode,
+            sitMode: r.sitMode,
+            activeEmote: r.activeEmote,
+            isBot: r.isBot,
+          }));
+          nearbySocialPeerRef.current = evaluateNearbySocialPeerPure(
+            p.x,
+            p.y,
+            p.z,
+            peerSnapshots,
+            saveDataRef.current.friends,
+            saveDataRef.current.blockedPeerIds || [],
+            4.5
+          );
+
+          const nearbyCoopDoor = interactablesRef.current.find(
+            (i) =>
+              i.type === 'coop_door' &&
+              !i.activated &&
+              Math.hypot(i.x - p.x, i.z - p.z) <= 8.5
+          );
+          coopEvalRef.current = nearbyCoopDoor
+            ? evaluateCoopMechanismPure(
+                p.x,
+                p.y,
+                p.z,
+                nearbyCoopDoor,
+                peerSnapshots,
+                2,
+                5.8
+              )
+            : null;
+
+          const activeVistaObj = cameraStateRef.current.activeVistaId
+            ? SCENIC_VISTA_ZONES.find(
+                (v) => v.id === cameraStateRef.current.activeVistaId
+              )
+            : null;
+          sharedEmotionalRef.current = evaluateSharedEmotionalMomentPure(
+            p.x,
+            p.y,
+            p.z,
+            p.sitMode,
+            networkClient.dualActionMode === 'bench_sit'
+              ? 'none'
+              : networkClient.dualActionMode,
+            activeVistaObj?.name || null,
+            Boolean(
+              instrumentOpenRef.current ||
+                progressRef.current.activeEmote === 'emote_spin_dance'
+            ),
+            peerSnapshots,
+            saveDataRef.current.friends
+          );
+
+          // Module 10: Evaluate 3D Acoustic Soundscape, Cave/Valley Reverb, Spatial Emitters & Flight Wind Mix
+          soundscapeRef.current = evaluateAcousticSoundscapeAtPure({
+            realmId: progressRef.current.currentRealm,
+            x: p.x,
+            y: p.y,
+            z: p.z,
+            yaw: cameraYawRef.current,
+            grounded: p.grounded,
+            inCloudBank: p.inCloudBank,
+            inWindTunnel: p.inWindTunnel,
+            horizSpeed,
+            vy: p.vy,
+            isDiving: p.isDiving,
+            krillAlertLevel: p.krillAlertLevel,
+            activeVistaId: cameraStateRef.current.activeVistaId,
+          });
+        }
+
+        const emoEval = sharedEmotionalRef.current;
+        if (emoEval?.active && p.wingEnergy < p.maxWingWedges) {
+          p.wingEnergy = Math.min(
+            p.maxWingWedges,
+            p.wingEnergy + emoEval.wingRechargeBonusPerSec * dt
+          );
+        }
+        if (soundscapeRef.current) {
+          skyAudio.updateContinuousSoundscape(dt, soundscapeRef.current, {
+            grounded: p.grounded,
+            horizSpeed,
+            vy: p.vy,
+            isDiving: p.isDiving,
+            inCloudBank: p.inCloudBank,
+            isPlayingInstrument: instrumentOpenRef.current,
+          });
+        }
+
         // Throttled HUD state sync (~10Hz)
         hudSyncAccumulator += dt;
         if (hudSyncAccumulator >= 0.1) {
@@ -3265,6 +4245,11 @@ export default function App() {
             nearestInteractableRef.current = nearest;
             setNearestInteractable(nearest);
           }
+          setNearbyLuminaShardEval(nearbyLuminaShardRef.current);
+          setNearbySocialPeerEval(nearbySocialPeerRef.current);
+          setCoopEval(coopEvalRef.current);
+          setSharedEmotionalEval(sharedEmotionalRef.current);
+          setSoundscapeProfile(soundscapeRef.current);
           setPhysics({ ...p });
           setProgress({ ...progressRef.current });
           setNetStatus(networkClient.getStatusSnapshot());
@@ -3283,16 +4268,14 @@ export default function App() {
         }
       }
 
-      // Advance Pooled Particle Ring Buffer
+      // Advance Pooled Particle Ring Buffer (skipping already-inactive slots to avoid redundant matrix uploads)
+      let particleMatrixDirty = false;
       for (let i = 0; i < PARTICLE_CAP; i++) {
         const pt = particlePool[i];
         if (!pt.active) {
-          _dummyMatrixObj.position.set(0, -200, 0);
-          _dummyMatrixObj.scale.set(0, 0, 0);
-          _dummyMatrixObj.updateMatrix();
-          particleInstanced.setMatrixAt(i, _dummyMatrixObj.matrix);
           continue;
         }
+        particleMatrixDirty = true;
         pt.life += dt;
         if (pt.life >= pt.maxLife) {
           pt.active = false;
@@ -3302,18 +4285,27 @@ export default function App() {
           particleInstanced.setMatrixAt(i, _dummyMatrixObj.matrix);
           continue;
         }
-        pt.x += pt.vx * dt;
-        pt.y += pt.vy * dt;
-        pt.z += pt.vz * dt;
+        const curlDrift = computeOrganicFlickerPure(elapsed, i * 0.41);
+        pt.vx *= Math.exp(-1.2 * dt);
+        pt.vz *= Math.exp(-1.2 * dt);
+        pt.x += (pt.vx + curlDrift.driftX * 0.65) * dt;
+        pt.y += (pt.vy + curlDrift.driftY * 0.35) * dt;
+        pt.z += (pt.vz + curlDrift.driftZ * 0.65) * dt;
         const lifeRatio = 1 - pt.life / pt.maxLife;
-        const s = pt.scale * lifeRatio;
+        const s = pt.scale * Math.sin(lifeRatio * Math.PI * 0.5);
         _dummyMatrixObj.position.set(pt.x, pt.y, pt.z);
         _dummyMatrixObj.scale.set(s, s, s);
-        _dummyMatrixObj.rotation.set(elapsed * 3, elapsed * 2, 0);
+        _dummyMatrixObj.rotation.set(
+          elapsed * 2.4 + i,
+          elapsed * 1.9 + i * 0.5,
+          0
+        );
         _dummyMatrixObj.updateMatrix();
         particleInstanced.setMatrixAt(i, _dummyMatrixObj.matrix);
       }
-      particleInstanced.instanceMatrix.needsUpdate = true;
+      if (particleMatrixDirty) {
+        particleInstanced.instanceMatrix.needsUpdate = true;
+      }
 
       renderer.render(scene, camera);
 
@@ -3334,6 +4326,8 @@ export default function App() {
       window.removeEventListener('pointerdown', onPointerDown);
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
+      renderer.domElement.removeEventListener('wheel', onWheel);
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', clearHeldInputs);
@@ -3502,6 +4496,21 @@ export default function App() {
           onAdvanceOnboardingTutorial={handleAdvanceOnboardingTutorial}
           discoveredEasterEggIds={saveData.discoveredEasterEggIds || []}
           onDiscoverAndWarpEasterEgg={handleDiscoverAndWarpEasterEgg}
+          collectedLuminaShardIds={saveData.collectedLuminaShardIds || []}
+          sessionEchoedShardIds={sessionEchoedShardIds}
+          discoveredSecretZoneIds={saveData.discoveredSecretZoneIds || []}
+          luminaResonancePts={saveData.luminaResonancePts || 0}
+          explorerRank={saveData.explorerRank || 1}
+          nearbyLuminaShardEval={nearbyLuminaShardEval}
+          nearbySocialPeerEval={nearbySocialPeerEval}
+          coopEval={coopEval}
+          sharedEmotionalEval={sharedEmotionalEval}
+          ceremonyTitle={ceremonyTitle}
+          onCollectAndWarpLuminaShard={handleCollectAndWarpLuminaShard}
+          onDiscoverAndWarpSecretLandmark={handleDiscoverAndWarpSecretLandmark}
+          onFollowPartner={handleFollowPartner}
+          onSummonCoopCompanions={handleSummonCoopCompanions}
+          onToggleLocalBotsEnabled={handleToggleLocalBotsEnabled}
           activeSpellId={activeSpellId}
           activeSpellRemainingSec={activeSpellRemainingSec}
           onActivateSkySpell={handleActivateSkySpell}
@@ -3523,9 +4532,20 @@ export default function App() {
             document.body.dataset.state = 'paused';
             setGameState('paused');
           }}
+          activeInputDevice={activeInputDevice}
+          soundscapeProfile={soundscapeProfile}
+          audioMixer={audioMixer}
+          onChangeAudioMixer={handleUpdateAudioMixer}
           onResetPosition={handleResetPosition}
           onTouchJoystickChange={(mx, mz, sprint) => {
             touchInputRef.current = { moveX: mx, moveZ: mz, sprint };
+            if (
+              (Math.abs(mx) > 0.05 || Math.abs(mz) > 0.05) &&
+              activeInputDeviceRef.current !== 'touch'
+            ) {
+              activeInputDeviceRef.current = 'touch';
+              setActiveInputDevice('touch');
+            }
           }}
         />
       )}
@@ -3563,6 +4583,10 @@ export default function App() {
         sitMode={physics.sitMode}
         dualActionPartnerId={dualActionPartnerId}
         dualActionMode={dualActionMode}
+        netStatus={netStatus}
+        onToggleLocalBotsEnabled={handleToggleLocalBotsEnabled}
+        onFollowPartner={handleFollowPartner}
+        onSummonCoopCompanions={handleSummonCoopCompanions}
         onUnlockConstellationNode={handleUnlockConstellationNode}
         onStartSpiritMemoryQuest={handleStartSpiritMemoryQuest}
         onForgeCandleWax={handleForgeCandleWax}
